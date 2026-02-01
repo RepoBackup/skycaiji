@@ -117,6 +117,7 @@ class CpatternColl extends CpatternBase{
         if(!is_array($config)){
             $config=array();
         }
+        $config['reg_area_merge']=$this->merge_convert_variables($config['reg_area_merge']);
         $doMerge=false;
         if(!empty($config['reg_area'])){
             
@@ -187,7 +188,7 @@ class CpatternColl extends CpatternBase{
         if(!is_array($config)){
             $config=array();
         }
-        
+        $config['reg_url_merge']=$this->merge_convert_variables($config['reg_url_merge']);
         $parentMatches=$this->parent_page_signs2matches($this->parent_page_signs($pageType,$pageName,($isPagination?'pn:':'').'url'));
         if(!empty($config['reg_url'])&&!empty($config['reg_url_merge'])){
             
@@ -220,7 +221,7 @@ class CpatternColl extends CpatternBase{
                     $cont_urls=is_array($cont_urls)?$cont_urls:array();
                 }elseif('json'==$config['reg_url_module']){
                     
-                    $cont_urls=$this->rule_module_json_data(array('json'=>$config['reg_url'],'json_merge_data'=>false,'json_arr'=>'_original_'),$html);
+                    $cont_urls=$this->rule_module_json_data(array('json'=>$config['reg_url'],'json_merge_data'=>true,'json_url_merge_data'=>true,'json_arr'=>'_original_'),$html);
                     if(empty($cont_urls)){
                         $cont_urls=array();
                     }elseif(!is_array($cont_urls)){
@@ -252,6 +253,14 @@ class CpatternColl extends CpatternBase{
             'count'=>0,
         );
         if($isPagination&&$config['number']['open']){
+            
+            
+            $config['number']['start']=$this->merge_convert_variables($config['number']['start']);
+            $config['number']['end']=$this->merge_convert_variables($config['number']['end']);
+            
+            $areaParentMatches=$this->parent_page_signs2matches($this->parent_page_signs($pageType,$pageName,($isPagination?'pn:':'').'area'));
+            $config['number']['start']=$this->merge_match_signs($areaParentMatches, $config['number']['start']);
+            $config['number']['end']=$this->merge_match_signs($areaParentMatches, $config['number']['end']);
             
             $pnNum['nums']=\util\Funcs::increase_nums($config['number']['start'],$config['number']['end'],$config['number']['inc'],$config['number']['desc'],$config['number']['len']);
             $pnNum['count']=count($pnNum['nums']);
@@ -297,15 +306,7 @@ class CpatternColl extends CpatternBase{
             $doBan=true;
         }
         
-        $urlCharset='';
-        if(!empty($this->config['url_encode'])){
-            
-            $urlWebConfig=$this->get_page_config($pageType,$pageName,'url_web');
-            $urlCharset=$this->page_url_web_charset($urlWebConfig);
-            if(empty($urlCharset)||in_array($urlCharset,array('auto','utf-8','utf8'))){
-                $urlCharset='';
-            }
-        }
+        $urlCharset=$this->page_url_encode_charset($pageType, $pageName);
         
         $contUrlsCount=count($cont_urls);
         $oldContUrls=array();
@@ -530,6 +531,7 @@ class CpatternColl extends CpatternBase{
                 
                 $formData=$this->arrays_to_key_val($pageUrlWeb['form_names'], $pageUrlWeb['form_vals']);
                 if(!empty($formData)&&is_array($formData)){
+                    $formData=$this->merge_convert_variables($formData);
                     if(!$isPagination){
                         
                         $formParentMatches=$this->page_convert_data_signs($pageType, $pageName, 'form', $formData, true);
@@ -555,6 +557,7 @@ class CpatternColl extends CpatternBase{
                 
                 $formData=$this->arrays_to_key_val($pnConfig['url_web']['form_names'], $pnConfig['url_web']['form_vals']);
                 if(!empty($formData)&&is_array($formData)){
+                    $formData=$this->merge_convert_variables($formData);
                     $formData=$this->pn_replace_cur_url($pageType,$pageName,$isPagination,$formData);
                     $formParentMatches=$this->page_convert_data_signs($pageType, $pageName, 'pn:form', $formData, true);
                     $hasPnNum=$this->pn_number_exists($formData);
@@ -629,6 +632,7 @@ class CpatternColl extends CpatternBase{
                 
                 if(!empty($pageRenderer['types'])){
                     
+                    $pageRenderer['contents']=$this->merge_convert_variables($pageRenderer['contents']);
                     if(!$isPagination){
                         
                         $renderParentMatches=$this->page_convert_data_signs($pageType, $pageName, 'renderer', $pageRenderer['contents'], true);
@@ -656,6 +660,7 @@ class CpatternColl extends CpatternBase{
                 
                 if(!empty($pnConfig['renderer']['types'])){
                     
+                    $pnConfig['renderer']['contents']=$this->merge_convert_variables($pnConfig['renderer']['contents']);
                     $pnConfig['renderer']['contents']=$this->pn_replace_cur_url($pageType,$pageName,$isPagination,$pnConfig['renderer']['contents']);
                     $renderParentMatches=$this->page_convert_data_signs($pageType, $pageName, 'pn:renderer', $pnConfig['renderer']['contents'], true);
                     $hasPnNum=$this->pn_number_exists($pnConfig['renderer']['contents']);
@@ -752,7 +757,7 @@ class CpatternColl extends CpatternBase{
     
     
     /*将页面标签转换成match值*/
-    public function parent_page_signs2matches($parentPageSigns){
+    public function parent_page_signs2matches($parentPageSigns,$returnSignFmt=false){
         $matches=array();
         if(!empty($parentPageSigns)&&is_array($parentPageSigns)){
             $signTypes=array('area','url','content');
@@ -798,6 +803,17 @@ class CpatternColl extends CpatternBase{
                     }
                 }
             }
+        }
+        if($returnSignFmt&&$matches){
+            
+            $matchLen=strlen('match');
+            $signs=array();
+            foreach ($matches as $k=>$v){
+                if(stripos($k,'match')===0){
+                    $signs[cp_sign('match',substr($k,$matchLen))]=$v;
+                }
+            }
+            $matches=$signs;
         }
         return $matches;
     }
@@ -1026,8 +1042,13 @@ class CpatternColl extends CpatternBase{
             if(empty($mergeType)||$mergeType=='content_sign'){
                 $contentSigns=is_array($pageConfig['content_signs'])?$pageConfig['content_signs']:array();
                 foreach ($contentSigns as $v){
-                    if($v['identity']&&!empty($v['func'])){
+                    if($v['identity']&&!empty($v['funcs'])&&is_array($v['funcs'])){
                         
+                        foreach ($v['funcs'] as $vk=>$vv){
+                            if(is_array($vv)&&$vv['func_param']){
+                                $pageContentSignMerge.=$vv['func_param'];
+                            }
+                        }
                     }
                 }
                 $pageContentSignRule='';
@@ -1143,6 +1164,13 @@ class CpatternColl extends CpatternBase{
                 if(!$this->page_rule_is_null($pageType,$isPn)){
                     
                     $pageAreaMerge=$pageConfig['reg_area_merge'];
+                    if($isPn){
+                        
+                        if($pageConfig['number']&&$pageConfig['number']['open']){
+                            
+                            $pageAreaMerge.=$pageConfig['number']['start'].$pageConfig['number']['end'];
+                        }
+                    }
                 }
             }
             $pageSigns=$this->signs_not_in_rule($pageConfig['reg_area'],$pageAreaMerge.implode('',$unknownPageSigns),$ruleWhole,false,true);
@@ -1628,6 +1656,33 @@ class CpatternColl extends CpatternBase{
     }
     
     
+    public function page_url_encode_charset($pageType,$pageName){
+        $urlCharset='';
+        if(!empty($this->config['url_encode'])){
+            
+            $urlWebConfig=$this->get_page_config($pageType,$pageName,'url_web');
+            $urlCharset=$this->page_url_web_charset($urlWebConfig);
+            if(empty($urlCharset)||in_array($urlCharset,array('auto','utf-8','utf8'))){
+                $urlCharset='';
+            }
+        }
+        return $urlCharset;
+    }
+    
+    public function page_url_encode($pageType,$pageName,$url){
+        $urlCharset=$this->page_url_encode_charset($pageType, $pageName);
+        if($url){
+            if(is_array($url)){
+                foreach ($url as $k=>$v){
+                    $url[$k]=\util\Funcs::url_auto_encode($v, $urlCharset);
+                }
+            }else{
+                $url=\util\Funcs::url_auto_encode($url, $urlCharset);
+            }
+        }
+        return $url;
+    }
+    
     /*起始页设为了内容页*/
     public function source_is_url(){
         return $this->get_config('source_is_url')?true:false;
@@ -1737,6 +1792,7 @@ class CpatternColl extends CpatternBase{
                 if($openPageUw){
                     
                     $headers=$this->arrays_to_key_val($pageUrlWeb['header_names'], $pageUrlWeb['header_vals']);
+                    $headers=$this->merge_convert_variables($headers);
                     $headers=$this->page_convert_data_signs($pageType, $pageName, 'header', $headers);
                     init_array($headers);
                 }
@@ -1744,6 +1800,7 @@ class CpatternColl extends CpatternBase{
                 if($isPagination&&$this->pagination_url_web_opened($pnConfig)){
                     
                     $pnHeaders=$this->arrays_to_key_val($pnConfig['url_web']['header_names'], $pnConfig['url_web']['header_vals']);
+                    $pnHeaders=$this->merge_convert_variables($pnHeaders);
                     $pnHeaders=$this->pn_replace_cur_url($pageType, $pageName, $isPagination, $pnHeaders);
                     $pnHeaders=$this->page_convert_data_signs($pageType, $pageName, 'pn:header', $pnHeaders);
                     init_array($pnHeaders);
@@ -1807,6 +1864,7 @@ class CpatternColl extends CpatternBase{
             if($openPageUw){
                 
                 $formData=$this->arrays_to_key_val($pageUrlWeb['form_names'], $pageUrlWeb['form_vals']);
+                $formData=$this->merge_convert_variables($formData);
                 $formData=$this->page_convert_data_signs($pageType, $pageName, 'form', $formData);
                 init_array($formData);
             }
@@ -1814,6 +1872,7 @@ class CpatternColl extends CpatternBase{
             if($isPagination&&$this->pagination_url_web_opened($pnConfig)){
                 
                 $pnFormData=$this->arrays_to_key_val($pnConfig['url_web']['form_names'], $pnConfig['url_web']['form_vals']);
+                $pnFormData=$this->merge_convert_variables($pnFormData);
                 $pnFormData=$this->pn_replace_cur_url($pageType, $pageName, $isPagination, $pnFormData);
                 $pnFormData=$this->page_convert_data_signs($pageType, $pageName, 'pn:form', $pnFormData);
                 init_array($pnFormData);
@@ -1868,6 +1927,7 @@ class CpatternColl extends CpatternBase{
             $rendererData=array();
             if($this->renderer_is_open(null,null,$pageRenderer,$pnConfig,true)){
                 
+                $pageRenderer['contents']=$this->merge_convert_variables($pageRenderer['contents']);
                 $pageRenderer['contents']=$this->page_convert_data_signs($pageType, $pageName, 'renderer', $pageRenderer['contents']);
                 $rendererData=array(
                     'types'=>$pageRenderer['types'],
@@ -1877,8 +1937,9 @@ class CpatternColl extends CpatternBase{
             }
             if($isPagination&&$this->pagination_renderer_opened($pnConfig)){
                 
-                $pnConfig['renderer']['contents']=$this->page_convert_data_signs($pageType, $pageName, 'pn:renderer', $pnConfig['renderer']['contents']);
+                $pnConfig['renderer']['contents']=$this->merge_convert_variables($pnConfig['renderer']['contents']);
                 $pnConfig['renderer']['contents']=$this->pn_replace_cur_url($pageType, $pageName, $isPagination, $pnConfig['renderer']['contents']);
+                $pnConfig['renderer']['contents']=$this->page_convert_data_signs($pageType, $pageName, 'pn:renderer', $pnConfig['renderer']['contents']);
                 
                 if($this->pn_number_exists($pnConfig['renderer']['contents'])){
                     foreach ($pnConfig['renderer']['contents'] as $k=>$v){
@@ -1969,7 +2030,7 @@ class CpatternColl extends CpatternBase{
         }
         if($html){
             
-            $contentMatches=array();
+            $this->page_content_matches[$pageType][$pageName]=array();
             $contentSigns=$this->get_page_config($pageType,$pageName,'content_signs');
             if(!empty($contentSigns)&&is_array($contentSigns)){
                 $pageSourceName=$this->page_source_name($pageType, $pageName);
@@ -1993,11 +2054,16 @@ class CpatternColl extends CpatternBase{
                         
                         if(!empty($contentSign['funcs'])&&is_array($contentSign['funcs'])){
                             
+                            $parentSigns=$this->parent_page_signs2matches($this->parent_page_signs($pageType,$pageName,'content_sign'),true);
+                            if(g_sc('task_full_variables')){
+                                
+                                $parentSigns=array_merge(is_array($parentSigns)?$parentSigns:array(),g_sc('task_full_variables'));
+                            }
                             $csMatchSign=cp_sign('match',$contentSign['identity']);
                             foreach ($contentSign['funcs'] as $csFunc){
                                 if(is_array($csFunc)&&!empty($csFunc['func'])){
                                     
-                                    $result=$this->execute_plugin_func('contentSign', $csFunc['func'], $val, $csFunc['func_param'], null, '【'.$pageSourceName.'：'.$csMatchSign.'】',true);
+                                    $result=$this->execute_plugin_func('contentSign', $csFunc['func'], $val, $csFunc['func_param'], $parentSigns, '【'.$pageSourceName.'：'.$csMatchSign.'】',true);
                                     if(empty($result['success'])){
                                         $this->echo_msg_exit('');
                                     }
@@ -2007,11 +2073,10 @@ class CpatternColl extends CpatternBase{
                                 }
                             }
                         }
-                        $contentMatches['match'.$contentSign['identity']]=$val;
+                        $this->page_content_matches[$pageType][$pageName]['match'.$contentSign['identity']]=$val;
                     }
                 }
             }
-            $this->page_content_matches[$pageType][$pageName]=$contentMatches;
         }
         if($returnInfo){
             return $htmlInfo;

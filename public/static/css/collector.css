@@ -8,6 +8,8 @@
 
 .c-p-source-urls>.form-group:first-child{margin-top:10px;}
 
+#c_p_variable_funcs .c-p-variable-func-var{display:inline;width:80px;border:0;cursor:pointer;margin:0;padding:0;height:auto;color:#555;}
+
 #c_p_level_urls tbody{
  	counter-reset:levelcounter;
 }
@@ -52,6 +54,8 @@
 .c-p-url-web-form .delete-url-web-form,.c-p-url-web-header .delete-url-web-header{margin-top:8px;}
 .c-p-url-web-form td:first-child,.c-p-url-web-header td:first-child{width:200px;}
 .c-p-url-web-form td:last-child,.c-p-url-web-header td:last-child{width:50px;text-align:center;}
+.c-p-url-web-form .input-group-btn:last-child{display:none;}
+
 /*页面渲染动作*/
 .c-p-url-renderer-list table{margin-bottom:0;}
 .c-p-url-renderer-list .td-renderer-element,.c-p-url-renderer-list .td-renderer-content{display:none;}
@@ -69,6 +73,15 @@
 .c-p-url-page-signs .c-p-url-ps-table .table td:first-child{white-space:nowrap!important;}
 .c-p-url-page-signs .c-p-url-ps-table .table td:last-child{text-align:left!important;}
 
+.c-p-url-page-signs .c-p-url-ps-table .table tfoot td:first-child{white-space:normal!important;}
+
+.c-p-url-page-vars thead,.c-p-url-page-vars tbody{display:none;}
+.c-p-url-page-vars tfoot td:first-child{border-top:0;}
+/*传入变量*/
+.c-p-variables{
+	width:auto;
+	overflow:hidden;	
+}
 /*分页字段*/
 .c-p-url-pagination-fields{
 	width:auto;
@@ -77,9 +90,10 @@
 
 /*参数标签样式*/
 .param-label{
+	background:#fff;
 	font-size:14px;
 	font-weight:normal;
-	padding: 4px 8px;
+	padding: 6px 12px;
     text-decoration: none;
     border-bottom: none;
     color: #3c8dbc;
@@ -90,13 +104,29 @@
 }
 .param-label em.delete{
     font-style: normal;
+	font-size:12px;	
     display: block;
     position: absolute;
-    top: -7px;
+    top: -5px;
+    right: -6px;
+    z-index: 999;
+	background:#fff;
+	cursor:pointer;
+}
+.param-label .icon-drag-move{
+    font-style: normal;
+	font-size:10px;
+    display: block;
+    position: absolute;
+    top: 13px;
     right: -5px;
     z-index: 999;
 	background:#fff;
 }
+.param-label .icon-drag-move:before {
+    content: "\e178";
+}
+
 
 /*采集器字段*/
 .c-p-field-list .field-name{color:#3c8dbc;cursor:pointer;}
@@ -192,14 +222,15 @@
 }
 
 @media (min-width: 768px) {
-	.c-p-url-web-form,.c-p-url-web-header{overflow:inherit;} /*table-responsive设置overflow:inherit;可正常显示dropdown-menu*/
+	.c-p-request-headers,.c-p-request-headers-img,.c-p-request-headers-file,.c-p-url-web-form,.c-p-url-web-header{overflow:inherit;} /*table-responsive设置overflow:inherit;可正常显示dropdown-menu*/
 }
 
 @media (max-width: 767px){
 	.c-p-url-page-signs .dropdown-menu .table td>a,.c-p-url-page-signs .dropdown-menu .table td>span{display:block;margin-right:0;}	
+	.c-p-url-page-signs .dropdown-menu .table tfoot td>a,.c-p-url-page-signs .dropdown-menu .table tfoot td>span{display:inline;}
 	/*dropdown-menu用fixed避免被table-responsive的overflow:hidden;影响*/
-	.c-p-url-web-form .c-p-url-page-signs .dropdown-menu,.c-p-url-web-header .c-p-url-page-signs .dropdown-menu{padding:0;border:4px solid #ddd;border-radius:4px;background:transparent;position:fixed;left:10px;right:10px;bottom:10px;top:auto;max-height:80%;overflow-y:scroll;}
-	.c-p-url-web-form .c-p-url-page-signs .dropdown-menu .c-p-url-ps-table,.c-p-url-web-header .c-p-url-page-signs .dropdown-menu .c-p-url-ps-table{background:#fff;}
+	.c-p-url-page-signs .dropdown-menu{padding:0;border:4px solid #ddd;border-radius:4px;background:transparent;position:fixed;left:10px;right:10px;bottom:10px;top:auto;max-height:80%;overflow-y:scroll;}
+	.c-p-url-page-signs .dropdown-menu .c-p-url-ps-table{background:#fff;}
 }
 
 @media (max-width: 550px){

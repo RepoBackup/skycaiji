@@ -76,6 +76,10 @@ class Collector extends BaseController {
     		    $tabLink=$tabLink?('&tab_link='.$tabLink):'';
     		    $isEasymode=\util\UnmaxPost::val('easymode');
     		    $isEasymode=$isEasymode?'&easymode=1':'';
+    		    if($module=='pattern'){
+    		        
+    		        $this->_set_modified_names($taskId);
+    		    }
     		    $this->success(lang('op_success'),'collector/set?task_id='.$taskId.$tabLink.$isEasymode);
     		}else{
     			$this->error(lang('op_failed'));
@@ -119,6 +123,137 @@ class Collector extends BaseController {
 	    	
 	    	return $this->fetch();
     	}
+    }
+    
+    private function _set_modified_names($taskId){
+        $modifiedNames=\util\UnmaxPost::val('modified_names','','trim');
+        if(empty($modifiedNames)){
+            return false;
+        }
+        $mtask=model('Task');
+        $taskData=null;
+        if($taskId>0){
+            $taskData=$mtask->getById($taskId);
+        }
+        if(!empty($taskData)){
+            $taskData['config']=$mtask->compatible_config($taskData['config']);
+        }
+        if(empty($taskData)||empty($taskData['config'])){
+            return false;
+        }
+        
+        $taskConfig=$taskData['config'];
+        init_array($taskConfig);
+        $taskVars=$taskConfig['variables'];
+        init_array($taskVars);
+        
+        $releConfig=array();
+        $mrele=model('Release');
+        $releData=$mrele->where(array('task_id'=>$taskData['id']))->find();
+        $releModule='';
+        if(!empty($releData)){
+            
+            $releModule=$releData['module'];
+            $releConfig=$mrele->compatible_config($releData['config']);
+        }
+        init_array($releConfig);
+        
+        $updateTask=false;
+        $updateRele=false;
+        
+        $taskHasFieldKeys=array('name_custom_path','name_custom_name','file_custom_path','file_custom_name');
+        
+        $modifiedNames=explode(';;;', $modifiedNames);
+        foreach ($modifiedNames as $modifiedName){
+            if($modifiedName){
+                list($nameType,$names)=explode(':',$modifiedName,2);
+                if($nameType&&$names){
+                    $names=explode('||',$names,2);
+                    if($names&&$names[0]&&$names[1]){
+                        $nameFrom=$names[0];
+                        $nameTo=$names[1];
+                        if($nameType=='variable'){
+                            
+                            if(isset($taskVars[$nameFrom])){
+                                $updateTask=true;
+                                $taskVars[$nameTo]=$taskVars[$nameFrom];
+                                unset($taskVars[$nameFrom]);
+                            }
+                        }elseif($nameType=='field'){
+                            
+                            
+                            foreach ($taskHasFieldKeys as $taskHasFieldKey){
+                                if(!empty($taskConfig[$taskHasFieldKey])){
+                                    $updateTask=true;
+                                    $taskConfig[$taskHasFieldKey]=str_replace('[字段:'.$nameFrom.']', '[字段:'.$nameTo.']', $taskConfig[$taskHasFieldKey]);
+                                }
+                            }
+                            
+                            if(!empty($releConfig)){
+                                $updateRele=true;
+                                if($releConfig['file']&&is_array($releConfig['file'])){
+                                    
+                                    if(is_array($releConfig['file']['hide_fields'])){
+                                        
+                                        foreach ($releConfig['file']['hide_fields'] as $k=>$v){
+                                            if($v&&$v==$nameFrom){
+                                                $releConfig['file']['hide_fields'][$k]=$nameTo;
+                                            }
+                                        }
+                                    }
+                                }
+                                if($releConfig['api']&&is_array($releConfig['api'])){
+                                    
+                                    if(is_array($releConfig['api']['hide_fields'])){
+                                        
+                                        foreach ($releConfig['api']['hide_fields'] as $k=>$v){
+                                            if($v&&$v==$nameFrom){
+                                                $releConfig['api']['hide_fields'][$k]=$nameTo;
+                                            }
+                                        }
+                                    }
+                                }
+                                if($releConfig['cms_app']&&is_array($releConfig['cms_app'])){
+                                    
+                                    if(is_array($releConfig['cms_app']['param'])){
+                                        
+                                        foreach ($releConfig['cms_app']['param'] as $k=>$v){
+                                            if($v&&$v==('field:'.$nameFrom)){
+                                                $releConfig['cms_app']['param'][$k]='field:'.$nameTo;
+                                            }
+                                        }
+                                    }
+                                }
+                                $releConfig=$this->_rele_replace_field($releConfig,'[采集字段:'.$nameFrom.']','[采集字段:'.$nameTo.']');
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        if($updateTask&&$taskData){
+            $taskConfig['variables']=$taskVars;
+            $mtask->strict(false)->where(array('id'=>$taskData['id']))->update(array('config'=>serialize($taskConfig)));
+        }
+        if($updateRele&&$releData){
+            $mrele->strict(false)->where(array('id'=>$releData['id']))->update(array('config'=>serialize($releConfig)));
+        }
+        
+        return true;
+    }
+    
+    private function _rele_replace_field($data,$nameFrom,$nameTo){
+        if($data){
+            if(is_array($data)){
+                foreach ($data as $k=>$v){
+                    $data[$k]=$this->_rele_replace_field($v, $nameFrom, $nameTo);
+                }
+            }elseif(is_string($data)&&!is_numeric($data)){
+                $data=str_replace($nameFrom, $nameTo, $data);
+            }
+        }
+        return $data;
     }
     /*列表*/
     public function listAction(){
@@ -170,9 +305,20 @@ class Collector extends BaseController {
             $this->error('规则不存在');
         }
         
-        $funcList=array('contentSign'=>array(),'process'=>array(),'processIf'=>array());
+        $funcList=array('variable'=>array(),'contentSign'=>array(),'process'=>array(),'processIf'=>array());
         
         $apiAppList=array('process'=>array());
+        
+        
+        if(is_array($config['variables'])){
+            foreach ($config['variables'] as $v){
+                if(is_array($v)&&$v['funcs']&&is_array($v['funcs'])){
+                    foreach ($v['funcs'] as $vfv){
+                        $funcList['variable'][$vfv['func']]=$vfv['func'];
+                    }
+                }
+            }
+        }
         
         $contentSignFuncPages=array('front_urls','source_url','level_urls','url','relation_urls');
         foreach ($contentSignFuncPages as $page){
@@ -413,30 +559,40 @@ class Collector extends BaseController {
                     }
                     if(!$maxHasNext){
                         
-                        $isEnd=false;
-                        foreach ($list as $k=>$txt){
-                            if(!$isEnd&&strpos($txt,'echo-msg-is-end')!==false){
-                                
-                                $isEnd=true;
-                            }
-                            $list[$k]=$txt;
-                        }
-                        if($isEnd){
+                        if(count($list)==1&&strpos($list[0],'::http_error=')!==false){
                             
                             if(file_exists($filename)){
                                 unlink($filename);
                             }
+                            $errorMsg=str_replace('::http_error=', '', $list[0]);
+                            $list[0]=' ';
+                            $list[1]=\skycaiji\admin\model\Collector::echo_msg_end_js(false,$errorMsg);
                         }else{
-                            
-                            if(\skycaiji\admin\model\Collector::collecting_process_status($collectorKey, $processKey)!='lock'){
-                                
-                                if(!empty($list)){
-                                    $lastKey=array_keys($list);
-                                    $lastKey=end($lastKey);
-                                    $list[$lastKey]=($list[$lastKey]?$list[$lastKey]:'').\skycaiji\admin\model\Collector::echo_msg_end_js(true);
-                                }elseif($line>0){
+                            $isEnd=false;
+                            foreach ($list as $k=>$txt){
+                                if(!$isEnd&&strpos($txt,'echo-msg-is-end')!==false){
                                     
-                                    $list[$line]=\skycaiji\admin\model\Collector::echo_msg_end_js(true);
+                                    $isEnd=true;
+                                }
+                                $list[$k]=$txt;
+                            }
+                            if($isEnd){
+                                
+                                if(file_exists($filename)){
+                                    unlink($filename);
+                                }
+                            }else{
+                                
+                                if(\skycaiji\admin\model\Collector::collecting_process_status($collectorKey, $processKey)!='lock'){
+                                    
+                                    if(!empty($list)){
+                                        $lastKey=array_keys($list);
+                                        $lastKey=end($lastKey);
+                                        $list[$lastKey]=($list[$lastKey]?$list[$lastKey]:'').\skycaiji\admin\model\Collector::echo_msg_end_js(true);
+                                    }elseif($line>0){
+                                        
+                                        $list[$line]=\skycaiji\admin\model\Collector::echo_msg_end_js(true);
+                                    }
                                 }
                             }
                         }

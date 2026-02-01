@@ -68,10 +68,19 @@
 			       	</select>
 				</div>
 				<div class="form-group">
-					<label>传入参数</label>
-					<textarea rows="3" data-func-func-param="1" class="form-control" data-placeholder="默认传入当前内容标签的值" placeholder="默认传入当前内容标签的值"></textarea>
-					<div class="help-block">
-						一行一个值，可输入任何内容，用 <a href="javascript:;" data-func-insert="###">###</a> 表示当前内容标签的值，请按函数传参，否则运行出错！<a href="javascript:;" onclick="pluginFuncOp.tips('contentSign')">扩展函数</a>
+			   		<label>传入参数</label>
+			    	<div class="input-group c-p-url-page-signs" data-page-type="{$page_type}" data-input-name="">
+			    		<textarea rows="3" data-func-func-param="1" class="form-control" data-merge-type="content_sign" data-placeholder="默认传入当前内容标签的值" placeholder="默认传入当前内容标签的值"></textarea>
+			    		<div class="input-group-addon">
+			    			<a href="javascript:;" title="调用全局内容标签" role="button" class="dropdown-toggle btn-page-signs" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+				            	{:cp_sign('match','N')}
+				            	<span class="caret"></span>
+				            </a>
+							<div class="dropdown-menu dropdown-menu-right"></div>
+			    		</div>
+			      	</div>
+			      	<div class="help-block">
+						一行一个值（参数）可输入任何内容，用 <a href="javascript:;" data-func-insert="###">###</a> 表示当前内容标签的值，请按函数传参，否则运行出错！<a href="javascript:;" onclick="pluginFuncOp.tips('contentSign')">扩展函数</a>
 					</div>
 				</div>
 	    	</div>

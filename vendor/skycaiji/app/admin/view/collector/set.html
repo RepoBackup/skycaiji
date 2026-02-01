@@ -16,9 +16,8 @@
 	{/if}
 	
    	{if condition="$taskData['module']=='pattern'"}
-		{include file="cpattern:set" /}
-   	{elseif condition="$taskData['module']=='weixin'" /}
-   	
+	<input type="hidden" name="modified_names" value="" />
+	{include file="cpattern:set" /}
 	{/if}
 	<div class="form-group">
 		<button type="submit" class="btn btn-primary btn-block">{$Think.lang.save}</button>

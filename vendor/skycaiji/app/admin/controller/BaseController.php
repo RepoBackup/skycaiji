@@ -30,7 +30,7 @@ class BaseController extends \skycaiji\common\controller\BaseController{
             if($useCookie<1){
                 $this->error('session未开启，请在php.ini配置文件中设置session.use_cookies=1');
             }else{
-                $this->error(lang('usertoken_error'),'');
+                $this->error(lang('usertoken_error'),'',array('_set_new_usertoken'=>g_sc('usertoken')));
             }
         }
     }

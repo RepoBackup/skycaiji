@@ -386,17 +386,27 @@ class Task extends CollectController {
                     breadcrumb(array(array('url'=>url('task/list'),'title'=>lang('task_list')),array('url'=>url('task/set?id='.$taskData['id']),'title'=>$taskData['name'])))
                 );
                 
+                $variables=array();
                 $fieldList=array();
                 $collData=model('Collector')->where(array('task_id'=>$taskData['id']))->find();
                 if(!empty($collData)){
                     
                     $collConfig=unserialize($collData['config']?:'');
-                    if(is_array($collConfig)&&is_array($collConfig['field_list'])){
-                        foreach($collConfig['field_list'] as $v){
-                            $fieldList[]=$v['name'];
+                    if(is_array($collConfig)){
+                        if(is_array($collConfig['variables'])){
+                            foreach($collConfig['variables'] as $v){
+                                $variables[$v['name']]=$v;
+                            }
+                            $variables=array_values($variables);
                         }
-                        $fieldList=array_unique($fieldList);
-                        $fieldList=array_filter($fieldList);
+                        if(is_array($collConfig['field_list'])){
+                            foreach($collConfig['field_list'] as $v){
+                                $fieldList[]=$v['name'];
+                            }
+                            $fieldList=array_unique($fieldList);
+                            $fieldList=array_filter($fieldList);
+                            $fieldList=array_values($fieldList);
+                        }
                     }
                     $singleConfig=$taskData['config']['single'];
                     if($singleConfig&&$singleConfig['open']){
@@ -404,7 +414,7 @@ class Task extends CollectController {
                         
                         $eCpattern=new \skycaiji\admin\event\CpatternSingle();
                         $eCpattern->init($collData);
-                        $singleIptUrls=$eCpattern->single_get_input_urls(array(), $input_urls);
+                        $singleIptUrls=$eCpattern->single_get_input_urls(array(), array());
                         
                         $singleApiUrl=array('url'=>'<b>内容页网址</b>');
                         $singleIptMore=false;
@@ -442,6 +452,7 @@ class Task extends CollectController {
                 $this->assign('collData',$collData);
                 $this->assign('timerInfo',$timerInfo);
                 $this->assign('fieldList',$fieldList);
+                $this->assign('variables',$variables);
             }
             
             $proxyGroupId=g_sc_c('proxy','group_id');
@@ -646,6 +657,9 @@ class Task extends CollectController {
     	init_array($config['file_funcs']);
     	$config['file_funcs']=array_values($config['file_funcs']);
     	
+    	
+    	init_array($config['variables']);
+    	
     	return $config;
     }
     
@@ -795,4 +809,8 @@ class Task extends CollectController {
     	},null,null,\skycaiji\admin\model\Collector::url_backstage_run());
     }
     
+    public function load_resourceAction(){
+        
+        return $this->fetch();
+    }
 }

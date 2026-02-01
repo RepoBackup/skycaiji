@@ -26,7 +26,6 @@ class Setting extends BaseController {
             $config['closelog']=input('closelog/d',0);
             $config['dblong']=input('dblong/d',0);
             $config['login']=input('login/a',array());
-            $config['closetrans']=input('closetrans/d',0);
             $config['timezone']=input('timezone','');
             
             $config['verifycode_len']=min(max(3,$config['verifycode_len']),20);
@@ -185,6 +184,7 @@ class Setting extends BaseController {
                 }
                 $apiUrl['tids']='任务id';
                 $apiParams[]='任务id：可在任务中查看，多个id用逗号分隔';
+                $apiParams[]=lang('tips_url_param_variable');
                 $apiParams=implode('<br>',$apiParams);
                 foreach ($apiUrl as $k=>$v){
                     $apiUrl[$k]=$k.'='.$v;
@@ -734,13 +734,31 @@ class Setting extends BaseController {
                 $this->ajax_check_userpwd();
             }
             
+            $error=\util\ChromeSocket::userDataDirError($config['chrome']['user_data_dir']);
+            if($error){
+                $this->error($error);
+            }
+            
+            $curChrome=g_sc_c('page_render');
+            $curChrome=$curChrome?$curChrome['chrome']:array();
+            init_array($curChrome);
+            
             $mconfig->setConfig('page_render',$config);
             
-            $error=\util\ChromeSocket::config_start($config);
+            $restart=false;
+            
+            foreach (array('filename','host','port','user_data_dir') as $k){
+                if($curChrome[$k]!=$config['chrome'][$k]){
+                    $restart=true;
+                    break;
+                }
+            }
+            
+            $error=\util\ChromeSocket::config_start($config,$restart);
             if($error){
                 $this->error($error);
             }else{
-                $this->success(lang('op_success'),'setting/page_render');
+                $this->success(lang('op_success'),'setting/page_render?saved=1');
             }
         }else{
             $this->set_html_tags(
@@ -749,10 +767,17 @@ class Setting extends BaseController {
                 breadcrumb(array(array('url'=>url('setting/caiji'),'title'=>lang('setting_caiji')),array('url'=>url('setting/page_render'),'title'=>'页面渲染')))
             );
             $config=$mconfig->getConfig('page_render','data');
+            
             $defDir=\util\ChromeSocket::defaultUserDataDir();
+            
             init_array($config);
             init_array($config['chrome']);
+            
+            $isSaved=input('saved');
+            $isSaved=$isSaved?'1':'';
+            
             $this->assign('config',$config);
+            $this->assign('isSaved',$isSaved);
             $this->assign('defDir',$defDir);
             return $this->fetch('page_render');
         }
@@ -786,9 +811,11 @@ class Setting extends BaseController {
                             \util\Funcs::clear_dir($systemPath);
                         }
                     }
+                    $passPaths=$systemPaths;
+                    $passPaths[]=\util\ChromeSocket::defaultUserDataDir();
                     if(in_array('data', $types)){
                         
-                        \util\Tools::clear_runtime_dir($systemPaths);
+                        \util\Tools::clear_runtime_dir($passPaths);
                     }
                 }
                 
@@ -937,10 +964,19 @@ class Setting extends BaseController {
             }
             $tabs=$tabs?count($tabs):0;
             
+            $commandStr='';
+            if(input('saved')&&!$toolIsOpen&&$serverIsLocal){
+                
+                $commandStr=$chromeSocket->getCommandStr();
+                $commandStr=empty($commandStr['error'])?$commandStr['command']:'';
+                
+            }
+            
             $this->assign('config',$config);
             $this->assign('toolIsOpen',$toolIsOpen);
             $this->assign('serverIsLocal',$serverIsLocal);
             $this->assign('tabs',$tabs);
+            $this->assign('commandStr',$commandStr);
             return $this->fetch('page_render_status');
         }
     }

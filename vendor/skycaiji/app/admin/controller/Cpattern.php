@@ -188,6 +188,7 @@ class Cpattern extends BaseController {
 				'xpath' =>array('xpath','xpath_multi','xpath_multi_type','xpath_multi_str','xpath_attr','xpath_attr_custom'),
 				'json' =>array('json','json_merge_data','json_arr','json_arr_implode','json_loop'),
 				'words' =>'words',
+			    'variable'=>'variable',
 			    'num' => array('num_start','num_end'),
 			    'no' => array('no_start','no_inc','no_len'),
 				'time' => array ('time_format','time_start','time_end','time_stamp'),
@@ -342,7 +343,7 @@ class Cpattern extends BaseController {
     			    $process=controller('admin/Cpattern','event')->set_process($process);
     			}
     			$objid=input('objid','');
-    			$this->success('',null,array('process'=>$process,'process_json'=>empty($process)?'':json_encode($process),'objid'=>$objid));
+    			$this->success('',null,array('process'=>$process,'objid'=>$objid));
     		}
     	}elseif('common'==$type){
     		
@@ -543,9 +544,10 @@ class Cpattern extends BaseController {
             $contentSign=trim_input_array('post.content_sign');
             if(empty($contentSign['identity'])){
                 $this->error('请输入标识名');
-            }
-            if(!preg_match('/^[a-z0-9\_]+$/i', $contentSign['identity'])){
+            }elseif(!preg_match('/^[a-z0-9\_]+$/i', $contentSign['identity'])){
                 $this->error('标识名只能由数字、字母和下划线组成');
+            }elseif(mb_strlen($contentSign['identity'],'utf-8')>50){
+                $this->error('标识名长度50字以内');
             }
             switch ($contentSign['module']){
                 case 'rule':if(empty($contentSign['rule']))$this->error('规则不能为空！');break;
@@ -920,6 +922,9 @@ class Cpattern extends BaseController {
         if(!preg_match('/^[\x{4e00}-\x{9fa5}\w\-]+$/u', $name)){
             $this->error(($nameStr?$nameStr:'名称').'只能由汉字、字母、数字和下划线组成');
             return false;
+        }elseif(mb_strlen($name,'utf-8')>50){
+            $this->error(($nameStr?$nameStr:'名称').'长度50字以内');
+            return false;
         }else{
             return true;
         }
@@ -951,5 +956,356 @@ class Cpattern extends BaseController {
             $signs=array(cp_sign('match'));
         }
         return $signs;
+    }
+    
+    
+    public function variableAction(){
+        if($this->request->isPost()&&input('is_submit')){
+            $objid=input('objid');
+            $var=input('variable/a',array(),'trim');
+            init_array($var);
+            
+            if(empty($var['name'])){
+                $this->error('变量名称不能为空！');
+            }elseif(!preg_match('/^[a-z0-9\_]+$/i', $var['name'])){
+                $this->error('变量名称只能由数字、字母和下划线组成');
+            }elseif(mb_strlen($var['name'],'utf-8')>50){
+                $this->error('变量名称长度50字以内');
+            }
+            $var['allow_url']=intval($var['allow_url']);
+            if(is_array($var['funcs'])){
+                $var['funcs']=array_values($var['funcs']);
+            }
+            $this->success('','',array('objid'=>$objid,'variable'=>$var));
+        }else{
+            $objid=input('objid');
+            $var=input('variable','','url_b64decode');
+            $var=$var?json_decode($var,true):array();
+            $params=array('objid'=>$objid,'variable'=>$var);
+            $this->assign('params',$params);
+            return $this->fetch();
+        }
+    }
+    
+    
+    private function _replace_str($from,$to,$str){
+        if($str&&is_string($str)&&!is_numeric($str)){
+            $str=str_replace($from, $to, $str);
+        }
+        return $str;
+    }
+    
+    
+    public function element_replace_fieldAction(){
+        if($this->request->isPost()){
+            $vals=input('vals','','url_b64decode');
+            $names=input('names','','url_b64decode');
+            $vals=$vals?json_decode($vals,true):array();
+            $names=$names?json_decode($names,true):array();
+            init_array($vals);
+            init_array($names);
+            
+            $originalName=input('originalName','','trim');
+            $newName=input('newName','','trim');
+            
+            $fmtOriginalName='[字段:'.$originalName.']';
+            $fmtNewName='[字段:'.$newName.']';
+            
+            $updated=array();
+            
+            foreach ($vals as $k=>$v){
+                $eleName=$names[$k];
+                if(empty($eleName)&&is_numeric($eleName)){
+                    continue;
+                }
+                if($eleName=='config[field_list][]'||$eleName=='config[field_process][]'){
+                    try{
+                        $vDecode=url_b64decode($v);
+                        if($vDecode){
+                            $vDecode=json_decode($vDecode,true);
+                            if(!empty($vDecode)&&is_array($vDecode)){
+                                
+                                if($eleName=='config[field_list][]'){
+                                    
+                                    if($vDecode['module']=='extract'||$vDecode['module']=='merge'){
+                                        if($vDecode['extract']&&$vDecode['extract']==$originalName){
+                                            $vDecode['extract']=$newName;
+                                        }
+                                        if($vDecode['merge']){
+                                            $vDecode['merge']=$this->_replace_str($fmtOriginalName, $fmtNewName, $vDecode['merge']);
+                                        }
+                                        $updated[$k]=true;
+                                    }
+                                }elseif($eleName=='config[field_process][]'){
+                                    
+                                    $isUpdated=false;
+                                    foreach ($vDecode as $vk=>$vv){
+                                        if($vv&&is_array($vv)){
+                                            if($vv['module']=='insert'){
+                                                $isUpdated=true;
+                                                $vv['insert_txt']=$this->_replace_str($fmtOriginalName, $fmtNewName, $vv['insert_txt']);
+                                            }elseif($vv['module']=='if'){
+                                                $isUpdated=true;
+                                                if($vv['if_val']&&is_array($vv['if_val'])){
+                                                    foreach ($vv['if_val'] as $vvk=>$vvv){
+                                                        $vv['if_val'][$vvk]=$this->_replace_str($fmtOriginalName, $fmtNewName, $vvv);
+                                                    }
+                                                }
+                                            }elseif($vv['module']=='api'){
+                                                $isUpdated=true;
+                                                if($vv['api_url']){
+                                                    $vv['api_url']=$this->_replace_str($fmtOriginalName, $fmtNewName, $vv['api_url']);
+                                                }
+                                                if($vv['api_params']&&is_array($vv['api_params'])){
+                                                    if($vv['api_params']['addon']&&is_array($vv['api_params']['addon'])){
+                                                        foreach ($vv['api_params']['addon'] as $vvk=>$vvv){
+                                                            $vv['api_params']['addon'][$vvk]=$this->_replace_str($fmtOriginalName, $fmtNewName, $vvv);
+                                                        }
+                                                    }
+                                                }
+                                                if($vv['api_headers']&&is_array($vv['api_headers'])){
+                                                    if($vv['api_headers']['addon']&&is_array($vv['api_headers']['addon'])){
+                                                        foreach ($vv['api_headers']['addon'] as $vvk=>$vvv){
+                                                            $vv['api_headers']['addon'][$vvk]=$this->_replace_str($fmtOriginalName, $fmtNewName, $vvv);
+                                                        }
+                                                    }
+                                                }
+                                            }elseif($vv['module']=='apiapp'){
+                                                $isUpdated=true;
+                                                if($vv['apiapp_config']&&is_array($vv['apiapp_config'])){
+                                                    foreach ($vv['apiapp_config'] as $vvk=>$vvv){
+                                                        $vv['apiapp_config'][$vvk]=$this->_replace_str($fmtOriginalName, $fmtNewName, $vvv);
+                                                    }
+                                                }
+                                            }elseif($vv['module']=='func'){
+                                                $isUpdated=true;
+                                                $vv['func_param']=$this->_replace_str($fmtOriginalName, $fmtNewName, $vv['func_param']);
+                                            }
+                                            $vDecode[$vk]=$vv;
+                                        }
+                                    }
+                                    if($isUpdated){
+                                        $updated[$k]=true;
+                                    }
+                                }
+                                
+                                
+                                $v=url_b64encode(json_encode($vDecode));
+                                $vals[$k]=$v;
+                            }
+                        }
+                    }catch (\Exception $ex){
+                        
+                    }
+                }
+            }
+            
+            $this->success('已同步修改','',array('vals'=>$vals,'updated'=>$updated));
+        }
+        $this->error('同步修改失败');
+    }
+    
+    public function element_replace_variableAction(){
+        if($this->request->isPost()){
+            $vals=input('vals','','url_b64decode');
+            $names=input('names','','url_b64decode');
+            $vals=$vals?json_decode($vals,true):array();
+            $names=$names?json_decode($names,true):array();
+            init_array($vals);
+            init_array($names);
+            
+            $originalName=input('originalName','','trim');
+            $newName=input('newName','','trim');
+            
+            $fmtOriginalName='[变量'.$originalName.']';
+            $fmtNewName='[变量'.$newName.']';
+            
+            
+            $pageEleNames=array('config[front_urls][]','config[level_urls][]','config[relation_urls][]');
+            $encodeEleNames=array('config[variables][]','config[field_list][]');
+            
+            foreach ($vals as $k=>$v){
+                $eleName=$names[$k];
+                if(empty($eleName)&&is_numeric($eleName)){
+                    continue;
+                }
+                if(in_array($eleName,$pageEleNames)||in_array($eleName,$encodeEleNames)||preg_match('/\[content_signs\]\[\]$/',$eleName)){
+                    try{
+                        $vDecode=url_b64decode($v);
+                        if($vDecode){
+                            $vDecode=json_decode($vDecode,true);
+                            if(!empty($vDecode)&&is_array($vDecode)){
+                                
+                                
+                                if(in_array($eleName,$pageEleNames)){
+                                    
+                                    $vDecode=$this->_page_replace_labels($eleName, $vDecode, $fmtOriginalName, $fmtNewName);
+                                }elseif($eleName=='config[variables][]'){
+                                    if($vDecode['funcs']&&is_array($vDecode['funcs'])){
+                                        
+                                        foreach ($vDecode['funcs'] as $vk=>$vv){
+                                            if(is_array($vv)&&!empty($vv['func_param'])){
+                                                $vv['func_param']=$this->_replace_str($fmtOriginalName, $fmtNewName, $vv['func_param']);
+                                            }
+                                            $vDecode['funcs'][$vk]=$vv;
+                                        }
+                                    }
+                                }elseif($eleName=='config[field_list][]'){
+                                    
+                                    if($vDecode['module']=='variable'){
+                                        $vDecode['variable']=$this->_replace_str($fmtOriginalName, $fmtNewName, $vDecode['variable']);
+                                    }
+                                }
+                                $v=url_b64encode(json_encode($vDecode));
+                                $vals[$k]=$v;
+                            }
+                        }
+                    }catch (\Exception $ex){
+                        
+                    }
+                }else{
+                    
+                    $replaceEleNames = array(
+                        'config[request_headers][custom_vals][]',
+                        'config[request_headers][img_vals][]',
+                        'config[request_headers][file_vals][]',
+                        'config[source_url][]',
+                        '[area_merge]',
+                        '[url_merge]',
+                        '[url_web][form_vals][]',
+                        '[url_web][header_vals][]',
+                        '[renderer][contents][]',
+                        '[pagination][number][start]',
+                        '[pagination][number][end]',
+                    );
+                    $doReplace=false;
+                    foreach ($replaceEleNames as $replaceEleName){
+                        if(stripos($eleName, $replaceEleName)!==false){
+                            
+                            $doReplace=true;
+                            break;
+                        }
+                    }
+                    if($doReplace){
+                        $v=$this->_replace_str($fmtOriginalName, $fmtNewName, $v);
+                        $vals[$k]=$v;
+                    }
+                }
+            }
+            $this->success('已同步修改','',array('vals'=>$vals));
+        }
+        $this->error('同步修改失败');
+    }
+    
+    private function _page_replace_labels($eleName,$arr,$originalName,$newName){
+        init_array($arr);
+        if($eleName=='config[front_urls][]'){
+            
+            if(!empty($arr['url'])){
+                $arr['url']=$this->_replace_str($originalName, $newName, $arr['url']);
+            }
+        }
+        
+        if(!empty($arr['area_merge'])){
+            $arr['area_merge']=$this->_replace_str($originalName, $newName, $arr['area_merge']);
+        }
+        if(!empty($arr['url_merge'])){
+            $arr['url_merge']=$this->_replace_str($originalName, $newName, $arr['url_merge']);
+        }
+        if(is_array($arr['url_web'])){
+            
+            if(is_array($arr['url_web']['form_vals'])){
+                foreach ($arr['url_web']['form_vals'] as $vk=>$vv){
+                    $arr['url_web']['form_vals'][$vk]=$this->_replace_str($originalName, $newName, $vv);
+                }
+            }
+            
+            if(is_array($arr['url_web']['header_vals'])){
+                foreach ($arr['url_web']['header_vals'] as $vk=>$vv){
+                    $arr['url_web']['header_vals'][$vk]=$this->_replace_str($originalName, $newName, $vv);
+                }
+            }
+        }
+        if(is_array($arr['renderer'])){
+            
+            if(is_array($arr['renderer']['contents'])){
+                foreach ($arr['renderer']['contents'] as $vk=>$vv){
+                    $arr['renderer']['contents'][$vk]=$this->_replace_str($originalName, $newName, $vv);
+                }
+            }
+        }
+        if($arr['pagination']&&is_array($arr['pagination'])){
+            
+            if(is_array($arr['pagination']['number'])){
+                if(!empty($arr['pagination']['number']['start'])){
+                    $arr['pagination']['number']['start']=$this->_replace_str($originalName, $newName, $arr['pagination']['number']['start']);
+                }
+                if(!empty($arr['pagination']['number']['end'])){
+                    $arr['pagination']['number']['end']=$this->_replace_str($originalName, $newName, $arr['pagination']['number']['end']);
+                }
+            }
+            $arr['pagination']=$this->_page_replace_labels('', $arr['pagination'], $originalName, $newName);
+        }
+        
+        return $arr;
+    }
+    
+    public function page_replace_nameAction(){
+        if($this->request->isPost()){
+            $pageType=input('type');
+            $vals=input('vals','','url_b64decode');
+            $names=input('names','','url_b64decode');
+            $vals=$vals?json_decode($vals,true):array();
+            $names=$names?json_decode($names,true):array();
+            init_array($vals);
+            init_array($names);
+            
+            $originalName=input('originalName','','trim');
+            $newName=input('newName','','trim');
+            
+            $updated=array();
+            
+            foreach ($vals as $k=>$v){
+                $eleName=$names[$k];
+                if(empty($eleName)&&is_numeric($eleName)){
+                    continue;
+                }
+                if($eleName=='config[relation_urls][]'||$eleName=='config[field_list][]'){
+                    try{
+                        $vDecode=url_b64decode($v);
+                        if($vDecode){
+                            $vDecode=json_decode($vDecode,true);
+                            if(!empty($vDecode)&&is_array($vDecode)){
+                                
+                                if($pageType=='relation_url'){
+                                    
+                                    if($eleName=='config[relation_urls][]'){
+                                        
+                                        if($vDecode['page']&&$vDecode['page']==$originalName){
+                                            $vDecode['page']=$newName;
+                                            $updated[$k]=true;
+                                        }
+                                    }
+                                }
+                                if($eleName=='config[field_list][]'){
+                                    
+                                    if($vDecode['source']&&$vDecode['source']==$pageType.':'.$originalName){
+                                        $vDecode['source']=$pageType.':'.$newName;
+                                        $updated[$k]=true;
+                                    }
+                                }
+                                $v=url_b64encode(json_encode($vDecode));
+                                $vals[$k]=$v;
+                            }
+                        }
+                    }catch (\Exception $ex){
+                        
+                    }
+                }
+            }
+            
+            $this->success('已同步修改','',array('vals'=>$vals,'updated'=>$updated));
+        }
+        $this->error('同步修改失败');
     }
 }

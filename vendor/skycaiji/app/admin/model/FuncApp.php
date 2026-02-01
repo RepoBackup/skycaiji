@@ -13,6 +13,18 @@ namespace skycaiji\admin\model;
 class FuncApp extends \skycaiji\common\model\BaseModel{
 	public $funcPath; 
 	public $funcModules=array(
+	    'variable'=>array (
+	        'name'=>'传入变量',
+	        'loc'=>'任务»采集器设置»传入变量»使用函数',
+	        'config'=>'allow_process_func',
+	        'extend'=>'EXTEND_PROCESS_FUNC',
+	    ),
+	    'contentSign'=>array(
+	        'name'=>'内容标签',
+	        'loc'=>'任务»采集器设置»页面配置»提取内容标签»使用函数',
+	        'config'=>'allow_process_func',
+	        'extend'=>'EXTEND_PROCESS_FUNC',
+	    ),
 		'process'=>array (
 			'name'=>'数据处理',
 		    'loc'=>'任务»采集器设置»数据处理»使用函数',
@@ -33,12 +45,6 @@ class FuncApp extends \skycaiji\common\model\BaseModel{
 	        'name'=>'下载文件',
 	        'loc'=>'设置»采集设置»文件本地化»使用函数',
 	    ),
-	    'contentSign'=>array(
-	        'name'=>'内容标签',
-	        'loc'=>'任务»采集器设置»页面配置»提取内容标签»使用函数',
-	        'config'=>'allow_process_func',
-	        'extend'=>'EXTEND_PROCESS_FUNC',
-	    )
 	);
 	public function __construct($data = []){
 		parent::__construct($data);
@@ -326,19 +332,20 @@ class FuncApp extends \skycaiji\common\model\BaseModel{
 	/**
 	 * 执行插件函数
 	 * @param string $module 模块
-	 * @param string $funcNameFmt 函数/方法
+	 * @param string $funcName 函数/方法
 	 * @param string $defaultVal 默认传入值
 	 * @param string $paramsStr 输入的参数（有换行符）
 	 * @param array $paramValList 所有参数值（调用参数时使用）
 	 */
 	public function execute_func($module,$funcName,$defaultVal,$paramsStr,$paramValList=null){
 	    
-	    static $func_class_list=array('process'=>array(),'processIf'=>array(),'contentSign'=>array(),'downloadImg'=>array(),'downloadFile'=>array());
-	    static $func_param_num_list=array('process'=>array(),'processIf'=>array(),'contentSign'=>array(),'downloadImg'=>array(),'downloadFile'=>array());
+	    static $func_class_list=array('process'=>array(),'processIf'=>array(),'contentSign'=>array(),'variable'=>array(),'downloadImg'=>array(),'downloadFile'=>array());
+	    static $func_param_num_list=array('process'=>array(),'processIf'=>array(),'contentSign'=>array(),'variable'=>array(),'downloadImg'=>array(),'downloadFile'=>array());
 	    static $func_param_rules=array(
 	        'process'=>'/\[\x{5b57}\x{6bb5}\:.+?\]/u',
 	        'processIf'=>'/\[\x{5b57}\x{6bb5}\:.+?\]/u',
-	        'contentSign'=>null,
+	        'contentSign'=>'/\[(\x{5185}\x{5bb9}|\x{53d8}\x{91cf}).+?\]/u',
+	        'variable'=>'/\[\x{53d8}\x{91cf}.+?\]/u',
 	        'downloadImg'=>'/\[\x{56fe}\x{7247}\:.+?\]/u',
 	        'downloadFile'=>'/\[\x{6587}\x{4ef6}\:.+?\]/u',
 	    );

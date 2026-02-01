@@ -1,0 +1,79 @@
+<form id="form_variable" method="post" action="{:url('cpattern/variable')}">
+	{:html_usertoken()}
+	<input type="hidden" name="is_submit" value="1" />
+	<input type="hidden" name="objid" value="" />
+	<div class="form-group">
+		<label>变量名称</label>
+		<input type="text" name="variable[name]" data-original-name="" class="form-control" autocomplete="off" />
+	</div>
+	<div class="form-group">
+		<label>默认值</label>
+		<textarea name="variable[value]" class="form-control"></textarea>
+	</div>
+	<div class="form-group">
+		<label class="control-label">允许传入值</label>
+		<div class="input-group">
+    		<label class="radio-inline"><input type="radio" name="variable[allow_url]" value="1"> 是</label>
+    		<label class="radio-inline"><input type="radio" name="variable[allow_url]" value="0" checked="checked"> 否</label>
+    	</div>
+    	<p class="help-block">允许从外部传入变量的值</p>
+	</div>
+	<div class="form-group">
+   		<label>使用函数</label>
+   		<a href="javascript:;" class="glyphicon glyphicon-plus" id="c_p_variable_add_func" title="添加"></a>
+   		<div class="panel-group ui-sortable" id="c_p_variable_funcs" style="margin-bottom:0;">
+   		</div>
+	</div>
+	<div class="form-group form-group-sm">
+ 		<button type="submit" class="btn btn-primary btn-block">确定</button>
+ 	</div>
+</form>
+<div id="c_p_variable_tpl_func" style="display:none;">
+	<div class="panel panel-default" data-func-box="1">
+		<div class="panel-heading">
+	    	<div class="panel-title" style="font-size:14px;overflow:hidden;line-height:20px;">
+	    		<a data-toggle="collapse" data-func-a="1" href="#" data-parent="#c_p_variable_funcs" aria-expanded="false" class="collapsed">使用函数</a>
+		    	<div style="float:right;font-size:12px;">
+		    		<a href="javascript:;" data-func-move="1" class="glyphicon icon-drag-move" title="移动"></a>
+		    		<a href="javascript:;" data-func-remove="1" class="glyphicon glyphicon-remove" title="删除"></a>
+		    	</div>
+	    	</div>
+	   	</div>
+	    <div class="panel-collapse collapse" data-func-panel="1">
+	    	<div class="panel-body">
+		        <div class="form-group">
+		        	<label>函数名</label>
+					<a href="javascript:;" class="fa fa-refresh plugin-func-refresh" title="刷新"></a>
+			   		<select class="form-control" data-func-func="1">
+			   			<option value="">不使用</option>
+			   			<optgroup label="系统函数">
+							{foreach $Think.config.allow_process_func as $k=>$v}
+							<option value="{$k}">{$k}：{$v}</option>
+							{/foreach}
+							{if is_array($Think.config.EXTEND_PROCESS_FUNC)}
+							{foreach $Think.config.EXTEND_PROCESS_FUNC as $k=>$v}
+							<option value="{$k}">{$k}：{$v}</option>
+							{/foreach}
+							{/if}
+						</optgroup>
+			       	</select>
+				</div>
+				<div class="form-group">
+					<label>传入参数</label>
+					<textarea rows="3" data-func-func-param="1" class="form-control" data-placeholder="默认传入当前变量的值" placeholder="默认传入当前变量的值"></textarea>
+					<div class="help-block">
+						一行一个值（参数）可输入任何内容或<select class="c-p-variable-func-var"><option value="">插入变量</option></select>
+						请按函数传参, 否则运行出错！<a href="javascript:;" onclick="pluginFuncOp.tips('variable')">扩展函数</a>
+					</div>
+				</div>
+	    	</div>
+	    </div>
+	</div>
+</div>
+<script type="text/javascript">
+{if !empty($params)}
+c_pattern.variable_op('form',{$params|json_encode});
+{else}
+c_pattern.variable_op('form');
+{/if}
+</script>

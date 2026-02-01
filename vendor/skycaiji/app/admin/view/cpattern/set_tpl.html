@@ -2,17 +2,50 @@
 	<table>
 		<tr id="coll_tpl_request_headers">
 			<td><input type="text" data-name="config[request_headers][custom_names][]" class="form-control" autocomplete="off" /></td>
-			<td><input type="text" data-name="config[request_headers][custom_vals][]" class="form-control" autocomplete="off" /></td>
+			<td>
+				<div class="input-group c-p-url-page-signs" data-page-type="" data-input-name="config[request_headers][custom_vals][]">
+					<input type="text" data-name="config[request_headers][custom_vals][]" data-merge-type="" class="form-control" autocomplete="off" />
+					<div class="input-group-addon brl_0">
+		    			<a href="javascript:;" title="调用全局内容标签" role="button" class="dropdown-toggle btn-page-signs" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+			            	<span style="font-size:12px;">{:cp_sign('match','N')}</span>
+			            	<span class="caret"></span>
+			            </a>
+						<div class="dropdown-menu dropdown-menu-right"></div>
+		    		</div>
+				</div>
+			</td>
 			<td><a href="javascript:;" class="glyphicon glyphicon-remove delete-request-header"></a></td>
 		</tr>
 		<tr id="coll_tpl_request_headers_img">
 			<td><input type="text" data-name="config[request_headers][img_names][]" class="form-control" autocomplete="off" /></td>
-			<td><input type="text" data-name="config[request_headers][img_vals][]" class="form-control" autocomplete="off" /></td>
+			<td>
+				<div class="input-group c-p-url-page-signs" data-page-type="" data-input-name="config[request_headers][img_vals][]">
+					<input type="text" data-name="config[request_headers][img_vals][]" data-merge-type="" class="form-control" autocomplete="off" />
+					<div class="input-group-addon brl_0">
+		    			<a href="javascript:;" title="调用全局内容标签" role="button" class="dropdown-toggle btn-page-signs" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+			            	<span style="font-size:12px;">{:cp_sign('match','N')}</span>
+			            	<span class="caret"></span>
+			            </a>
+						<div class="dropdown-menu dropdown-menu-right"></div>
+		    		</div>
+				</div>
+			</td>
 			<td><a href="javascript:;" class="glyphicon glyphicon-remove delete-request-header-img"></a></td>
 		</tr>
 		<tr id="coll_tpl_request_headers_file">
 			<td><input type="text" data-name="config[request_headers][file_names][]" class="form-control" autocomplete="off" /></td>
-			<td><input type="text" data-name="config[request_headers][file_vals][]" class="form-control" autocomplete="off" /></td>
+			<td>
+				<div class="input-group c-p-url-page-signs" data-page-type="" data-input-name="config[request_headers][file_vals][]">
+					<input type="text" data-name="config[request_headers][file_vals][]" data-merge-type="" class="form-control" autocomplete="off" />
+					<div class="input-group-addon brl_0">
+		    			<a href="javascript:;" title="调用全局内容标签" role="button" class="dropdown-toggle btn-page-signs" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+			            	<span style="font-size:12px;">{:cp_sign('match','N')}</span>
+			            	<span class="caret"></span>
+			            </a>
+						<div class="dropdown-menu dropdown-menu-right"></div>
+		    		</div>
+				</div>
+			</td>
 			<td><a href="javascript:;" class="glyphicon glyphicon-remove delete-request-header-file"></a></td>
 		</tr>
 		<tr id="coll_tpl_url_web_form">
@@ -20,7 +53,7 @@
 			<td>
 				<div class="input-group c-p-url-page-signs" data-page-type="" data-input-name="[url_web][form_vals][]">
 					<input type="text" data-name="[url_web][form_vals][]" data-merge-type="url" class="form-control" autocomplete="off" />
-					<div class="input-group-addon">
+					<div class="input-group-addon brl_0">
 		    			<a href="javascript:;" title="调用全局内容标签" role="button" class="dropdown-toggle btn-page-signs" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
 			            	<span style="font-size:12px;">{:cp_sign('match','N')}</span>
 			            	<span class="caret"></span>

@@ -201,85 +201,137 @@ class CpatternSingle extends Cpattern{
 	}
 	
 	
-	public function single_input_urls($isContUrl,$pageType,$pageName,$inputedUrls,&$input_urls){
-	    $pageSigns=$this->parent_page_signs($pageType,$pageName);
-	    $this->single_signs_input_urls($isContUrl,false,$pageSigns,$inputedUrls,$input_urls);
-	    $pageSigns=$this->parent_page_signs($pageType,$pageName,'url_web');
-	    $this->single_signs_input_urls($isContUrl,true,$pageSigns,$inputedUrls,$input_urls);
-	    $pageSigns=$this->parent_page_signs($pageType,$pageName,'renderer');
-	    $this->single_signs_input_urls($isContUrl,true,$pageSigns,$inputedUrls,$input_urls);
-	    $pageSigns=$this->parent_page_signs($pageType,$pageName,'pn:');
-	    $this->single_signs_input_urls($isContUrl,true,$pageSigns,$inputedUrls,$input_urls);
+	public function single_remove_cur_page_url($pageType,$pageName,&$input_urls){
+	    if($input_urls&&is_array($input_urls)){
+	        if($pageType){
+	            if($pageType=='source_url'||$pageType=='url'){
+	                unset($input_urls[$pageType]);
+	            }else{
+	                if(is_array($input_urls[$pageType])){
+	                    foreach ($input_urls[$pageType] as $k=>$v){
+	                        if(is_array($v)&&$v['name']==$pageName){
+	                            unset($input_urls[$pageType][$k]);
+	                        }
+	                    }
+	                }
+	                if(empty($input_urls[$pageType])){
+	                    unset($input_urls[$pageType]);
+	                }
+	            }
+	        }
+	    }
 	}
 	
 	
-	public function single_signs_input_urls($isContUrl,$inPageConfig,$pageSigns,$inputedUrls,&$input_urls){
+	public function single_input_urls($pageType,$pageName,$inputedUrls,&$input_urls,$getPnSigns=false,$getAreaUrlSigns=false){
+	    if($getAreaUrlSigns){
+	        
+	        $pageSigns=$this->parent_page_signs($pageType,$pageName);
+	        if($getAreaUrlSigns=='all'){
+	            
+	            $pageSigns['cur']['area']=1;
+	        }
+	        $this->single_signs_input_urls($pageSigns,$inputedUrls,$input_urls);
+	    }
+	    
+	    $pageSigns=$this->parent_page_signs($pageType,$pageName,'url_web');
+	    $this->single_signs_input_urls($pageSigns,$inputedUrls,$input_urls);
+	    $pageSigns=$this->parent_page_signs($pageType,$pageName,'renderer');
+	    $this->single_signs_input_urls($pageSigns,$inputedUrls,$input_urls);
+	    if($getPnSigns){
+	        
+	        $pageSigns=$this->parent_page_signs($pageType,$pageName,'pn:');
+	        $this->single_signs_input_urls($pageSigns,$inputedUrls,$input_urls);
+	    }
+	}
+	
+	
+	public function single_set_parent_input_url($pagePageSigns,$pageType,$pageName,$inputedUrls,&$input_urls){
+	    if(!empty($pagePageSigns['url'])||!empty($pagePageSigns['area'])){
+	        
+	        $prevPageSource=$this->single_parent_page($pageType, $pageName);
+	        if($prevPageSource){
+	            
+	            list($prevPageType,$prevPageName)=$this->page_source_split($prevPageSource);
+	            if($prevPageType=='level_url'){
+	                if(is_array($this->config['level_urls'])){
+	                    foreach ($this->config['level_urls'] as $k=>$v){
+	                        if($v['name']==$prevPageName){
+	                            $curLevelNum=$k+1;
+	                            $input_urls['level_url'][$curLevelNum]=array('level'=>$curLevelNum,'name'=>$v['name'],'url'=>$inputedUrls['level'.$curLevelNum.'_url']);
+	                            break;
+	                        }
+	                    }
+	                }
+	            }else{
+	                $input_urls[$prevPageType]=$inputedUrls[$prevPageType]?$inputedUrls[$prevPageType]:'';
+	            }
+	            
+	            $this->single_input_urls($prevPageType, $prevPageName, $inputedUrls, $input_urls);
+	        }
+	    }
+	    if(!empty($pagePageSigns['content'])){
+	        
+	        if($pageType=='level_url'){
+	            if(is_array($this->config['level_urls'])){
+	                foreach ($this->config['level_urls'] as $k=>$v){
+	                    if($v['name']==$pageName){
+	                        $curLevelNum=$k+1;
+	                        $input_urls['level_url'][$curLevelNum]=array('level'=>$curLevelNum,'name'=>$v['name'],'url'=>$inputedUrls['level'.$curLevelNum.'_url']);
+	                        break;
+	                    }
+	                }
+	            }
+	        }else{
+	            $input_urls[$pageType]=$inputedUrls[$pageType]?$inputedUrls[$pageType]:'';
+	        }
+	    }
+	}
+	
+	
+	public function single_signs_input_urls($pageSigns,$inputedUrls,&$input_urls){
 	    $iptUrls=array();
 	    if(!empty($pageSigns)){
-	        if($inPageConfig){
-	            
-	            if(!empty($pageSigns['cur'])&&(!empty($pageSigns['cur']['url'])||!empty($pageSigns['cur']['area']))){
-	                
-	                $prevPageSource=$this->single_parent_page($isContUrl, $pageSigns['cur']['page_type'], $pageSigns['cur']['page_name']);
-	                if($prevPageSource){
-	                    
-	                    list($prevPageType,$prevPageName)=$this->page_source_split($prevPageSource);
-	                    if($prevPageType=='level_url'){
-	                        if(is_array($this->config['level_urls'])){
-	                            foreach ($this->config['level_urls'] as $k=>$v){
-	                                if($v['name']==$prevPageName){
-	                                    $curLevelNum=$k+1;
-	                                    $iptUrls['level_url'][$curLevelNum]=array('level'=>$curLevelNum,'name'=>$v['name'],'url'=>$inputedUrls['level'.$curLevelNum.'_url']);
-	                                    break;
-	                                }
-	                            }
-	                        }
-	                    }else{
-	                        $iptUrls[$prevPageType]=$inputedUrls[$prevPageType]?$inputedUrls[$prevPageType]:'';
-	                    }
-	                }
-	            }
-	        }
-	        
+            if(!empty($pageSigns['cur'])){
+                if($pageSigns['cur']['is_pagination']){
+                    
+                    $pageSigns['cur']['url']='';
+                    $pageSigns['cur']['area']='';
+                    
+                    $curPageType=$pageSigns['cur']['page_type'];
+                    $curPageSigns=array();
+                    if($pageSigns[$curPageType]&&is_array($pageSigns[$curPageType])){
+                        if($curPageType=='url'||$curPageType=='source_url'){
+                            $curPageSigns=$pageSigns[$curPageType];
+                        }else{
+                            $curPageSigns=$pageSigns[$curPageType][$pageSigns['cur']['page_name']];
+                        }
+                    }
+                    if($curPageSigns){
+                        $pageSigns['cur']['url']=$curPageSigns['url'];
+                        $pageSigns['cur']['area']=$curPageSigns['area'];
+                    }
+                }
+                $this->single_set_parent_input_url($pageSigns['cur'], $pageSigns['cur']['page_type'], $pageSigns['cur']['page_name'], $inputedUrls, $iptUrls);
+            }
 	        
 	        if(!empty($pageSigns['source_url'])&&is_array($pageSigns['source_url'])){
-	            if(!empty($pageSigns['source_url']['content'])){
-	                
-	                $iptUrls['source_url']=$inputedUrls['source_url']?$inputedUrls['source_url']:'';
-	            }
+	            $this->single_set_parent_input_url($pageSigns['source_url'], 'source_url', '', $inputedUrls, $iptUrls);
 	        }
-	        
 	        
 	        if(!empty($pageSigns['level_url'])&&is_array($pageSigns['level_url'])){
-	            
-	            $signLevels=array_keys($pageSigns['level_url']);
-	            if(is_array($this->config['level_urls'])){
-	                foreach ($this->config['level_urls'] as $levIx=>$levVal){
-	                    
-	                    
-	                    $level=$levIx+1;
-	                    if(in_array($levVal['name'],$signLevels)){
-	                        
-	                        if($level==1){
-	                            
-	                            $iptUrls['source_url']=$inputedUrls['source_url']?$inputedUrls['source_url']:'';
-	                        }else{
-	                            
-	                            $prevLevel=$level-1;
-	                            $iptUrls['level_url'][$prevLevel]=array('level'=>$prevLevel,'name'=>$this->get_config('level_urls',$prevLevel-1,'name'),'url'=>$inputedUrls['level'.$prevLevel.'_url']);
-	                        }
-	                        
-	                        $iptUrls['level_url'][$level]=array('level'=>$level,'name'=>$levVal['name'],'url'=>$inputedUrls['level'.$level.'_url']);
-	                    }
-	                }
+	            foreach ($pageSigns['level_url'] as $levName=>$levSigns){
+	                $this->single_set_parent_input_url($levSigns, 'level_url', $levName, $inputedUrls, $iptUrls);
 	            }
 	        }
-	        if(!$isContUrl){
+	        
+	        if(!empty($pageSigns['url'])&&is_array($pageSigns['url'])){
+	            $this->single_set_parent_input_url($pageSigns['url'], 'url', '', $inputedUrls, $iptUrls);
+	        }
+	        
+	        if(!empty($pageSigns['relation_url'])&&is_array($pageSigns['relation_url'])){
 	            
-	            if(!empty($pageSigns['url'])||(!empty($pageSigns['relation_url'])&&is_array($pageSigns['relation_url']))){
-	                
-	                $iptUrls['url']=$inputedUrls['url']?$inputedUrls['url']:'';
-	            }
+	            $iptUrls['url']=$inputedUrls['url']?$inputedUrls['url']:'';
 	        }
 	    }
 	    
@@ -288,7 +340,9 @@ class CpatternSingle extends Cpattern{
 	    }
 	    if(is_array($iptUrls['level_url'])){
 	        foreach ($iptUrls['level_url'] as $k=>$v){
-	            $input_urls['level_url'][$k]=$v;
+	            if(isset($v)){
+	                $input_urls['level_url'][$k]=$v;
+	            }
 	        }
 	    }
 	    if(isset($iptUrls['url'])){
@@ -299,37 +353,7 @@ class CpatternSingle extends Cpattern{
 	}
 	
 	
-	public function single_urls_parent($isContUrl,$curInputUrls,$inputedUrls,&$input_urls){
-	    $levelNames=array();
-	    if(is_array($curInputUrls)&&is_array($curInputUrls['level_url'])){
-	        foreach ($curInputUrls['level_url'] as $v){
-	            $levelNames[$v['name']]=$v['name'];
-	        }
-	    }
-	    if($levelNames){
-	        foreach ($levelNames as $levelName){
-	            $mergeTypes=array(''=>false,'url_web'=>true,'renderer'=>true);
-	            foreach ($mergeTypes as $mtk=>$mtv){
-	                $pageSigns=$this->parent_page_signs('level_url',$levelName,$mtk);
-	                $iptUrls=$this->single_signs_input_urls($isContUrl,$mtv,$pageSigns,$inputedUrls,$input_urls);
-	                if(is_array($iptUrls['level_url'])){
-	                    
-	                    foreach ($iptUrls['level_url'] as $k=>$v){
-	                        if(isset($input_urls['level_url'][$k])){
-	                            unset($iptUrls['level_url'][$k]);
-	                        }
-	                    }
-	                    if(!empty($iptUrls['level_url'])){
-	                        $this->single_urls_parent($isContUrl,$iptUrls, $inputedUrls, $input_urls);
-	                    }
-	                }
-	            }
-	        }
-	    }
-	}
-	
-	
-	public function single_parent_page($isContUrl,$pageType,$pageName){
+	public function single_parent_page($pageType,$pageName){
 	    $prevPageType='';
 	    $prevPageName='';
 	    
@@ -372,11 +396,8 @@ class CpatternSingle extends Cpattern{
 	        }
 	    }elseif($pageType=='relation_url'){
 	        
-	        if(!$isContUrl){
-	            
-	            $prevPageType='url';
-	            $prevPageName='';
-	        }
+	        $prevPageType='url';
+	        $prevPageName='';
 	    }
 	    return $this->page_source_merge($prevPageType, $prevPageName);
 	}
@@ -392,61 +413,18 @@ class CpatternSingle extends Cpattern{
 	    if(is_array($this->config['new_field_list'])){
 	        foreach ($this->config['new_field_list'] as $field){
 	            list($fPageType,$fPageName)=$this->page_source_split($field['field']['source']);
-	            if(empty($fPageType)){
+	            $fPageType=$fPageType?$fPageType:'url';
+	            if($field['field']['module']=='sign'){
 	                
-	                if($field['field']['module']=='sign'){
-	                    
-	                    if(empty($this->config['level_urls'])){
-	                        $input_urls['source_url']=$inputedUrls['source_url'];
-	                    }else{
-	                        
-	                        $endLevelNum=count($this->config['level_urls']);
-	                        $endLevel=$this->config['level_urls'][$endLevelNum-1];
-	                        $input_urls['level_url'][$endLevelNum]=array('level'=>$endLevelNum,'name'=>$endLevel['name'],'url'=>$inputedUrls['level'.$endLevelNum.'_url']);
-	                    }
-	                }
-	            }elseif('source_url'==$fPageType){
-	                
-	                $input_urls['source_url']=$inputedUrls['source_url'];
-	            }elseif('level_url'==$fPageType){
-	                
-	                if(is_array($this->config['level_urls'])){
-	                    foreach($this->config['level_urls'] as $levIx=>$levVal){
-	                        if($field['field']['source']==$this->page_source_merge('level_url',$levVal['name'])){
-	                            
-	                            $level=$levIx+1;
-	                            if($field['field']['module']=='sign'){
-	                                
-	                                if($level==1){
-	                                    
-	                                    $input_urls['source_url']=$inputedUrls['source_url'];
-	                                }else{
-	                                    
-	                                    $prevLevel=$level-1;
-	                                    $input_urls['level_url'][$prevLevel]=array('level'=>$prevLevel,'name'=>$this->get_config('level_urls',$prevLevel-1,'name'),'url'=>$inputedUrls['level'.$prevLevel.'_url']);
-	                                }
-	                            }
-	                            
-	                            $input_urls['level_url'][$level]=array('level'=>$level,'name'=>$levVal['name'],'url'=>$inputedUrls['level'.$level.'_url']);
-	                            break;
-	                        }
-	                    }
-	                }
-	            }elseif('relation_url'==$fPageType){
-	                
-	                $this->single_input_urls(true,'relation_url',$fPageName,$inputedUrls,$input_urls);
+	                $this->single_input_urls($fPageType, $fPageName, $inputedUrls, $input_urls, false, 'all');
+	            }else{
+	                $this->single_input_urls($fPageType, $fPageName, $inputedUrls, $input_urls);
 	            }
 	        }
 	    }
 	    
-	    $pageSigns=$this->parent_page_signs('url','','url_web');
-	    $this->single_signs_input_urls(true,true,$pageSigns,$inputedUrls,$input_urls);
-	    $pageSigns=$this->parent_page_signs('url','','renderer');
-	    $this->single_signs_input_urls(true,true,$pageSigns,$inputedUrls,$input_urls);
-	    $pageSigns=$this->parent_page_signs('url','','pn:');
-	    $this->single_signs_input_urls(true,true,$pageSigns,$inputedUrls,$input_urls);
+	    $this->single_input_urls('url', '', $inputedUrls, $input_urls, true);
 	    
-	    $this->single_urls_parent(true, $input_urls, $inputedUrls, $input_urls);
 	    if(is_array($input_urls['level_url'])){
 	        
 	        ksort($input_urls['level_url']);
@@ -455,6 +433,8 @@ class CpatternSingle extends Cpattern{
 	        
 	        unset($input_urls['source_url']);
 	    }
+	    
+	    $this->single_remove_cur_page_url('url','',$input_urls);
 	    
 	    return $input_urls;
 	}

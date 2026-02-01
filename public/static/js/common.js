@@ -8,10 +8,13 @@
  |--------------------------------------------------------------------------
  */
 'use strict';$(document).ready(function(){toastr.options={"closeButton":!1,"debug":!1,"newestOnTop":!1,"progressBar":!1,"positionClass":"toast-top-center","preventDuplicates":!1,"onclick":null,'tapToDismiss':!1,"showDuration":"300","hideDuration":"1000","timeOut":"3000","extendedTimeOut":"1000","showEasing":"swing","hideEasing":"linear","showMethod":"fadeIn","hideMethod":"fadeOut"};$('body').on('submit','form[ajax-submit="true"]',function(){var settings=getFormAjaxSettings($(this));ajaxOpen(settings);return!1})});function getFormAjaxSettings(formObj,successFunc){var settings={type:'POST',dataType:'json',url:formObj.attr('action'),beforeSend:function(){formObj.find('button[type="submit"]').attr('disabled',!0)},success:function(data){if(data.url){window.setTimeout("window.location.href='"+data.url+"';",2000)}else{formObj.find('button[type="submit"]').removeAttr('disabled')}
-if(data.code==1){if(data.msg){toastr.success(data.msg)}
-formObj.find('.verify-img').trigger('click')}else{if(data.msg){toastr.error(data.msg)}}
-if(successFunc&&typeof(successFunc)=='function'){data=isNull(data.data)?{}:data.data;successFunc(data)}},error:function(data){formObj.find('button[type="submit"]').removeAttr('disabled');toastr.error(data)}};if(formObj.attr('enctype')&&formObj.attr('enctype').toLowerCase()=='multipart/form-data'){var formData=new FormData(formObj[0]);settings.data=formData;settings.contentType=!1;settings.processData=!1}else{settings.data=formObj.serialize()}
+var newVerifyImg=!1;if(data.code==1){if(data.msg){toastr.success(data.msg)}
+newVerifyImg=!0}else{if(data.msg){toastr.error(data.msg)}
+if(isObject(data.data)&&data.data._verify_img_success){newVerifyImg=!0}}
+if(newVerifyImg){if(formObj.find('.verify-img').length>0){formObj.find('.verify-img').trigger('click')}}
+setNewUsertoken(data);if(successFunc&&typeof(successFunc)=='function'){data=isNull(data.data)?{}:data.data;successFunc(data)}},error:function(data){formObj.find('button[type="submit"]').removeAttr('disabled');toastr.error(data)}};if(formObj.attr('enctype')&&formObj.attr('enctype').toLowerCase()=='multipart/form-data'){var formData=new FormData(formObj[0]);settings.data=formData;settings.contentType=!1;settings.processData=!1}else{settings.data=formObj.serialize()}
 return settings}
+function setNewUsertoken(data){if(isObject(data)&&isObject(data.data)&&data.data._set_new_usertoken){if(window.site_config.usertoken!=data.data._set_new_usertoken){window.site_config.usertoken=data.data._set_new_usertoken;$('input[name="_usertoken_"]').val(data.data._set_new_usertoken);setTimeout(function(){toastr.info(tpl_lang.usertoken_is_new)},1000)}}}
 function htmlspecialchars(str){if(str&&typeof(str)=='string'){str=str.replace(/\&/g,'&amp;').replace(/\</g,'&lt;').replace(/\>/g,'&gt;').replace(/\"/g,'&quot;').replace(/\'/g,'&#039;')}
 return str}
 function setCookie(c_name,value,expiredays){var exdate=new Date();exdate.setDate(exdate.getDate()+expiredays);document.cookie=c_name+"="+escape(value)+((expiredays==null)?"":";expires="+exdate.toGMTString())+';path='+(window.site_config?(window.site_config.root?window.site_config.root:'/'):'/')}
@@ -25,7 +28,9 @@ function dataIsJson(data){if((/^\{[\s\S]*\}$/).test(data)||(/^\[[\s\S]*\]$/).tes
 function dataIsHtml(data){if((/<\w+[^<>]*>/).test(data)){return!0}else{return!1}}
 function ajaxOpen(settings){if(settings.type&&'post'==settings.type.toLowerCase()){if(window.site_config){var regToken=new RegExp("_usertoken_\\s*=",'i');if(!regToken.test(settings.url)){var usertoken=window.site_config.usertoken;var data=settings.data;if(isNull(data)){data={'_usertoken_':usertoken}}else{if(typeof(data)=='object'){data._usertoken_=usertoken}else{if(!regToken.test(data)){data+='&_usertoken_='+encodeURIComponent(usertoken)}}}
 settings.data=data}}}
-return $.ajax(settings)}
+var successFunc=null;if(settings.success&&typeof(settings.success)=='function'){successFunc=settings.success}
+settings.success=function(data,status,xhr){if(successFunc&&typeof(successFunc)=='function'){successFunc(data,status,xhr)}
+setNewUsertoken(data)};return $.ajax(settings)}
 function modal(title,body,options){if(!options){options={}}
 if(document.getElementById('myModal')){$('#myModal').off();$('#myModal').modal('hide');$('#myModal').remove()}
 if(!document.getElementById('myModal')){var modal='<div class="modal '+(options.lg?' bs-example-modal-lg':'')+' myModal" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"><div class="modal-dialog'+(options.lg?' modal-lg':'')+'"><div class="modal-content">'+'<div class="modal-header"><button type="button" class="close" data-dismiss="modal" style="font-size:24px;">&times;</button><h4 class="modal-title" id="myModalLabel"></h4></div><div class="modal-body" '+(options.bodyStyle?options.bodyStyle:'')+'></div>'+'<div class="modal-footer"><button type="button" class="close" data-dismiss="modal">'+tpl_lang.close+'</button></div></div></div></div>';$('body').append(modal)}
@@ -48,7 +53,7 @@ function url_base64decode(str){str=str.replace(/\-/g,'+').replace(/\_/g,'/');var
 str=Base64.decode(str);return str}
 function encode_json2urlbase(data){try{data=url_base64encode(JSON.stringify(data))}catch(e){data=''}
 return data}
-function decode_urlbase2json(urlBase64Str){var json={};try{json=url_base64decode(urlBase64Str);json=JSON.parse(json)}catch(e){json={}}
+function decode_urlbase2json(urlBase64Str,checkNull){var json={};try{json=url_base64decode(urlBase64Str);json=JSON.parse(json)}catch(e){json=checkNull?null:{}}
 return json}
 function generateUUID(){var d=new Date().getTime();var uuid='xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,function(c){var r=(d+Math.random()*16)%16|0;d=Math.floor(d/16);return(c=='x'?r:(r&0x7|0x8)).toString(16)});return uuid}
 function refreshVerify(obj){var src=$(obj).attr('src');if(src.indexOf('version')>0){src=src.replace(/([\?\&]version\=)[\.\d]+/i,"$1"+Math.random())}else{src+=(src.indexOf('?')>-1?'&':'?')+'version='+Math.random()}
@@ -68,9 +73,3 @@ var html='<div id="confirm_right" style="position:fixed;top:0;left:0;width:100%;
 var btnFunc=function(func){if(!closeAfterFunc){$('#confirm_right').remove()}
 if(func&&typeof(func)){func()}
 if(closeAfterFunc){$('#confirm_right').remove()}};$('#confirm_right .cr-btn-yes').bind('click',function(){btnFunc(func1)});$('#confirm_right .cr-btn-no').bind('click',function(){btnFunc(func2)});$('#confirm_right .close').bind('click',function(){$('#confirm_right').remove()})}
-function page_translator(publicPath,acceptLang){window.gg_page_translator_loaded=!1;if(!window.gg_page_translator_loaded){window.gg_page_translator_loaded=!0;(function(){var allLanguage='de,hi,lt,hr,lv,ht,hu,zh-CN,hy,uk,mg,id,ur,mk,ml,mn,af,mr,uz,ms,el,mt,is,it,my,es,et,eu,ar,pt-PT,ja,ne,az,fa,ro,nl,en-GB,no,be,fi,ru,bg,fr,bs,sd,se,si,sk,sl,ga,sn,so,gd,ca,sq,sr,kk,st,km,kn,sv,ko,sw,gl,zh-TW,pt-BR,co,ta,gu,ky,cs,pa,te,tg,th,la,cy,pl,da,tr'.split(',');var localLanguage=null;if(acceptLang){var regQ=new RegExp("\\s*\\bq\\s*=\\s*\\d*(\\.\\d+){0,1}",'gi');acceptLang=acceptLang.replace(regQ,'');var regLang=new RegExp("^[\,\;]{0,1}\\s*([a-zA-Z\-]+)");acceptLang=acceptLang.match(regLang);acceptLang=acceptLang?acceptLang[1]:'';if(acceptLang){localLanguage=acceptLang}}
-if(!localLanguage){if(navigator.language){localLanguage=navigator.language}else{localLanguage=navigator.browserLanguage}}
-if(localLanguage&&localLanguage.toLowerCase()!='zh-cn'){if(allLanguage.indexOf(localLanguage)<=-1){if(localLanguage.indexOf('-')>-1){localLanguage=localLanguage.split('-');localLanguage=localLanguage[0]}
-if(allLanguage.indexOf(localLanguage)<=-1&&localLanguage!='en'){var regLangStart=new RegExp("^"+localLanguage+"\\b");var hasLangStart=null;for(var i in allLanguage){if(allLanguage[i]&&regLangStart.test(allLanguage[i])){hasLangStart=allLanguage[i];break}}
-localLanguage=hasLangStart?hasLangStart:null}}
-if(localLanguage&&localLanguage.toLowerCase()!='zh-cn'){window.localLanguage=localLanguage;window.resourcesUrl=publicPath+'/googleTrans';var eleLink=document.createElement('link');eleLink.setAttribute('rel','stylesheet');eleLink.setAttribute('href',window.resourcesUrl+'/page.css');var eleScript=document.createElement('script');eleScript.setAttribute('type','text/javascript');eleScript.setAttribute('src',window.resourcesUrl+'/page.js');$('body').append(eleLink);$('body').append(eleScript)}}})()}}

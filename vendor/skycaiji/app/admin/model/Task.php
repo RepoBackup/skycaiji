@@ -47,6 +47,9 @@ class Task extends \skycaiji\common\model\BaseModel{
 		$this->set_c_num_names('caiji', array('interval'=>'num_interval','interval_html'=>'num_interval_html'), $config, $original_config);
 		
 		
+		set_g_sc('task_variables',is_array($config['variables'])?$config['variables']:array());
+		
+		
 		if(empty($config['same_url'])){
 		    
 		    set_g_sc(['c','caiji','same_url'],$original_config['caiji']['same_url']);

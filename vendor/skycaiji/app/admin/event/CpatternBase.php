@@ -149,6 +149,34 @@ class CpatternBase extends CollectBase{
         
         return $this->rule_module_rule_data($configParams,$html,$parentMatches,$whole,$returnMatch);
     }
+    
+    public function merge_convert_variables($data){
+        if($data){
+            if(is_array($data)){
+                foreach ($data as $k=>$v){
+                    $data[$k]=$this->merge_convert_variables($v);
+                }
+            }elseif(is_string($data)&&!is_numeric($data)){
+                
+                if(strpos($data, '[变量')!==false){
+                    $varVals=g_sc('task_full_variables');
+                    init_array($varVals);
+                    
+                    $vars=array();
+                    $vals=array();
+                    
+                    if(preg_match_all('/\[\x{53d8}\x{91cf}.+?\]/u', $data, $mvars)){
+                        $vars=$mvars[0];
+                        foreach ($vars as $vk=>$vv){
+                            $vals[$vk]=$varVals[$vv];
+                        }
+                    }
+                    $data=str_replace($vars, $vals, $data);
+                }
+            }
+        }
+        return $data;
+    }
     /*拼接替换标签*/
     public function merge_match_signs($matches,$merge){
         if(!is_array($matches)){
@@ -345,7 +373,19 @@ class CpatternBase extends CollectBase{
                                 
                                 if(!isset($jsonFmt[$i+1])){
                                     
-                                    $mergeData[]=$val;
+                                    if($configParams['json_url_merge_data']){
+                                        
+                                        if(is_array($val)){
+                                            
+                                            foreach ($val as $vv){
+                                                $mergeData[]=$vv;
+                                            }
+                                        }else{
+                                            $mergeData[]=$val;
+                                        }
+                                    }else{
+                                        $mergeData[]=$val;
+                                    }
                                 }
                             }
                         }
@@ -382,7 +422,6 @@ class CpatternBase extends CollectBase{
         }
         return $val;
     }
-    
     
     /**
      * 拼接默认设置
@@ -702,8 +741,9 @@ class CpatternBase extends CollectBase{
         $urlWebConfig['content_type']=empty($urlWebConfig['content_type'])?'':strtolower($urlWebConfig['content_type']);
         $urlWebConfig['header_global']=empty($urlWebConfig['header_global'])?'':strtolower($urlWebConfig['header_global']);
         
-        \util\Funcs::filter_key_val_list($urlWebConfig['form_names'], $urlWebConfig['form_vals']);
+        \util\Funcs::filter_key_val_list($urlWebConfig['form_names'],$urlWebConfig['form_vals']);
         \util\Funcs::filter_key_val_list($urlWebConfig['header_names'], $urlWebConfig['header_vals']);
+        
         return $urlWebConfig;
     }
     private function _page_set_config_renderer($renderer){
@@ -750,12 +790,14 @@ class CpatternBase extends CollectBase{
         if($isPagination){
             
             init_array($pageConfig['number']);
-            $pcNumUrlMode=$pageConfig['number']['url_mode'];
             foreach ($pageConfig['number'] as $k=>$v){
+                if($k=='start'||$k=='end'||$k=='url_mode'){
+                    
+                    continue;
+                }
                 $pageConfig['number'][$k]=intval($v);
             }
             $pageConfig['number']['inc']=max(1,intval($pageConfig['number']['inc']));
-            $pageConfig['number']['url_mode']=$pcNumUrlMode;
             
             if($urlRequired){
                 
@@ -1079,13 +1121,13 @@ class CpatternBase extends CollectBase{
      * 执行数据处理»使用函数
      * @param string $module 模块
      * @param string $funcName 函数/方法
-     * @param string $fieldVal 字段值
+     * @param string $defaultVal 默认值
      * @param string $paramsStr 输入的参数（有换行符）
      * @param array $paramValList 需要替换的数据列表
      * @param string $errorTips 错误提示信息
      */
-    public function execute_plugin_func($module,$funcName,$fieldVal,$paramsStr,$paramValList=null,$errorTips=null,$returnAll=false){
-        $return=model('FuncApp')->execute_func($module,$funcName,$fieldVal,$paramsStr,$paramValList);
+    public function execute_plugin_func($module,$funcName,$defaultVal,$paramsStr,$paramValList=null,$errorTips=null,$returnAll=false){
+        $return=model('FuncApp')->execute_func($module,$funcName,$defaultVal,$paramsStr,$paramValList);
         if(empty($return['success'])&&!empty($return['msg'])){
             
             $errorTips=$errorTips?$errorTips:'';

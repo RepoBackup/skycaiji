@@ -96,17 +96,39 @@
 			</div>
         	<div class="form-group">
         		<div class="input-group">
-        			<span class="input-group-addon">数字，从</span>
-        			<input type="number" name="{$_tpl_name}[number][start]" class="form-control" placeholder="默认：0" />
-        			<span class="input-group-addon brl_0 brr_0">到</span>
-        			<input type="number" name="{$_tpl_name}[number][end]" class="form-control" placeholder="默认：0" />
-        			<span class="input-group-addon brl_0 brr_0">递增数</span>
-        			<input type="number" name="{$_tpl_name}[number][inc]" class="form-control" placeholder="默认：1" />
+        			<div class="input-group-addon" style="border:0;padding:0;">
+        				<div class="input-group c-p-url-page-signs" data-page-type="{$_tpl_page_type}" data-input-name="{$_tpl_name}[number][start]"{$_tpl_is_pagination?' data-is-pagination="1"':''}>
+        					<span class="input-group-addon">数字，从</span>
+        					<input type="text" name="{$_tpl_name}[number][start]" data-merge-type="area" class="form-control" placeholder="默认：0" />
+	        				<div class="input-group-addon">
+				    			<a href="javascript:;" title="调用全局内容标签" role="button" class="dropdown-toggle btn-page-signs" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+					            	{:cp_sign('match','N')}
+					            	<span class="caret"></span>
+					            </a>
+								<div class="dropdown-menu dropdown-menu-right"></div>
+				    		</div>
+				    	</div>
+        			</div>
+        			<div class="input-group-addon" style="border:0;padding:0;">
+        				<div class="input-group c-p-url-page-signs" data-page-type="{$_tpl_page_type}" data-input-name="{$_tpl_name}[number][end]"{$_tpl_is_pagination?' data-is-pagination="1"':''}>
+        					<span class="input-group-addon brl_0 brr_0">到</span>
+        					<input type="text" name="{$_tpl_name}[number][end]" data-merge-type="area"  class="form-control" placeholder="默认：0" />
+        					<div class="input-group-addon">
+				    			<a href="javascript:;" title="调用全局内容标签" role="button" class="dropdown-toggle btn-page-signs" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+					            	{:cp_sign('match','N')}
+					            	<span class="caret"></span>
+					            </a>
+								<div class="dropdown-menu dropdown-menu-right"></div>
+				    		</div>
+				    	</div>
+        			</div>
         		</div>
         	</div>
         	<div class="form-group">
         		<div class="input-group">
-        			<span class="input-group-addon">补零位数</span>
+        			<span class="input-group-addon brr_0">递增数</span>
+        			<input type="number" name="{$_tpl_name}[number][inc]" class="form-control" placeholder="默认：1" />
+        			<span class="input-group-addon brl_0 brr_0">补零位数</span>
         			<input type="number" name="{$_tpl_name}[number][len]" class="form-control" placeholder="默认不补零，小于位数的数字开头自动补零" />
         			<div class="input-group-addon">
 						<label class="checkbox-inline"><input type="checkbox" name="{$_tpl_name}[number][desc]" value="1">倒序</label>

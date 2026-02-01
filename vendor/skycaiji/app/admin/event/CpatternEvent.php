@@ -234,6 +234,11 @@ class CpatternEvent extends CpatternColl{
         
         return $field_params['words'];
     }
+    public function field_module_variable($field_params){
+        
+        $field_params['variable']=$this->merge_convert_variables($field_params['variable']);
+        return $field_params['variable'];
+    }
     public function field_module_num($field_params){
         
         $start=intval($field_params['num_start']);
@@ -1215,6 +1220,7 @@ class CpatternEvent extends CpatternColl{
      */
     public function source_url_convert($url){
         $urls=array();
+        $url=$this->merge_convert_variables($url);
         $parentMatches=$this->parent_page_signs2matches($this->parent_page_signs('source_url','','url'));
         $url=$this->merge_match_signs($parentMatches, $url);
         if(preg_match('/\{param\:(?P<type>[a-z]+)\,(?P<val>.*?)\}/i', $url,$match)){
@@ -1251,6 +1257,7 @@ class CpatternEvent extends CpatternColl{
                     $urls[]=str_replace('__set:param__', $v, $fmtUrl);
                 }
             }
+            $urls=$this->page_url_encode('source_url', '', $urls);
             return $urls;
         }elseif(preg_match('/\{json\:([^\}]*)\}/i',$url,$match)){
             
@@ -1262,7 +1269,7 @@ class CpatternEvent extends CpatternColl{
             $jsonData=$this->get_html($url);
             if(!empty($jsonData)){
                 
-                $urls=$this->rule_module_json_data(array('json'=>$jsonRule,'json_merge_data'=>false,'json_arr'=>'_original_'),$jsonData);
+                $urls=$this->rule_module_json_data(array('json'=>$jsonRule,'json_merge_data'=>true,'json_url_merge_data'=>true,'json_arr'=>'_original_'),$jsonData);
                 if(empty($urls)){
                     $urls=array();
                 }
@@ -1280,8 +1287,9 @@ class CpatternEvent extends CpatternColl{
                     $urls=array_unique($urls);
                     $urls=array_values($urls);
                 }
-                return $urls;
             }
+            $urls=$this->page_url_encode('source_url', '', $urls);
+            return $urls;
         }elseif(preg_match('/[\r\n]/', $url)){
             
             if(preg_match_all('/^\w+\:\/\/[^\r\n]+/im',$url,$urls)){
@@ -1291,9 +1299,11 @@ class CpatternEvent extends CpatternColl{
             }else{
                 $urls=array();
             }
+            $urls=$this->page_url_encode('source_url', '', $urls);
             return $urls;
         }else{
             
+            $url=$this->page_url_encode('source_url', '', $url);
             return $url;
         }
     }

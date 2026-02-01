@@ -42,7 +42,12 @@ class Index extends CollectController{
             }
             if(input('post.sublogin')){
                 $username=User::lower_username(input('post.username'));
-                $pwd=trim(input('post.password'));
+                $pwd=$this->_js_decrypt_pwd('post.password');
+                if($pwd['success']){
+                    $pwd=$pwd['pwd'];
+                }else{
+                    $this->error($pwd['msg']);
+                }
                 if(g_sc_c('site','verifycode')){
                     
                     $verifycode=trim(input('post.verifycode'));
@@ -130,6 +135,65 @@ class Index extends CollectController{
         model('User')->setLoginSession(null);
         $this->success(lang('op_success'),'admin/index/index');
     }
+    
+    
+    public function encrypt_configAction(){
+        $opened=false;
+        if($this->request->isPost()){
+            if(function_exists('openssl_decrypt')){
+                
+                $opened=true;
+            }
+        }
+        if(!$opened){
+            
+            $this->error();
+        }
+        
+        $key=\util\Funcs::uniqid();
+        $key=strtolower($key);
+        $key=substr($key,0,16);
+        $config=array('key'=>$key,'iv'=>'abcdef1234567890');
+        
+        cache('admin_encrypt_config',$config);
+        
+        $this->success('','',$config);
+    }
+    
+    
+    private function _js_decrypt_pwd($pwdName){
+        $pwd=trim(input($pwdName));
+        $result=return_result('',true,array('pwd'=>$pwd));
+        try{
+            if(strpos($pwd,'::')===0){
+                
+                $pwd=substr($pwd,2);
+                $pwd=base64_decode($pwd);
+                $config=cache('admin_encrypt_config');
+                
+                $decrypted = openssl_decrypt(
+                    $pwd,
+                    'aes-128-cbc', 
+                    $config['key'],
+                    OPENSSL_RAW_DATA | OPENSSL_ZERO_PADDING,
+                    $config['iv']
+                );
+                
+                
+                $padLength = ord(substr($decrypted, -1)); 
+                if ($padLength >= 1 && $padLength <= 16) { 
+                    $decrypted = substr($decrypted, 0, -$padLength); 
+                }
+                $pwd=$decrypted;
+            }
+            $result['pwd']=$pwd;
+        }catch (\Exception $ex){
+            $result['success']=false;
+            $result['msg']='密码解密失败：'.$ex->getMessage();
+        }
+        return $result;
+    }
+    
     /*验证码*/
     public function verifyAction(){
         $len=g_sc_c('site','verifycode_len');
@@ -534,13 +598,24 @@ class Index extends CollectController{
             $cond['module']='pattern';
         }
         
+        $urlParams=input('param.',array(),'trim');
+        init_array($urlParams);
+        if($urlParams){
+            foreach ($urlParams as $k=>$v){
+                if(strpos($k, 'v_')!==0){
+                    
+                    unset($urlParams[$k]);
+                }
+            }
+        }
+        
         $this->collect_create_or_run(function()use($cond,$noAuto){
             $taskIds=model('Task')->where($cond)->order('caijitime asc')->column('id');
             if(empty($taskIds)){
                 $this->echo_msg_exit('没有可'.($noAuto?'自动':'').'采集的任务 <a href="'.url('admin/task/list').'" target="_blank">设置</a>');
             }
             return $taskIds;
-        },null,true,\skycaiji\admin\model\Collector::url_backstage_run());
+        },null,true,\skycaiji\admin\model\Collector::url_backstage_run(),$urlParams);
             
     }
     

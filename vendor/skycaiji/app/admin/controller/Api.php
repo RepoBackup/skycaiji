@@ -181,7 +181,7 @@ class Api extends CollectController{
 	                }
 	            }
 	            if($isRight){
-	                $cacheKey='api_caiji_visit_time'.($taskIds?('_'.$taskIds):'');
+	                $cacheKey='api_caiji_visit_time'.($taskIds?('_'.serialize($taskIds)):'');
 	                $cacheKey=md5($cacheKey);
 	                
 	                $mcache=\skycaiji\admin\model\CacheModel::getInstance();
@@ -197,7 +197,22 @@ class Api extends CollectController{
 	                    $result['msg']='采集已经触发，'.$apiInterval.'秒后才能再次访问';
 	                }else{
 	                    $mcache->setCache($cacheKey,$nowTime);
-	                    $rootUrl=\think\Config::get('root_website').'/index.php?s=';
+	                    $rootUrl=\think\Config::get('root_website').'/index.php?';
+	                    $urlParams=input('param.',array(),'trim');
+	                    init_array($urlParams);
+	                    if($urlParams){
+	                        foreach ($urlParams as $k=>$v){
+	                            if(strpos($k, 'v_')!==0){
+	                                
+	                                unset($urlParams[$k]);
+	                            }
+	                        }
+	                    }
+	                    unset($urlParams['s']);
+	                    $urlParams['s']='';
+	                    $urlParams=http_build_query($urlParams);
+	                    $rootUrl.=$urlParams;
+	                    
 	                    \skycaiji\admin\model\Collector::collect_run_auto($rootUrl,$taskIds,true);
 	                    $result['msg']='成功触发采集';
 	                    $result['success']=true;

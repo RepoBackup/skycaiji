@@ -87,6 +87,7 @@ return array(
 	'user_auto_login'=>'正在自动登录...',
 	
 	'usertoken_error'=>'用户token错误，请刷新页面或重新登录！',
+    'usertoken_is_new'=>'用户token已自动更新，请重试操作！',
 	
 	'task'=>'任务',
 	'task_add'=>'添加任务',
@@ -167,7 +168,8 @@ return array(
     'field_module_num'=>'随机数字',
     'field_module_no'=>'自增数字',
 	'field_module_time'=>'时间',
-	'field_module_list'=>'列表抽取',
+    'field_module_list'=>'列表抽取',
+    'field_module_variable'=>'调用变量',
 	'field_module_json'=>'JSON提取',
 	'field_module_merge'=>'字段组合',
 	'field_module_extract'=>'字段提取',
@@ -315,8 +317,9 @@ return array(
 	'skin_green_light'=>'绿亮',
 	'skin_red_light'=>'红亮',
 	'skin_yellow_light'=>'黄亮',
-	
-		
+    
+    'check_curl_multi'=>'检测并发数量',
+    
 	'store'=>'云平台',
 
 	'rule_collect'=>'采集规则',
@@ -360,6 +363,8 @@ return array(
     'tips_matchn_area'=>'示例：[内容123] [内容abc]',
 	'tips_match_url'=>'示例：&lt;a href=&quot;http://demo.com/[内容123]/[内容abc]&quot;&gt;(*)&lt;/a&gt;',
 	'tips_matchn_url'=>'示例：http://www.demo.com/[内容123]-[内容abc].html',
+    
+    'tips_url_param_variable'=>'允许在网址中传入任务采集器设置中的变量，传入变量格式：v_变量名=变量值',
     
     'ds_f_type_bigint'=>'数字',
     'ds_f_type_double'=>'小数',

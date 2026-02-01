@@ -921,4 +921,63 @@ class Tool extends BaseController {
 	    );
 	    return $this->fetch('preview');
 	}
+	
+	
+	public function check_curl_multiAction(){
+	    if($this->request->isPost()){
+	        $num=input('num/d',0);
+	        if($num>100){
+	            $this->error('检测并发数最多100');
+	        }elseif($num<=0){
+	            $num=20;
+	        }
+	        
+	        $invalidFuncs=array();
+	        foreach (array('curl_multi_init','curl_multi_add_handle','curl_multi_exec','curl_getinfo') as $curlFunc){
+	            if(!function_exists($curlFunc)){
+	                $invalidFuncs[]=$curlFunc;
+	            }
+	        }
+	        if($invalidFuncs){
+	            $this->error('php函数被禁用：'.implode(', ',$invalidFuncs));
+	        }
+	        
+	        $mh=curl_multi_init();
+	        $chList=array();
+	        for($i=0;$i<$num;$i++){
+	            $url=url('admin/tool/check_curl_multi?op=check',null,false,true);
+	            $chList[$i]=get_html($url,null,array('return_curl'=>1,'timeout'=>10));
+	            curl_multi_add_handle($mh, $chList[$i]);
+	        }
+	        
+	        
+	        $running=null;
+	        do {
+	            curl_multi_exec($mh,$running);
+	        } while ($running > 0);
+	        
+	        $errorNum=0;
+	        foreach ($chList as $ch){
+	            $chCode=curl_getinfo($ch,CURLINFO_HTTP_CODE);
+	            $chCode=intval($chCode);
+	            if($chCode>=400){
+	                
+	                $errorNum++;
+	            }
+	            curl_multi_remove_handle($mh,$ch);
+	        }
+	        curl_multi_close($mh);
+	        
+	        $this->success('成功：'.($num-$errorNum).'，失败：'.$errorNum,'');
+	    }else{
+	        $op=input('op');
+	        if($op=='check'){
+	            
+	            return json();
+	        }else{
+	            $this->set_html_tags(lang('check_curl_multi'),lang('check_curl_multi'),breadcrumb(array(array('url'=>url('tool/check_curl_multi'),'title'=>lang('check_curl_multi')))));
+	            return $this->fetch();
+	        }
+	    }
+	}
 }

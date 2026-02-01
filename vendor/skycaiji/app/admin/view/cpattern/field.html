@@ -5,7 +5,7 @@
 	<div class="form-group">
    		<div class="input-group">
    			<span class="input-group-addon" style="background:#f4f4f4;">字段名称</span>
-			<input type="text" name="field[name]" class="form-control" autocomplete="off" />
+			<input type="text" name="field[name]" data-original-name="" class="form-control" autocomplete="off" />
    		</div>
 	</div>
 	<div class="form-group">
@@ -34,6 +34,7 @@
 				<option value="sign">{$Think.lang.field_module_sign}</option>
 				<optgroup label="数据生成">
 					<option value="words">{$Think.lang.field_module_words}</option>
+					<option value="variable">{$Think.lang.field_module_variable}</option>
 					<option value="num">{$Think.lang.field_module_num}</option>
 					<option value="no">{$Think.lang.field_module_no}</option>
 					<option value="list">{$Think.lang.field_module_list}</option>
@@ -149,6 +150,13 @@
 					</select>
 				</div>
 			</div>
+			<div class="c-p-field-module" module="variable" style="display:none;">
+				<div class="form-group">
+					<textarea name="field[variable]" class="form-control" rows="3"></textarea>
+					<p class="help-block">调用采集器设置中的传入变量</p>
+					<div id="c_p_field_variable_list"></div>
+				</div>
+			</div>
 			<div class="c-p-field-module" module="merge" style="display:none;">
 				<textarea name="field[merge]" class="form-control" rows="3"></textarea>
 				<div id="c_p_field_merge_list" style="margin-top:5px;"></div>
@@ -189,9 +197,9 @@
 			</div>
 			<div class="c-p-field-module" module="sign" style="display:none;">
 				<div class="form-group">
-					<textarea name="field[sign]" class="form-control" rows="3" placeholder="填入数据来源页面中区域规则或网址规则里的{:cp_sign('match')}标签"></textarea>
-					<div id="c_p_field_sign_list" style="margin-top:10px;"></div>
-					<p class="help-block">如果存在同名标签，实际获取后面的标签</p>
+					<textarea name="field[sign]" class="form-control" rows="3" placeholder="填入数据来源页面中“区域规则/网址规则/提取内容”里的{:cp_sign('match')}标签"></textarea>
+					<p class="help-block" style="margin-bottom:5px;">如果存在同名标签，实际获取后面的标签</p>
+					<div id="c_p_field_sign_list"></div>
 				</div>
 			</div>
 		</div>

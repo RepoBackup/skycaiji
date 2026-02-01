@@ -81,22 +81,45 @@ class ChromeSocket{
         }
         return true;
     }
+    public function getCommandStr($isTest=false){
+        return self::commandStr($this->filename,$this->port,$this->options,$isTest);
+    }
+    public static function userDataDirError($userDataDir){
+        $error='';
+        if(!empty($userDataDir)){
+            if(!is_dir($userDataDir)){
+                $error='用户配置目录不存在！';
+                if(\skycaiji\admin\model\Config::check_basedir_limited($userDataDir)){
+                    
+                    $error.=lang('error_open_basedir');
+                }
+            }else{
+                $filePath=rtrim(realpath($userDataDir),'\\\/').DS;
+                $root_path=rtrim(realpath(config('root_path')),'\\\/').DS;
+                if(stripos($filePath, $root_path)===0){
+                    
+                    $filePath=rtrim($filePath,'\\\/');
+                    if(stripos($filePath, $root_path.'data'.DS)!==0&&stripos($filePath, $root_path.'runtime'.DS)!==0){
+                        $error='用户配置目录必须在蓝天采集器data或runtime文件夹里';
+                    }
+                }
+            }
+        }
+        return $error;
+    }
     
-    public static function execHeadless($filename,$port,$options,$isTest){
+    public static function commandStr($filename,$port,$options,$isTest){
         $port=self::defaultPort($port);
         $options=is_array($options)?$options:array();
-        $return=array('error'=>'','info'=>'');
+        $return=array('error'=>'','command'=>'');
         $userDataDir=$options['user_data_dir'];
         if(empty($port)){
             $return['error']='请设置端口';
-        }elseif(!empty($userDataDir)&&!is_dir($userDataDir)){
+        }elseif(!empty($userDataDir)){
             
-            $return['error']='用户配置目录不存在！';
-            if(\skycaiji\admin\model\Config::check_basedir_limited($userDataDir)){
-                
-                $return['error'].=lang('error_open_basedir');
-            }
-        }else{
+            $return['error']=self::userDataDirError($userDataDir);
+        }
+        if(empty($return['error'])){
             $hasProcOpen=function_exists('proc_open')?true:false;
             
             
@@ -122,9 +145,8 @@ class ChromeSocket{
                 }
                 if(!empty($userDataDir)){
                     
-                    $userDataDir.=DIRECTORY_SEPARATOR.$port;
+                    $userDataDir=rtrim($userDataDir,'\/\\').DIRECTORY_SEPARATOR.$port;
                     write_dir_file($userDataDir.'/index.html', '');
-                    
                     $command=sprintf('%s --user-data-dir=%s',$command,$userDataDir);
                 }
                 if($isTest&&$hasProcOpen){
@@ -139,11 +161,25 @@ class ChromeSocket{
                 $return['error']=$error;
             }else{
                 
-                try{
-                    $return['info']=\util\Tools::proc_open_exec_curl($command,$isTest?'all':true,10,$isTest?true:false);
-                }catch (\Exception $ex){
-                    $return['error']=$ex->getMessage();
-                }
+                $return['command']=$command;
+            }
+        }
+        return $return;
+    }
+    
+    public static function execHeadless($filename,$port,$options,$isTest){
+        $return=array('error'=>'','info'=>'');
+        $command=self::commandStr($filename,$port,$options,$isTest);
+        if($command['error']){
+            
+            $return['error']=$command['error'];
+        }else{
+            $command=$command['command'];
+            
+            try{
+                $return['info']=\util\Tools::proc_open_exec_curl($command,$isTest?'all':true,10,$isTest?true:false);
+            }catch (\Exception $ex){
+                $return['error']=$ex->getMessage();
             }
         }
         return $return;
@@ -821,6 +857,7 @@ class ChromeSocket{
         if($chromeSocket){
             $chromeSocket->clearBrowser();
         }
+        \util\Funcs::clear_dir(self::defaultUserDataDir());
     }
     
     public static function config_restart(){

@@ -76,10 +76,11 @@ class Tools{
         if(empty($verifycode)){
             return return_result(lang('verifycode_error'),false,array('name'=>'verifycode'));
         }
-        $verify = new \think\captcha\Captcha(array('reset'=>false));
+        $verify = new \think\captcha\Captcha(array('reset'=>true));
         if(!$verify->check($verifycode)){
             return return_result(lang('verifycode_error'),false,array('name'=>'verifycode'));
         }
+        set_g_sc('verify_img_success', true);
         return return_result('',true);
     }
     

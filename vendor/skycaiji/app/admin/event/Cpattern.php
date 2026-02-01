@@ -24,6 +24,15 @@ class Cpattern extends CpatternEvent{
             $config['regexp_flags']=array();
         }
         
+        if(!empty($config['variables'])){
+            
+            init_array($config['variables']);
+            foreach ($config['variables'] as $k=>$v){
+                $config['variables'][$k]=json_decode(url_b64decode($v),true);
+            }
+        }
+        
+        
         if(!is_array($config['request_headers'])){
             $config['request_headers']=array();
         }
@@ -150,7 +159,52 @@ class Cpattern extends CpatternEvent{
             $this->config_params=array();
         }
         
+        
+        $varFullList=array();
+        
+        if(is_array($this->config['variables'])){
+            $taskVars=g_sc('task_variables');
+            init_array($taskVars);
+            foreach ($this->config['variables'] as $var){
+                if(!is_array($var)){
+                    continue;
+                }
+                $varName=$var['name'];
+                if(empty($varName)){
+                    continue;
+                }
+                $varVal=$var['value'];
+                if(!is_empty($taskVars[$varName],true)){
+                    $varVal=$taskVars[$varName];
+                }
+                $varIpt=input('v_'.$varName);
+                if(!is_empty($varIpt,true)){
+                    $varVal=$varIpt;
+                }
+                
+                if(!empty($var['funcs'])&&is_array($var['funcs'])){
+                    
+                    foreach ($var['funcs'] as $varFunc){
+                        if(is_array($varFunc)&&!empty($varFunc['func'])){
+                            
+                            $result=$this->execute_plugin_func('variable',$varFunc['func'],$varVal,$varFunc['func_param'],$varFullList,null,true);
+                            if(empty($result['success'])){
+                                $this->echo_msg_exit('');
+                            }
+                            if(isset($result['data'])){
+                                $varVal=$result['data'];
+                            }
+                        }
+                    }
+                }
+                $varFullList['[变量'.$varName.']']=$varVal;
+            }
+        }
+        set_g_sc('task_full_variables',$varFullList);
+
         if(is_array($this->config_params['headers'])){
+            
+            $this->config_params['headers']=$this->merge_convert_variables($this->config_params['headers']);
             
             set_g_sc('task_img_headers',$this->config_params['headers']['img']);
             
@@ -776,9 +830,11 @@ class Cpattern extends CpatternEvent{
 	                $frontUrl=$this->cur_front_urls[$fuv['name']];
 	            }else{
 	                $frontUrl=$fuv['url'];
+	                $frontUrl=$this->merge_convert_variables($frontUrl);
 	                if($frontUrl){
 	                    $parentMatches=$this->parent_page_signs2matches($this->parent_page_signs('front_url',$fuv['name'],'url'));
 	                    $frontUrl=$this->merge_match_signs($parentMatches, $frontUrl);
+	                    $frontUrl=$this->page_url_encode('front_url',$fuv['name'],$frontUrl);
 	                    $this->cur_front_urls[$fuv['name']]=$frontUrl;
 	                }
 	            }

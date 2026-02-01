@@ -240,7 +240,8 @@
 						设置一个密钥增加API安全性
 						{if !empty($releData['config']['api'])}
 						{php}$apiKeyStr=isset($releData['config']['api']['url'])?$releData['config']['api']['url']:md5($releData['config']['api']['key']);{/php}
-						，API网址：<a href="{$apiRootUrl}/api_task/{$taskData['id']}/{$apiKeyStr}" target="_blank">{$apiRootUrl}/api_task/{$taskData['id']}/{$apiKeyStr}</a>
+						<br>API网址：<a href="{$apiRootUrl}/api_task/{$taskData['id']}/{$apiKeyStr}" target="_blank">{$apiRootUrl}/api_task/{$taskData['id']}/{$apiKeyStr}</a>
+						<br>{:lang('tips_url_param_variable')}
 						{/if}
 					</p>
 				</div>

@@ -467,8 +467,32 @@ class Collector extends \skycaiji\common\model\BaseModel{
 	            curl_multi_exec($mh,$running);
 	        } while ($running > 0);
 	        
-	        
-	        foreach ($chList as $ch){
+	        foreach ($chList as $pkey=>$ch){
+	            $chCode=curl_getinfo($ch,CURLINFO_HTTP_CODE);
+	            $chCode=intval($chCode);
+	            if(empty($chCode)||$chCode>=400){
+	                
+	                $logFilename=\skycaiji\admin\model\Collector::echo_msg_filename($collectorKey.'-'.$pkey);
+	                if(empty($chCode)){
+	                    
+	                    $chCode=array();
+	                    foreach (array('curl_multi_init','curl_multi_add_handle','curl_multi_exec','curl_getinfo') as $curlFunc){
+	                        if(!function_exists($curlFunc)){
+	                            $chCode[]=$curlFunc;
+	                        }
+	                    }
+	                    if($chCode){
+	                        $chCode='php函数被禁用：'.implode(', ',$chCode);
+	                    }else{
+	                        $chCode='';
+	                    }
+	                }else{
+	                    $chCode='服务器'.$chCode.'错误，请<a href="'.url('tool/check_curl_multi').'" target="_blank">'.lang('check_curl_multi').'</a>';
+	                }
+	                if($chCode){
+	                    write_dir_file($logFilename,$chCode111.'::http_error='.$chCode);
+	                }
+	            }
 	            curl_multi_remove_handle($mh,$ch);
 	        }
 	        curl_multi_close($mh);

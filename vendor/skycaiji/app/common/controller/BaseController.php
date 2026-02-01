@@ -14,6 +14,14 @@ use think\Controller;
 class BaseController extends Controller {
 	public function error($msg = '', $url = null, $data = array(), $wait = 3, array $header = []){
 		$url=\util\Tools::url_is_compatible($url);
+		if(g_sc('verify_img_success')){
+		    
+		    if(empty($data)||is_array($data)){
+		        
+		        init_array($data);
+		        $data['_verify_img_success']=true;
+		    }
+		}
 		parent::error($msg,$url,$data,$wait,$header);
 		exit();
 	}

@@ -73,11 +73,10 @@ class CpatternTest extends BaseController {
         }
         $this->assign('collData',$collData);
         
+        $taskData=model('Task')->getById($collData['task_id']);
+        model('Task')->loadConfig($taskData);
         
         $this->eCpattern->init($collData);
-        
-        $taskData=model('Task')->getById($this->eCpattern->collector['task_id']);
-        model('Task')->loadConfig($taskData);
         
         $this->set_html_tags(null,null,breadcrumb(array(
             array(
@@ -381,6 +380,11 @@ class CpatternTest extends BaseController {
         $this->assign('test',$test);
         
         $urlParams=input('param.','','trim');
+        init_array($urlParams);
+        if($test_url){
+            
+            $urlParams['url']=$test_url;
+        }
         $urlParams=base64_encode(serialize($urlParams));
         
         $urlOpened=$this->_page_opened_tips('url');
@@ -441,7 +445,7 @@ class CpatternTest extends BaseController {
             
             if(!empty($pageType)){
                 
-                $this->eCpattern->single_input_urls($pageType=='url'?true:false,$pageType,$pageName,$inputedUrls,$input_urls);
+                $this->eCpattern->single_input_urls($pageType,$pageName,$inputedUrls,$input_urls);
             }
         }elseif($test=='get_signs'){
             if(empty($pageType)){
@@ -457,47 +461,23 @@ class CpatternTest extends BaseController {
                 }
             }else{
                 
-                $this->eCpattern->single_input_urls($pageType=='url'?true:false,$pageType,$pageName,$inputedUrls,$input_urls);
-                if(input('?signs_cur_all')){
-                    
-                    $prevPageSource=$this->eCpattern->single_parent_page($pageType=='url'?true:false,$pageType,$pageName);
-                    if($prevPageSource){
-                        
-                        list($prevPageType,$prevPageName)=$this->eCpattern->page_source_split($prevPageSource);
-                        if($prevPageType=='level_url'){
-                            if(is_array($this->eCpattern->config['level_urls'])){
-                                foreach ($this->eCpattern->config['level_urls'] as $k=>$v){
-                                    if($v['name']==$prevPageName){
-                                        $curLevelNum=$k+1;
-                                        $input_urls['level_url'][$curLevelNum]=array('level'=>$curLevelNum,'name'=>$v['name'],'url'=>$inputedUrls['level'.$curLevelNum.'_url']);
-                                        break;
-                                    }
-                                }
-                            }
-                        }else{
-                            $input_urls[$prevPageType]=$inputedUrls[$prevPageType]?$inputedUrls[$prevPageType]:'';
-                        }
-                        
-                        $this->eCpattern->single_input_urls($prevPageType=='url'?true:false,$prevPageType,$prevPageName,$inputedUrls,$input_urls);
-                    }
-                }
+                
+                $this->eCpattern->single_input_urls($pageType,$pageName,$inputedUrls,$input_urls,false,true);
             }
         }elseif($test=='get_relation_urls'){
             
-            $this->eCpattern->single_input_urls(true,'url','',$inputedUrls,$input_urls);
+            $this->eCpattern->single_input_urls('url','',$inputedUrls,$input_urls);
             if(is_array($this->eCpattern->config['relation_urls'])){
                 foreach ($this->eCpattern->config['relation_urls'] as $relationUrl){
-                    $this->eCpattern->single_input_urls(true,'relation_url',$relationUrl['name'],$inputedUrls,$input_urls);
+                    $this->eCpattern->single_input_urls('relation_url',$relationUrl['name'],$inputedUrls,$input_urls);
                 }
             }
         }elseif($test=='get_pagination'){
             
-            $this->eCpattern->single_input_urls($pageType=='url'?true:false,$pageType,$pageName,$inputedUrls,$input_urls);
+            $this->eCpattern->single_input_urls($pageType,$pageName,$inputedUrls,$input_urls,true);
         }
         
         if($test!='get_fields'){
-            
-            $this->eCpattern->single_urls_parent($pageType=='url'?true:false, $input_urls, $inputedUrls, $input_urls);
             if(is_array($input_urls['level_url'])){
                 
                 ksort($input_urls['level_url']);
@@ -522,6 +502,9 @@ class CpatternTest extends BaseController {
         
         $pageOpened=$this->_page_opened_tips($pageType,$pageName);
         
+        $this->eCpattern->single_remove_cur_page_url($pageType, $pageName, $input_urls);
+        
+        $this->assign('taskCollUrl',url('collector/set?task_id='.$this->eCpattern->collector['task_id'].'&tab_link=coll_pattern_link'));
         $this->assign('input_urls',$input_urls);
         $this->assign('pageOpenedList',$pageOpenedList);
         $this->assign('pageOpened',$pageOpened);
@@ -586,8 +569,9 @@ class CpatternTest extends BaseController {
                 
                 $ptIsUrl=$pageType=='url'?true:false;
                 
-                $this->eCpattern->single_input_urls($ptIsUrl,$pageType,$pageName,$inputedUrls,$input_urls);
-                $this->eCpattern->single_urls_parent($ptIsUrl, $input_urls, $inputedUrls, $input_urls);
+                $this->eCpattern->single_input_urls($pageType,$pageName,$inputedUrls,$input_urls);
+                
+                $this->eCpattern->single_remove_cur_page_url($pageType, $pageName, $input_urls);
                 
                 if(isset($input_urls['source_url'])&&empty($input_urls['source_url'])){
                     if($ptIsUrl&&$this->eCpattern->source_is_url()){
@@ -737,17 +721,17 @@ class CpatternTest extends BaseController {
                 if(!empty($this->eCpattern->config['new_relation_urls'])){
                     
                     foreach ($this->eCpattern->config['new_relation_urls'] as $name=>$v){
-                        $this->eCpattern->getRelationUrl($name, $test_url, '');
+                        $relationUrl=$this->eCpattern->getRelationUrl($name, $test_url, '');
+                        if($relationUrl){
+                            $this->eCpattern->get_page_html($relationUrl, 'relation_url', $name);
+                        }
                     }
                 }
                 
-                if(input('?signs_cur_all')){
-                    
-                    $curMatch=$this->_get_matches_from_signs('url', '', 'all');
-                    $curMatch['name']='当前'.$this->eCpattern->page_source_name('url', '');
-                    $data['cur']=$curMatch;
-                }
                 
+                $curMatch=$this->_get_matches_from_signs('url', '', 'all');
+                $curMatch['name']='当前'.$this->eCpattern->page_source_name('url', '');
+                $data['cur']=$curMatch;
                 
                 if(!empty($this->eCpattern->config['new_front_urls'])){
                     
@@ -776,55 +760,65 @@ class CpatternTest extends BaseController {
                 
                 $data['list']=$matchList;
                 
-                $this->success('以下是所有页面的内容标签',null,$data);
+                $this->success('<b>以下是所有页面的内容标签</b>',null,$data);
             }else{
                 
-                if(input('?signs_cur_all')&&$pageType=='url'){
-                    $this->eCpattern->get_page_html($test_url, $pageType, $pageName);
+                
+                if($pageType=='url'||$pageType=='relation_url'){
+                    
+                    $this->eCpattern->get_page_html($this->eCpattern->cur_cont_url, 'url', '');
+                }
+                if($pageType=='relation_url'){
+                    
+                    $relationUrl=$this->eCpattern->getRelationUrl($pageName, $this->eCpattern->cur_cont_url, '');
+                    if($relationUrl){
+                        $this->eCpattern->get_page_html($relationUrl, $pageType, $pageName);
+                    }
                 }
                 
                 $data=array();
                 
                 $signs=$this->eCpattern->parent_page_signs($pageType,$pageName);
-                if(input('?signs_cur_all')){
-                    
-                    $curMatch=$this->_get_matches_from_signs($pageType, $pageName, 'all');
-                    $curMatch['name']='当前'.$this->eCpattern->page_source_name($pageType, $pageName);
-                    $data['cur']=$curMatch;
+                
+                $curMatch=$this->_get_matches_from_signs($pageType, $pageName, 'all');
+                $curMatch['name']='当前'.$this->eCpattern->page_source_name($pageType, $pageName);
+                $data['cur']=$curMatch;
+                if($pageType=='relation_url'){
+                    $data['tips']='注意：关联页网址会自动获取（输入的关联页网址无作用）';
                 }
                 
                 
                 if(is_array($signs['front_url'])){
                     foreach ($signs['front_url'] as $frontName=>$frontSings){
-                        $matchList[]=$this->_get_matches_from_signs('front_url', $frontName, $frontSings);
+                        $matchList[]=$this->_get_matches_from_signs('front_url', $frontName, 'all');
                     }
                 }
                 
                 
                 if(is_array($signs['source_url'])){
-                    $matchList[]=$this->_get_matches_from_signs('source_url', '', $signs['source_url']);
+                    $matchList[]=$this->_get_matches_from_signs('source_url', '', 'all');
                 }
                 
                 
                 if(is_array($signs['level_url'])){
                     foreach ($signs['level_url'] as $levelName=>$levelSings){
-                        $matchList[]=$this->_get_matches_from_signs('level_url', $levelName, $levelSings);
+                        $matchList[]=$this->_get_matches_from_signs('level_url', $levelName, 'all');
                     }
                 }
                 
                 if(is_array($signs['url'])){
-                    $matchList[]=$this->_get_matches_from_signs('url', '', $signs['url']);
+                    $matchList[]=$this->_get_matches_from_signs('url', '', 'all');
                 }
                 
                 if(is_array($signs['relation_url'])){
                     foreach ($signs['relation_url'] as $relationName=>$relationSings){
-                        $matchList[]=$this->_get_matches_from_signs('relation_url', $relationName, $relationSings);
+                        $matchList[]=$this->_get_matches_from_signs('relation_url', $relationName, 'all');
                     }
                 }
                 
                 $data['list']=$matchList;
                 
-                $this->success('以下是当前页规则中调用的其他页面'.cp_sign('match').'标签',null,$data);
+                $this->success('<b>以下是调用的其他页面'.cp_sign('match').'标签</b>',null,$data);
             }
         }elseif('get_pagination'==$testName){
             

@@ -1,6 +1,6 @@
 {if condition="!empty($input_urls)"}
 <div class="panel panel-default">
-	<div class="panel-heading">需要从以下页面中抓取数据，请输入网址</div>
+	<div class="panel-heading">需要从以下页面中抓取数据，请输入网址！注意：网址层级需递进对应，建议使用“<a href="{$taskCollUrl}">采集器设置</a>»底部的测试抓取内容页网址”功能填充网址</div>
 	<div class="panel-body">
 		{if condition="isset($input_urls['source_url'])"}
 		<div class="form-group">

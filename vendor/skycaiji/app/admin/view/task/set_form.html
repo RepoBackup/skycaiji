@@ -142,6 +142,34 @@
 </div>
 </div>
 
+<div id="task_variables_panel" class="panel panel-default" style="display:none;">
+	<div class="panel-heading">
+		<h4 class="panel-title">
+			<a data-toggle="collapse" href="#task_variables" aria-expanded="false">传入变量</a>
+    	</h4>
+   	</div>
+    <div id="task_variables" class="panel-collapse collapse">
+		<div class="panel-body">
+			<table class="table table-hover datatable" style="margin-bottom:0;">
+			<thead>
+				<tr>
+					<th>变量名</th>
+					<th>默认值</th>
+					<th>传入值</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr>
+					<td class="name" style="vertical-align:middle;width:100px;"></td>
+					<td class="val"><textarea class="form-control input-sm" rows="1" readonly="readonly"></textarea></td>
+					<td class="set" style="vertical-align:middle;"><textarea class="form-control input-sm" rows="1" data-name="config[variables]" placeholder="留空使用默认值"></textarea></td>
+				</tr>
+			</tbody>
+			</table>
+		</div>
+	</div>
+</div>
+
 <div class="panel panel-default">
 	<div class="panel-heading">
 		<h4 class="panel-title">
@@ -189,13 +217,14 @@
 		    
 		    {if !empty($singleApiUrl)}
 		    <div class="form-group">
-		        <label>访问接口</label>
+		        <label>接口网址</label>
 		    	<div>{$singleApiUrl}</div>
 		    	<p class="help-block">
 		    		传入的网址参数必须经过url编码
 		    		{if !empty($singleIptMore)}
-					<br>内容页网址必填，其他网址选填（输入其他网址是因为内容N或字段调用了该页面）为确保数据完整性建议全部填写
+					<br>内容页网址必填，其他网址选填（输入其他网址是因为{:cp_sign('match','N')}或字段调用了该页面）为确保数据完整性建议全部填写
 					{/if}
+					<br>{:lang('tips_url_param_variable')}
 		    	</p>
 		    </div>
 		    {/if}
@@ -606,8 +635,8 @@
 {include file="setting:download_img_func" func_tpl_id="config_img_tpl_func" func_list_id="config_img_funcs" /}
 {include file="setting:download_file_func" func_tpl_id="config_file_tpl_func" func_list_id="config_file_funcs" /}
 
-{php}$nTaskData=is_array($taskData)?json_encode($taskData):'null';$nFieldList=is_array($fieldList)?json_encode($fieldList):'null';{/php}
+{php}$nTaskData=is_array($taskData)?json_encode($taskData):'null';$nFieldList=is_array($fieldList)?json_encode($fieldList):'null';$nVariables=is_array($variables)?json_encode($variables):'null';{/php}
 <script src="__PUBLIC__/static/js/admin/task.js?{$Think.config.html_v}"></script>
 <script type="text/javascript">
-taskOpClass.task_load({$nTaskData},{$nFieldList});
+taskOpClass.task_load({$nTaskData},{$nFieldList},{$nVariables});
 </script>

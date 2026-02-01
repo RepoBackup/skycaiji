@@ -9,6 +9,8 @@
 		<button type="button" id="btn_page_render_api" class="btn btn-sm btn-success" style="margin-left:5px;">API接口</button>
 	</div>
 	{else /}
-	<div class="alert alert-warning" role="alert">渲染工具服务器未开启，请检查配置是否正确！确认无误后点击保存</div>
+	<div class="alert alert-warning" role="alert">
+		渲染工具服务器未开启，请检查配置是否正确！确认无误后点击保存{if $commandStr}<br>或者在服务器中手动执行命令：<br><code>{$commandStr}</code>{/if}
+	</div>
 	{/if}
 {/if}

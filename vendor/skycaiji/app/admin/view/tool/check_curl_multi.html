@@ -1,0 +1,18 @@
+{extend name="common:main" /}
+{block name="cssjs"}
+{/block}
+{block name="content"}
+<form ajax-submit="true" method="post" role="form" action="{:url('admin/tool/check_curl_multi')}">
+<div class="box box-default">
+	<div class="box-body" style="padding-bottom:0;">
+		{:html_usertoken()}
+		<div class="input-group">
+			<span class="input-group-addon">检测并发数</span>
+			<input type="number" name="num" class="form-control" placeholder="默认：20">
+		</div>
+		<div class="help-block">该功能可检测当前服务器能够承受的并发数量，并发数不足会导致多任务采集时运行失败，请修改服务器并发数以满足采集需求</div>
+	</div>
+</div>
+<button type="submit" class="btn btn-primary btn-block">开始检测</button>
+</form>
+{/block}
