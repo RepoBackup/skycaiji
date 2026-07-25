@@ -329,15 +329,7 @@ class Config extends \skycaiji\common\model\Config {
 	
 	public static function cli_safe_filename($filename){
 	    if(!empty($filename)){
-	        if(IS_WIN){
-	            
-	            $filename='"'.$filename.'"';
-	        }else{
-	            
-	            if(preg_match('/(?<!\\\)\s/', $filename)){
-	                $filename=preg_replace('/(?<!\\\)(\s)/', "\\\\$1", $filename);
-	            }
-	        }
+	        $filename=escapeshellarg($filename);
 	    }
 	    return $filename;
 	}
