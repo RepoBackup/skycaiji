@@ -34,6 +34,7 @@ class CpatternEvent extends CpatternColl{
             'rule_multi_type' => $field_params['rule_multi_type']
         ), $html,array(),true);
         
+        $val=is_array($val)?array_values($val):$val;
         return $val;
     }
     /**
@@ -53,7 +54,9 @@ class CpatternEvent extends CpatternColl{
                 }
             }
         }
-        return $this->rule_module_xpath_data($field_params,$html);
+        $val=$this->rule_module_xpath_data($field_params,$html);
+        $val=is_array($val)?array_values($val):$val;
+        return $val;
     }
     /**
      * json提取，$field_params传入规则参数
@@ -87,6 +90,7 @@ class CpatternEvent extends CpatternColl{
                 }
             }
         }
+        $val=is_array($val)?array_values($val):$val;
         return $val;
     }
     /*字段提取内容*/

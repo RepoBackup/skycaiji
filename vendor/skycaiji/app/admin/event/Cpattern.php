@@ -1015,9 +1015,10 @@ class Cpattern extends CpatternEvent{
 	                    
 	                    $m_pn_urls=$urlsMatches['urls'];
 	                    
+	                    $curPageUrl=$this->cur_page_source_url($pageType, $pageName);
 	                    
 	                    foreach ($m_pn_urls as $purl){
-	                        if($fromUrl!=$purl){
+	                        if($fromUrl!=$purl&&$curPageUrl!=$purl){
 	                            
 	                            $pn_urls[]=$purl;
 	                        }
@@ -1026,7 +1027,7 @@ class Cpattern extends CpatternEvent{
 	                    $pnUrlIsHome='';
 	                    
 	                    if(empty($pn_urls)){
-	                        $pnUrlIsHome=$this->cur_page_source_url($pageType, $pageName);
+	                        $pnUrlIsHome=$curPageUrl;
 	                    }elseif(count($pn_urls)==1){
 	                        $curFromUrl=\util\Tools::echo_url_msg_pn_id($fromUrl,true);
 	                        $pnUrlIsHome=\util\Tools::echo_url_msg_pn_id($pn_urls[0],true);
@@ -1358,7 +1359,8 @@ class Cpattern extends CpatternEvent{
 		if(is_array($val)){
 			
 			$is_loop=true;
-			$vals=array_values($val);
+			$vals=$val;
+			unset($val);
 		}else{
 			
 			$is_loop=false;
