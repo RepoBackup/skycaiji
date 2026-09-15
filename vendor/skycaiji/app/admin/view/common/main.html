@@ -36,8 +36,8 @@
 		</div>
 	</nav>
 </header>
-{php}$curMenu=array(strtolower(request()->controller())=>' menu-open cur-menu');{/php}
-{php}$curSubm=array(strtolower(request()->action())=>' menu-open cur-menu');{/php}
+{php}$curMenu=array(strtolower(request()->controller())=>' menu-open opened-menu');{/php}
+{php}$curSubm=array(strtolower(request()->action())=>' menu-open opened-menu');{/php}
 <aside class="main-sidebar">
 <section class="sidebar">
 <ul class="sidebar-menu">
@@ -55,7 +55,7 @@
 			<li><a href="{:url('admin/setting/email')}"><i class="fa fa-circle-o"></i> {$Think.lang.setting_email}</a></li>
 		</ul>
 	</li>
-   	<li class="treeview{$curMenu['task']}{$curMenu['taskgroup']}{$curMenu['collector']}{$curMenu['release']}{$curMenu['collected']}">
+   	<li class="treeview{$curMenu['task']}{$curMenu['taskgroup']}{$curMenu['collector']}{$curMenu['cpatterntest']}{$curMenu['cdatahub']}{$curMenu['cdataset']}{$curMenu['release']}">
        	<a href="#">
        		<i class="fa fa-th-list"></i> <span>{$Think.lang.task}</span>
       		<span class="pull-right-container">
@@ -66,10 +66,9 @@
 			<li><a href="{:url('admin/task/list')}"><i class="fa fa-circle-o"></i> {$Think.lang.task_list}</a></li>
 			<li><a href="{:url('admin/task/set')}"><i class="fa fa-circle-o"></i> {$Think.lang.task_add}</a></li>
 			<li><a href="{:url('admin/taskgroup/list')}"><i class="fa fa-circle-o"></i> {$Think.lang.taskgroup}</a></li>
-			<li><a href="{:url('admin/collected/list')}"><i class="fa fa-circle-o"></i> 已采集数据</a></li>
 		</ul>
     </li>
-	<li class="treeview{$curMenu['dataset']}{$curMenu['dataapi']}">
+	<li class="treeview{$curMenu['collected']}{$curMenu['datahub']}{$curMenu['dataset']}{$curMenu['dataapi']}">
 		<a href="#">
 			<i class="fa fa-database"></i> <span>数据</span>
 			<span class="pull-right-container">
@@ -77,8 +76,20 @@
 			</span>
 		</a>
 		<ul class="treeview-menu">
-			<li><a href="{:url('admin/dataset/list')}"><i class="fa fa-circle-o"></i> 数据集</a></li>
-			<li><a href="{:url('admin/dataapi/list')}"><i class="fa fa-circle-o"></i> 数据接口</a></li>
+			<li><a href="{:url('admin/collected/list')}"><i class="fa fa-circle-o"></i> {$Think.lang.collected}</a></li>
+			<li><a href="{:url('admin/datahub/list')}"><i class="fa fa-circle-o"></i> {$Think.lang.cdatahub}</a></li>
+			<li class="treeview menu-open opened-menu">
+				<a href="#"><i class="fa fa-circle-o"></i> 数据集
+					<span class="pull-right-container">
+						<i class="fa fa-angle-left pull-right"></i>
+					</span>
+				</a>
+				<ul class="treeview-menu">
+					<li><a href="{:url('admin/dataset/index')}"><i class="fa fa-circle-o"></i> 数据列表</a></li>
+					<li><a href="{:url('admin/dataset/list')}"><i class="fa fa-circle-o"></i> 数据集</a></li>
+					<li><a href="{:url('admin/dataapi/list')}"><i class="fa fa-circle-o"></i> 数据接口</a></li>
+				</ul>
+			</li>
 		</ul>
 	</li>
 	<li class="treeview{$curMenu['store']}{$curMenu['mystore']}{$curMenu['provider']}{$curMenu['develop']}">
@@ -91,7 +102,7 @@
 		<ul class="treeview-menu">
 			<li><a href="{:url('admin/mystore/store')}" target="_blank"><i class="fa fa-circle-o"></i> 云平台</a></li>
 			<li><a href="{:url('admin/provider/list')}"><i class="fa fa-circle-o"></i> 第三方</a></li>
-			<li class="treeview{$curMenu['develop']?'':' menu-open cur-menu'}">
+			<li class="treeview{$curMenu['develop']?'':' menu-open opened-menu'}">
 				<a href="#"><i class="fa fa-circle-o"></i> 仓库
 				<span class="pull-right-container">
 					<i class="fa fa-angle-left pull-right"></i>

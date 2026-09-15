@@ -75,17 +75,7 @@ class Task extends CollectController {
 			
 			$orderBy=empty($orderKey)?'sort desc':($orderKey.' '.$sortBy);
 			
-			$search['num']=input('num/d');
-			if($search['num']<=0){
-			    
-			    $search['num']=$mcache->getCache('action_task_list_num','data');
-			    $search['num']=intval($search['num']);
-			    if($search['num']<=0){
-			        $search['num']=30;
-			    }
-			}
-			$mcache->setCache('action_task_list_num',$search['num']);
-			
+			$search['num']=\util\Tools::action_search_num('task');
     		$search['tg_id']=input('tg_id');
     		$search['name']=input('name');
     		$search['module']=input('module');
@@ -177,7 +167,7 @@ class Task extends CollectController {
     		foreach ($taskList as $tk=>$tv){
     			$tv['module']=lang('task_module_'.$tv['module']);
     			$tv['addtime']=date('Y-m-d',$tv['addtime']);
-    			$tv['caijitime']=$tv['caijitime']>0?date('Y-m-d H:i',$tv['caijitime']):'无';
+    			$tv['caijitime']=$tv['caijitime']>0?date('n-d H:i',$tv['caijitime']):'无';
     			$taskList[$tk]=$tv;
     		}
     		$taskList=$this->_set_tasks($taskList);
@@ -228,7 +218,11 @@ class Task extends CollectController {
             $mtask=model('Task');
             $tids=array();
             $timerTids=array();
-            foreach ($taskList as $v){
+            foreach ($taskList as $k=>$v){
+                if(is_object($v)){
+                    $v=$v->toArray();
+                }
+                $taskList[$k]=$v;
                 $tids[$v['id']]=$v['id'];
                 if($mtask->auto_is_timer($v['auto'])){
                     
@@ -287,6 +281,7 @@ class Task extends CollectController {
                 
                 $this->error($validate->getError());
             }
+            
             if(input('?config.img_url')){
                 $newData['config']['img_url']=input('config.img_url','','trim');
             }
@@ -307,7 +302,7 @@ class Task extends CollectController {
                     if(!empty($importTask)){
                         $importTask=$importTask->toArray();
                         
-                        $importColl=model('Collector')->where(array('task_id'=>$importTask['id'],'module'=>$importTask['module']))->find();
+                        $importColl=model('Collector')->getByTaskData($importTask);
                         $importRele=model('Release')->where(array('task_id'=>$importTask['id']))->find();
                         
                         $newData['tg_id']=$newData['tg_id']>0?$newData['tg_id']:$importTask['tg_id'];
@@ -323,7 +318,6 @@ class Task extends CollectController {
                         
                         if(!empty($importColl)){
                             
-                            $importColl=$importColl->toArray();
                             $importColl['task_id']=$taskData['id'];
                             unset($importColl['id']);
                             model('Collector')->add_new($importColl);
@@ -388,10 +382,10 @@ class Task extends CollectController {
                 
                 $variables=array();
                 $fieldList=array();
-                $collData=model('Collector')->where(array('task_id'=>$taskData['id']))->find();
+                $collData=model('Collector')->getByTaskData($taskData);
                 if(!empty($collData)){
                     
-                    $collConfig=safe_unserialize($collData['config']);
+                    $collConfig=$collData['config'];
                     if(is_array($collConfig)){
                         if(is_array($collConfig['variables'])){
                             foreach($collConfig['variables'] as $v){
@@ -411,29 +405,34 @@ class Task extends CollectController {
                     $singleConfig=$taskData['config']['single'];
                     if($singleConfig&&$singleConfig['open']){
                         $tipsSingle='，单页采集模式中不使用';
-                        
-                        $eCpattern=new \skycaiji\admin\event\CpatternSingle();
-                        $eCpattern->init($collData);
-                        $singleIptUrls=$eCpattern->single_get_input_urls(array(), array());
-                        
-                        $singleApiUrl=array('url'=>'<b>内容页网址</b>');
                         $singleIptMore=false;
-                        if(isset($singleIptUrls['source_url'])){
+                        
+                        if($taskData['module']=='pattern'){
+                            $eCpattern=new \skycaiji\admin\event\CpatternSingle();
+                            $eCpattern->init($collData,true);
+                            $singleIptUrls=$eCpattern->single_get_input_urls(array(), array());
                             
-                            $singleApiUrl['source_url']='<b>起始页网址</b>';
-                            $singleIptMore=true;
-                        }
-                        if(is_array($singleIptUrls['level_url'])){
-                            foreach ($singleIptUrls['level_url'] as $level_url){
-                                $singleApiUrl['level'.$level_url['level'].'_url']='<b>多级页“'.$level_url['name'].'”网址</b>';
+                            $singleApiUrl=array('url'=>'<b>内容页网址</b>');
+                            if(isset($singleIptUrls['source_url'])){
+                                
+                                $singleApiUrl['source_url']='<b>起始页网址</b>';
                                 $singleIptMore=true;
                             }
-                        }
-                        foreach ($singleApiUrl as $k=>$v){
-                            $singleApiUrl[$k]=$k.'='.$v;
+                            if(is_array($singleIptUrls['level_url'])){
+                                foreach ($singleIptUrls['level_url'] as $level_url){
+                                    $singleApiUrl['level'.$level_url['level'].'_url']='<b>多级页“'.$level_url['name'].'”网址</b>';
+                                    $singleIptMore=true;
+                                }
+                            }
+                        }else{
+                            $singleApiUrl=array('data_id'=>'<b>数据ID</b>');
                         }
                         
                         $singleKey=$singleConfig['key']?('/'.md5($singleConfig['key'])):'';
+                        
+                        foreach ($singleApiUrl as $k=>$v){
+                            $singleApiUrl[$k]=$k.'='.$v;
+                        }
                         
                         $singleApiUrl=htmlspecialchars(config('root_website').'/?s=/api_single/'.$taskData['id'].$singleKey.'&').implode('&', $singleApiUrl);
                         
@@ -703,8 +702,7 @@ class Task extends CollectController {
     			$this->error('导入的规则为空',$referer);
     		}
     		
-    		
-    		$collData=$mcoll->where(array('task_id'=>$taskData['id'],'module'=>$module))->find();
+    		$collData=$mcoll->getByTaskData($taskData);
     		$newColl=array('name'=>$name,'module'=>$module,'task_id'=>$taskData['id'],'config'=>$config,'uptime'=>time());
     		if(empty($collData)){
     			$mcoll->add_new($newColl);
@@ -811,6 +809,8 @@ class Task extends CollectController {
     
     public function load_resourceAction(){
         
+        $module=input('module');
+        $this->assign('module',$module);
         return $this->fetch();
     }
 }

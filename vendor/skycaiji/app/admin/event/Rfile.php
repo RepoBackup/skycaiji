@@ -40,6 +40,7 @@ class Rfile extends Release {
 	        return $this->echo_msg_return(array('不支持的文件格式：%s',$filetype));
 		}
 		$hideFields=$this->config['file']['hide_fields'];
+		$sortFields=$this->config['file']['sort_fields'];
 		
 		$filepath=config('root_path').'/data/'.$this->config['file']['path'].'/'.$this->release['task_id'];
 		$filename=date('Y-m-d',time());
@@ -131,14 +132,18 @@ class Rfile extends Release {
 			    
 				$this->init_download_config($this->task,$collFields['fields']);
 				$this->hide_coll_fields($hideFields, $collFields);
+				$collFields['fields']=is_array($collFields['fields'])?$this->sort_coll_fields($sortFields,$collFields['fields'],true):array();
 				
-				$collFields['fields']=is_array($collFields['fields'])?array_values($collFields['fields']):array();
 				foreach ($collFields['fields'] as $k=>$v){
 				    $phpExcel->getActiveSheet()->setCellValue(chr(65+$k).$lineNum,$this->get_field_val($v));
 				}
-				$this->record_collected($collFields['url'], array('id'=>1,'target'=>$filefull,'desc'=>'行：'.$lineNum), $this->release,array('title'=>$collFields['title'],'content'=>$collFields['content']));
 				
-				unset($collFieldsList[$collFieldsKey]['fields']);
+				$returnData=array('id'=>1,'target'=>$filefull,'desc'=>'行：'.$lineNum);
+				
+				$this->record_collected($collFields['url'],$returnData, $this->release,array('title'=>$collFields['title'],'content'=>$collFields['content']));
+				
+				$this->exportEnd($returnData,$collFieldsList[$collFieldsKey]);
+				
 				
 				
 				if($maxLine>0&&$lineNum>$maxLine){
@@ -194,6 +199,7 @@ class Rfile extends Release {
 			    
 			    $this->init_download_config($this->task,$collFields['fields']);
 			    $this->hide_coll_fields($hideFields, $collFields);
+			    $collFields['fields']=is_array($collFields['fields'])?$this->sort_coll_fields($sortFields,$collFields['fields'],true):array();
 			    
 				$fieldVals=array();
 				foreach ($collFields['fields'] as $k=>$v){
@@ -205,13 +211,17 @@ class Rfile extends Release {
 					$fieldVals[]=$fieldVal;
 				}
 				$fieldVals=implode($this->config['file']['txt_implode']?$this->config['file']['txt_implode']:"\t", $fieldVals);
+				
+				$returnData=array();
 				if(write_dir_file($filefull,$fieldVals."\r\n",FILE_APPEND)){
 					
 				    $lineNum++;
-				    $this->record_collected($collFields['url'], array('id'=>1,'target'=>$filefull,'desc'=>'行：'.$lineNum), $this->release,array('title'=>$collFields['title'],'content'=>$collFields['content']));
+				    $returnData=array('id'=>1,'target'=>$filefull,'desc'=>'行：'.$lineNum);
+				    $this->record_collected($collFields['url'], $returnData, $this->release,array('title'=>$collFields['title'],'content'=>$collFields['content']));
 				}
 				
-				unset($collFieldsList[$collFieldsKey]['fields']);
+				$this->exportEnd($returnData,$collFieldsList[$collFieldsKey]);
+				
 				
 				
 				if($maxLine>0&&$lineNum>=$maxLine){
@@ -242,6 +252,7 @@ class Rfile extends Release {
 	        
 	        $this->hide_coll_fields($this->config['file']['hide_fields'], $firstFields);
 	        $firstFields=array_keys($firstFields['fields']);
+	        $firstFields=$this->sort_coll_fields($this->config['file']['sort_fields'], $firstFields);
 	        foreach ($firstFields as $k=>$v){
 	            $newPhpExcel->getActiveSheet()->setCellValue(chr(65+$k).'1',$v);
 	        }

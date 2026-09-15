@@ -304,7 +304,7 @@ class Rdb extends Release{
             }
             $this->record_collected($contUrl,$returnData,$this->release,array('title'=>$contTitle,'content'=>$contContent));
             
-            unset($collFieldsList[$collFieldsKey]['fields']);
+            $this->exportEnd($returnData,$collFieldsList[$collFieldsKey]);
         }
         return $addedNum;
     }

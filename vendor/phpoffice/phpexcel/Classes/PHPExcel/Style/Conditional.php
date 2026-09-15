@@ -254,8 +254,12 @@ class PHPExcel_Style_Conditional implements PHPExcel_IComparable
      * @throws     PHPExcel_Exception
      * @return PHPExcel_Style_Conditional
      */
-    public function setStyle(PHPExcel_Style $pValue = null)
+    public function setStyle($pValue = null)
     {
+if ($pValue !== null && !$pValue instanceof PHPExcel_Style) {
+    throw new \InvalidArgumentException('参数$pValue必须是PHPExcel_Style实例');//[修改]兼容类型约束
+}
+
            $this->style = $pValue;
            return $this;
     }

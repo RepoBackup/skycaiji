@@ -1,0 +1,255 @@
+<form id="form_field" method="post" action="{:url(g_sc('coll_collector').'/field')}">
+{:html_usertoken()}
+<input type="hidden" name="is_submit" value="1" />
+<input type="hidden" name="objid" value="{$objid}" />
+	<div class="form-group">
+   		<div class="input-group">
+   			<span class="input-group-addon" style="background:#f4f4f4;">字段名称</span>
+			<input type="text" name="field[name]" data-original-name="" class="form-control" autocomplete="off" />
+   		</div>
+	</div>
+	<div class="form-group">
+   		<div class="input-group">
+   			<span class="input-group-addon" style="background:#f4f4f4;">字段描述</span>
+			<input type="text" name="field[desc]" class="form-control" autocomplete="off" placeholder="选填" />
+   		</div>
+	</div>
+	{if g_sc('coll_module')=='pattern'}
+	<div class="form-group coll-field-source">
+   		<div class="input-group">
+   			<span class="input-group-addon" style="background:#f4f4f4;">数据来源</span>
+   			<select name="field[source]" class="form-control">
+				<option value="source_url">起始页</option>
+				<option value="" selected="selected">内容页</option>
+			</select>
+   		</div>
+	</div>
+	{elseif g_sc('coll_module')=='datahub'||g_sc('coll_module')=='dataset' /}
+	<div class="form-group coll-field-dsource">
+   		<div class="input-group">
+   			<span class="input-group-addon" style="background:#f4f4f4;">数据来源</span>
+   			<select name="field[dsource]" class="form-control">
+				{if empty($dfields)}
+				<option value="">没有{:lang('c'.g_sc('coll_module'))}字段，请先绑定{:lang('c'.g_sc('coll_module'))}</option>
+				{else /}
+				<option value="">请选择{:lang('c'.g_sc('coll_module'))}字段</option>
+				{foreach $dfields as $dfield}
+				<option value="dfield:{$dfield}">{:lang('c'.g_sc('coll_module').'_field')}：{$dfield}</option>
+				{/foreach}
+				{/if}
+			</select>
+   		</div>
+	</div>
+	{/if}
+	<div class="form-group">
+		<div class="input-group" style="margin-bottom:15px;">
+			<span class="input-group-addon" style="background:#f4f4f4;">获取方式</span>
+			<select name="field[module]" class="form-control">
+				<optgroup label="数据来源">
+					{if g_sc('coll_module')=='datahub'||g_sc('coll_module')=='dataset'}
+					<option value="dvalue">{$Think.lang.field_module_dvalue}</option>
+					{/if}
+					<option value="rule">{$Think.lang.field_module_rule}</option>
+					<option value="xpath">{$Think.lang.field_module_xpath}</option>
+					<option value="json">{$Think.lang.field_module_json}</option>
+					{if g_sc('coll_module')=='pattern'}
+					<option value="auto">{$Think.lang.field_module_auto}</option>
+					<option value="sign">{$Think.lang.field_module_sign}</option>
+					{/if}
+				</optgroup>
+				<optgroup label="数据生成">
+					<option value="words">{$Think.lang.field_module_words}</option>
+					{if g_sc('coll_module')=='pattern'}
+					<option value="variable">{$Think.lang.field_module_variable}</option>
+					{/if}
+					<option value="num">{$Think.lang.field_module_num}</option>
+					<option value="no">{$Think.lang.field_module_no}</option>
+					<option value="list">{$Think.lang.field_module_list}</option>
+					<option value="time">{$Think.lang.field_module_time}</option>
+					{if g_sc('coll_module')=='datahub'||g_sc('coll_module')=='dataset'}
+					<option value="durl">{$Think.lang.field_module_durl}</option>
+					{/if}
+				</optgroup>
+				<optgroup label="字段">
+					<option value="extract">{$Think.lang.field_module_extract}</option>
+					<option value="merge">{$Think.lang.field_module_merge}</option>
+				</optgroup>
+			</select>
+		</div>
+		<div id="coll_field_module">
+			{if g_sc('coll_module')=='datahub'||g_sc('coll_module')=='dataset'}
+			<div class="coll-field-module" module="dvalue">
+				<input type="hidden" name="field[dvalue]" class="form-control" />
+			</div>
+			{/if}
+			<div class="coll-field-module" module="rule"{if g_sc('coll_module')=='datahub'||g_sc('coll_module')=='dataset'} style="display:none;"{/if}>
+				{include file="collector:c_rule_module" _type="rule" _name="field" _name_pre="" _allow_loop="1" /}
+			</div>
+			<div class="coll-field-module" module="xpath" style="display:none;">
+				{include file="collector:c_rule_module" _type="xpath" _name="field" _name_pre="" _allow_loop="1" /}
+			</div>
+			<div class="coll-field-module" module="json" style="display:none;">
+				{include file="collector:c_rule_module" _type="json" _name="field" _name_pre="" _allow_loop="1" /}
+			</div>
+			{if g_sc('coll_module')=='pattern'}
+			<div class="coll-field-module" module="auto" style="display:none;">
+				<div class="form-group" style="text-align:center;">
+					<p>自动提取页面中的内容：</p>
+				    <label class="radio-inline" style="margin-left:0px;">
+				        <input type="radio" name="field[auto]" value="title">标题
+				    </label>
+				    <label class="radio-inline" style="margin-left:5px;">
+				        <input type="radio" name="field[auto]" value="content">正文
+				    </label>
+				    <label class="radio-inline" style="margin-left:5px;">
+				        <input type="radio" name="field[auto]" value="keywords">keywords
+				    </label>
+				    <label class="radio-inline" style="margin-left:5px;">
+				        <input type="radio" name="field[auto]" value="description">description
+				    </label>
+				    <label class="radio-inline" style="margin-left:5px;">
+				        <input type="radio" name="field[auto]" value="url">网址
+				    </label>
+				    <label class="radio-inline" style="margin-left:5px;">
+				        <input type="radio" name="field[auto]" value="html">源码
+				    </label>
+				    <label class="radio-inline" style="margin-left:5px;">
+				        <input type="radio" name="field[auto]" value="header">头信息
+				    </label>
+				    <label class="radio-inline" style="margin-left:5px;">
+				        <input type="radio" name="field[auto]" value="cookie">cookie
+				    </label>
+				</div>
+			</div>
+			<div class="coll-field-module" module="sign" style="display:none;">
+				<div class="form-group">
+					<textarea name="field[sign]" class="form-control" rows="3" placeholder="填入数据来源页面中“区域规则/网址规则/提取内容”里的{:coll_sign('match')}标签"></textarea>
+					<p class="help-block" style="margin-bottom:5px;">如果存在同名标签，实际获取后面的标签</p>
+					<div id="coll_field_sign_list"></div>
+				</div>
+			</div>
+			<div class="coll-field-module" module="variable" style="display:none;">
+				<div class="form-group">
+					<textarea name="field[variable]" class="form-control" rows="3"></textarea>
+					<p class="help-block">调用采集器设置中的传入变量</p>
+					<div id="coll_field_variable_list"></div>
+				</div>
+			</div>
+			{/if}
+			<div class="coll-field-module" module="words" style="display:none;">
+				<textarea name="field[words]" class="form-control" rows="10"></textarea>
+			</div>
+			<div class="coll-field-module" module="num" style="display:none;">
+				<div class="input-group">
+					<div class="input-group-addon">范围</div>
+					<input type="number" name="field[num_start]" class="form-control" />
+					<div class="input-group-addon brl_0 brr_0">到</div>
+					<input type="number" name="field[num_end]" class="form-control" />
+		   		</div>
+			</div>
+			<div class="coll-field-module" module="no" style="display:none;">
+				<div class="form-group">
+					<div class="input-group">
+						<div class="input-group-addon">起始数字</div>
+						<input type="number" name="field[no_start]" class="form-control" placeholder="默认：1" />
+						<div class="input-group-addon brl_0 brr_0">递增数</div>
+						<input type="number" name="field[no_inc]" class="form-control" placeholder="默认：1" />
+			   		</div>
+		   		</div>
+				<div class="form-group">
+					<div class="input-group">
+						<div class="input-group-addon">补零位数</div>
+						<input type="number" name="field[no_len]" class="form-control" placeholder="默认不补零，小于位数的数字开头自动补零" />
+					</div>
+				</div>
+				<p class="help-block">注意：自增数字不受采集退出影响会连续记录（测试除外）如需重新开始可以<a href="javascript:;" class="coll-field-no-reset">点击重置</a></p>
+			</div>
+			<div class="coll-field-module" module="time" style="display:none;">
+				<div class="input-group" style="margin-bottom:7px;">
+					<div class="input-group-addon">格式</div>
+					<input type="text" name="field[time_format]" class="form-control" />
+				</div>
+				<div class="help-block" id="coll_field_time_format_list">
+					<span>标签：</span>
+					<ul class="in-line-mg">
+						<li><a href="javascript:;" data-val="[年]">[年]</a></li>
+						<li><a href="javascript:;" data-val="[月]">[月]</a></li>
+						<li><a href="javascript:;" data-val="[日]">[日]</a></li>
+						<li><a href="javascript:;" data-val="[时]">[时]</a></li>
+						<li><a href="javascript:;" data-val="[分]">[分]</a></li>
+						<li><a href="javascript:;" data-val="[秒]">[秒]</a></li>
+					</ul>
+				</div>
+				<div class="input-group">	
+					<div class="input-group-addon">范围随机</div>
+					<input type="text" name="field[time_start]" class="form-control" placeholder="默认当前时间" autocomplete="off" />
+					<div class="input-group-addon" style="border-left:0;border-right:0;">到</div>
+					<input type="text" name="field[time_end]" class="form-control" placeholder="默认当前时间" autocomplete="off" />
+		   			<div class="input-group-btn"><button type="button" class="btn btn-default" onclick="$(this).parent().siblings('input:text').val('');">清空</button></div>
+		   		</div>
+				<div class="checkbox"><label><input type="checkbox" name="field[time_stamp]" value="1" /> 转换成时间戳</label></div>
+			</div>
+			<div class="coll-field-module" module="list" style="display:none;">
+				<div class="form-group">
+					<label>列表数据</label>
+					<textarea name="field[list]" class="form-control" rows="3"></textarea>
+					<p class="help-block">一行一条数据，从列表中抽取数据</p>
+				</div>
+				<div class="form-group">
+					<label>抽取方式</label>
+					<select name="field[list_type]" class="form-control">
+						<option value="" selected="selected">随机抽取</option>
+						<option value="asc">顺序抽取</option>
+						<option value="desc">倒序抽取</option>
+					</select>
+				</div>
+			</div>
+			<div class="coll-field-module" module="merge" style="display:none;">
+				<textarea name="field[merge]" class="form-control" rows="3"></textarea>
+				<div id="coll_field_merge_list" style="margin-top:5px;"></div>
+			</div>
+			<div class="coll-field-module" module="extract" style="display:none;">
+				<div class="form-group">
+					<div class="input-group">
+						<div class="input-group-addon">选择字段</div>
+						<select name="field[extract]" class="form-control">
+							<option value="">请选择</option>
+						</select>
+					</div>
+				</div>
+				<div class="form-group">
+					<div class="input-group">
+						<div class="input-group-addon">提取内容</div>
+						<select name="field[extract_module]" class="form-control">
+							<option value="">请选择</option>
+							<option value="cover">第一张图片</option>
+							<option value="rule">规则匹配</option>
+							<option value="xpath">xpath匹配</option>
+							<option value="json">json提取</option>
+						</select>
+					</div>
+				</div>
+				<div class="coll-field-extract-module" extract-module="rule" style="display:none;">
+					{include file="collector:c_rule_module" _type="rule" _name="field" _name_pre="extract_" _allow_loop="1" /}
+				</div>
+				<div class="coll-field-extract-module" extract-module="xpath" style="display:none;">
+					{include file="collector:c_rule_module" _type="xpath" _name="field" _name_pre="extract_" _allow_loop="1" /}
+				</div>
+				<div class="coll-field-extract-module" extract-module="json" style="display:none;">
+					{include file="collector:c_rule_module" _type="json" _name="field" _name_pre="extract_" _allow_loop="1" /}
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="form-group form-group-sm">
+ 		<button type="submit" class="btn btn-primary btn-block">确定</button>
+ 	</div>
+</form>
+
+<script type="text/javascript">
+{if condition="$field"}
+c_{:g_sc('coll_module')}.collCommon.collField.init({$field|json_encode});
+{else /}
+c_{:g_sc('coll_module')}.collCommon.collField.init();
+{/if}
+</script>

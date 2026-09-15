@@ -23,7 +23,7 @@ class QueryCompatible extends Query{
 		return isset($this->options['multi'][$logic][$field]) && count($this->options['multi'][$logic][$field]) > 1;
 	}
 	/*---------------------------*/
-	public function __construct(Connection $connection = null, $model = null){
+	public function __construct($connection = null, $model = null){
 		parent::__construct($connection,$model);
 	}	
 	public function where($field, $op = null, $condition = null){

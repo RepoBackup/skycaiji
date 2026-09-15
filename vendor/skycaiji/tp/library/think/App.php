@@ -74,8 +74,12 @@ class App
      * @return Response
      * @throws Exception
      */
-    public static function run(Request $request = null)
+    public static function run($request = null)
     {
+        if ($request !== null && !$request instanceof Request) {
+            throw new \InvalidArgumentException('参数$request必须是Request实例');//[修改]兼容类型约束
+        }
+        
         $request = is_null($request) ? Request::instance() : $request;
 
         try {

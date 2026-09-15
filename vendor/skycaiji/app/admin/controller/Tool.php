@@ -464,7 +464,8 @@ class Tool extends BaseController {
 		    }
 		}else{
 		    
-		    return $this->display('<pre>'.$log.'</pre>');
+		    $this->assign('log',$log);
+		    return $this->fetch();
 		}
 	}
 	

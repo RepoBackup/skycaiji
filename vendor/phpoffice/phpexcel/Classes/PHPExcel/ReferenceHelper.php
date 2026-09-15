@@ -376,8 +376,12 @@ class PHPExcel_ReferenceHelper
      * @param   PHPExcel_Worksheet  $pSheet     The worksheet that we're editing
      * @throws  PHPExcel_Exception
      */
-    public function insertNewBefore($pBefore = 'A1', $pNumCols = 0, $pNumRows = 0, PHPExcel_Worksheet $pSheet = null)
+    public function insertNewBefore($pBefore = 'A1', $pNumCols = 0, $pNumRows = 0, $pSheet = null)
     {
+if ($pSheet !== null && !$pSheet instanceof PHPExcel_Worksheet) {
+    throw new \InvalidArgumentException('参数$pSheet必须是PHPExcel_Worksheet实例');//[修改]兼容类型约束
+}
+
         $remove = ($pNumCols < 0 || $pNumRows < 0);
         $aCellCollection = $pSheet->getCellCollection();
 

@@ -27,6 +27,9 @@
 	text-shadow:none;
 	color:#333;
 }
+#skycaiji_wrapper *,#skycaiji_wrapper select:after, #skycaiji_wrapper select:before{
+	box-sizing:border-box!important;
+}
 
 #skycaiji_wrapper ul{list-style:none;}
 #skycaiji_wrapper a{text-decoration:none;color:#333;}
@@ -36,13 +39,30 @@
 	background:#A0C5E8;position:fixed;bottom:0;left:0;right:0;padding:0 5px 5px 5px;z-index:999999;
 	font-family:"Microsoft YaHei";
 	overflow:hidden;
+	opacity:0.95;
 }
-#skycaiji_console .skycaiji-block{width:100%;overflow:hidden;line-height:20px;padding-top:5px;}
-#skycaiji_console .skycaiji-block>.skycaiji-b-l{float:left;width:130px;}
-#skycaiji_console .skycaiji-block>.skycaiji-b-c{margin-left:130px;margin-right:260px;}
-#skycaiji_console .skycaiji-block>.skycaiji-b-c .skycaiji-b-c-i{margin-right:20px;min-width:300px;}
-#skycaiji_console .skycaiji-block>.skycaiji-b-c input{width:100%;height:20px;float:left;}
-#skycaiji_console .skycaiji-block>.skycaiji-b-c select{width:20px;height:20px;overflow:hidden;float:left;}
+#skycaiji_console *{font-size:16px;}
+#skycaiji_console .skycaiji-block{width:100%;overflow:hidden;padding-top:5px;}
+#skycaiji_console .skycaiji-block>.skycaiji-b-l{float:left;width:145px;}
+#skycaiji_console .skycaiji-block>.skycaiji-b-c{margin-left:145px;margin-right:290px;}
+#skycaiji_console .skycaiji-block>.skycaiji-b-c .skycaiji-b-c-i{margin-right:20px;min-width:150px;}
+#skycaiji_console .skycaiji-block>.skycaiji-b-c input{width:100%;height:24px;float:left;}
+#skycaiji_console .skycaiji-block>.skycaiji-b-c select{
+	width:20px;height:24px;overflow:hidden;float:left;
+ 
+	-webkit-appearance: none;
+	-moz-appearance: none;
+	appearance: none;
+	
+	padding-left:20px;
+	
+	background-image: url("../images/select_arrow.png");
+	background-repeat: no-repeat;
+	background-position:center center;
+	background-size: 15px 23px;
+	
+	cursor: pointer;
+}
 #skycaiji_console .skycaiji-block>.skycaiji-b-r{padding-left:5px;float:left;}
 
 #skycaiji_console  .skycaiji-close {
@@ -105,10 +125,18 @@
 	width:100%;
 }
 
-
 @media (max-width: 550px){
+}
+
+@media (max-width: 767px){
 	.skycaiji_tips_html{
-		width:100%!important;
-		top:30px!important;		
+		width:90%!important;
+		top:100px!important;		
 	}
+	
+	#skycaiji_console .skycaiji-block{margin-top:10px;}
+	#skycaiji_console .skycaiji-block>.skycaiji-b-l{float:left;width:145px;padding-left:10px;font-size:16px;line-height:26px;}
+	#skycaiji_console .skycaiji-block>.skycaiji-b-c{margin-left:155px;margin-right:20px;font-size:16px;line-height:26px;}
+	#skycaiji_console .skycaiji-block>.skycaiji-b-r{float:none;clear:both;margin-left:150px;margin-right:20px;text-align:left;}
+	#skycaiji_console .skycaiji-block>.skycaiji-b-r *{font-size:16px!important;}
 }

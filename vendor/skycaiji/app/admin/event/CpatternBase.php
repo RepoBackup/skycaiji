@@ -11,144 +11,8 @@
 
 namespace skycaiji\admin\event;
 
-class CpatternBase extends CollectBase{
-    
-    
-    public function setConfig($config){}
-    public function init($config){}
-    public function collect($num=10){}
-    
-    
-    /*正则规则匹配数据*/
-    public function rule_module_rule_data($configParams,$html,$parentMatches=array(),$whole=false,$returnMatch=false){
-        $val=null;
-        $matches=array();
-        if(!is_array($parentMatches)){
-            $parentMatches=array();
-        }
-        if(!empty($configParams['rule'])&&!empty($configParams['rule_merge'])){
-            
-            if(empty($configParams['rule_flags'])){
-                $configParams['rule_flags']='';
-            }
-            
-            $ruleSigns=$this->rule_str_signs($configParams['rule']);
-            
-            if(!empty($configParams['rule_multi'])){
-                
-                if(preg_match_all('/'.$configParams['rule'].'/'.$configParams['rule_flags'],$html,$matchConts,PREG_SET_ORDER)){
-                    if(empty($ruleSigns)){
-                        
-                        if($whole){
-                            
-                            foreach ($matchConts as $k=>$v){
-                                $v['match']=$v[0];
-                                $matchConts[$k]=$v;
-                            }
-                        }else{
-                            
-                            $matchConts=array();
-                        }
-                    }
-                    foreach ($matchConts as $k=>$v){
-                        
-                        foreach ($v as $vk=>$vv){
-                            if(stripos($vk,'match')!==0){
-                                unset($v[$vk]);
-                            }
-                        }
-                        if($returnMatch){
-                            
-                            $matches[$k]=$v;
-                        }
-                        if(!empty($parentMatches)){
-                            
-                            $v=array_merge($parentMatches,$v);
-                        }
-                        $matchConts[$k]=$this->merge_match_signs($v,$configParams['rule_merge']);
-                    }
-                    if($configParams['rule_multi_type']=='loop'){
-                        
-                        $val=$matchConts;
-                    }elseif($configParams['rule_multi_type']=='list'){
-                        
-                        $val=json_encode($matchConts);
-                    }else{
-                        
-                        $multiStr=$configParams['rule_multi_str'];
-                        if(!empty($multiStr)){
-                            $multiStr=str_replace(array('\r','\n'), array("\r","\n"), $multiStr);
-                        }
-                        $val=implode($multiStr, $matchConts);
-                    }
-                }
-                if($configParams['rule_multi_type']=='loop'){
-                    
-                    init_array($val);
-                }
-                
-            }else{
-                
-                if(preg_match('/'.$configParams['rule'].'/'.$configParams['rule_flags'],$html,$matchCont)){
-                    if(empty($ruleSigns)){
-                        
-                        if($whole){
-                            
-                            
-                            $matchCont['match']=$matchCont[0];
-                        }else{
-                            
-                            $matchCont=array();
-                        }
-                    }
-                    if(!empty($matchCont)){
-                        
-                        if(!empty($parentMatches)){
-                            
-                            
-                            foreach ($matchCont as $k=>$v){
-                                if(stripos($k,'match')!==0){
-                                    unset($matchCont[$k]);
-                                }
-                            }
-                            $parentMatches=array_merge($parentMatches,$matchCont);
-                            $val=$this->merge_match_signs($parentMatches,$configParams['rule_merge']);
-                        }else{
-                            $val=$this->merge_match_signs($matchCont,$configParams['rule_merge']);
-                        }
-                    }
-                }else{
-                    
-                    $matchCont=array();
-                }
-                if($returnMatch){
-                    
-                    $matches=$matchCont;
-                }
-            }
-        }
-        if($returnMatch){
-            return array('val'=>$val,'matches'=>$matches);
-        }else{
-            return $val;
-        }
-    }
-    public function rule_module_rule_data_get($configParams,$html,$parentMatches=array(),$whole=false,$returnMatch=false){
-        
-        init_array($configParams);
-        $rule=$this->convert_sign_match($configParams['rule']);
-        $rule=$this->correct_reg_pattern($rule);
-        
-        $ruleMerge=$this->set_merge_default($rule, $configParams['rule_merge']);
-        if(empty($ruleMerge)){
-            
-            $ruleMerge=cp_sign('match');
-        }
-        $configParams['rule']=$rule;
-        $configParams['rule_merge']=$ruleMerge;
-        
-        return $this->rule_module_rule_data($configParams,$html,$parentMatches,$whole,$returnMatch);
-    }
+class CpatternBase extends CollectCommon{
+    public $cur_c_module=array('pattern'=>true);
     
     public function merge_convert_variables($data){
         if($data){
@@ -177,514 +41,36 @@ class CpatternBase extends CollectBase{
         }
         return $data;
     }
-    /*拼接替换标签*/
-    public function merge_match_signs($matches,$merge){
-        if(!is_array($matches)){
+    
+    
+    public function echo_url_msg($strArgs,$url,$opened='',$color='black'){
+        init_array($strArgs);
+        if($opened){
             
-            $matches=array();
-        }
-        $val='';
-        if(!empty($merge)){
-            
-            $mergeSigns=$this->merge_str_signs($merge,true);
-            if(!empty($mergeSigns)){
-                
-                $signVals=array();
-                foreach($mergeSigns['id'] as $k=>$v){
-                    $signVals[$k]=isset($matches['match'.$v])?$matches['match'.$v]:'';
-                }
-                $val=str_replace($mergeSigns[0], $signVals, $merge);
-            }else{
-                
-                $val=$merge;
-            }
+            $strArgs[0].='：%s';
+            $strArgs[]=$opened.$url;
         }else{
             
-            if(isset($merge)){
-                
-                $val=$merge;
-            }
-        }
-        return $val;
-    }
-    
-    
-    public function rule_module_xpath_data($configParams,$html){
-        $vals=array();
-        $xpathMulti=$configParams['xpath_multi']?true:false;
-        if(!empty($configParams['xpath'])){
-            $html=$this->filter_html_tags($html,array('script'));
-            $dom=new \DOMDocument;
-            $libxml_previous_state = libxml_use_internal_errors(true);
-            @$dom->loadHTML('<meta http-equiv="Content-Type" content="text/html;charset=utf-8">'.$html);
-            
-            $dom->normalize();
-            
-            $xPath = new \DOMXPath($dom);
-            
-            $xpath_attr=strtolower($configParams['xpath_attr']);
-            $xpath_attr='custom'==$xpath_attr?strtolower($configParams['xpath_attr_custom']):$xpath_attr;
-            
-            $normal_attr=true;
-            if(in_array($xpath_attr,array('innerhtml','outerhtml','text'))){
-                
-                $normal_attr=false;
-            }
-            $xpath_q=trim($configParams['xpath']);
-            if(!empty($xpath_attr)){
-                
-                if(preg_match('/\/\@[\w\-]+$/', $xpath_q)){
-                    
-                    $xpath_q=preg_replace('/\@[\w\-]+$/', '', $xpath_q);
-                }
-                if($normal_attr){
-                    
-                    $xpath_q=$xpath_q.(preg_match('/\/$/', $xpath_q)?'':'/').'@'.$xpath_attr;
-                }
-            }else{
-                
-                if(!preg_match('/\/\@[\w\-]+$/', $xpath_q)){
-                    
-                    $xpath_attr='innerhtml';
-                    $normal_attr=false;
-                }
-            }
-            
-            $nodes = $xPath->query($xpath_q);
-            
-            foreach ($nodes as $node){
-                $val='';
-                if($normal_attr){
-                    
-                    $val.=$node->nodeValue;
-                }else{
-                    
-                    switch ($xpath_attr){
-                        case 'innerhtml':
-                            $nchilds  = $node->childNodes;
-                            foreach ($nchilds as $nchild){
-                                $val .= $nchild->ownerDocument->saveHTML($nchild);
-                            }
-                            break;
-                        case 'outerhtml':$val.=$node->ownerDocument->saveHTML($node);break;
-                        case 'text':
-                            
-                            
-                            $nchilds  = $node->childNodes;
-                            foreach ($nchilds as $nchild){
-                                $val .= $nchild->ownerDocument->saveHTML($nchild);
-                            }
-                            $val=$this->filter_html_tags($val, array('style','script','object'));
-                            $val=strip_tags($val);
-                            break;
-                    }
-                }
-                
-                if($xpathMulti){
-                    
-                    $vals[]=$val;
-                }else{
-                    
-                    $vals=$val;
-                    break;
-                }
-            }
-            
-            libxml_clear_errors();
-            
+            $strArgs[0].='：<a href="%s" target="_blank">%s</a>';
+            $strArgs[]=$url;
+            $strArgs[]=$url;
         }
         
-        if($xpathMulti){
+        if(!\util\Param::is_task_close_echo()){
             
-            init_array($vals);
-            if($configParams['xpath_multi_type']!='loop'){
-                
-                if($configParams['xpath_multi_type']=='list'){
-                    
-                    $vals=json_encode($vals);
-                }else{
-                    
-                    $multiStr=$configParams['xpath_multi_str'];
-                    if(!empty($multiStr)){
-                        $multiStr=str_replace(array('\r','\n'), array("\r","\n"), $multiStr);
-                    }
-                    $vals=implode($multiStr, $vals);
-                }
-            }
-        }else{
-            
-            if(is_array($vals)){
-                $vals=is_empty($vals[0],true)?'':$vals[0];
-            }
-        }
-        return $vals;
-    }
-    
-    public function rule_module_json_data($configParams,$jsonArrOrStr,$isSub=false,&$mergeData=null){
-        $jsonArr=array();
-        if(is_array($jsonArrOrStr)){
-            $jsonArr=&$jsonArrOrStr;
-        }else{
-            
-            $jsonArr=\util\Funcs::convert_html2json($jsonArrOrStr);
-            unset($jsonArrOrStr);
-        }
-        
-        if(!$isSub){
-            
-            $mergeData=array();
-        }
-        
-        $val='';
-        if(!empty($jsonArr)){
-            if(!empty($configParams['json'])){
-                
-                $jsonFmt=str_replace(array('"',"'",'[',' '), '', $configParams['json']);
-                $jsonFmt=str_replace(']','.',$jsonFmt);
-                $jsonFmt=trim($jsonFmt,'.');
-                $jsonFmt=explode('.', $jsonFmt);
-                $jsonFmt=array_values($jsonFmt);
-                if(!empty($jsonFmt)){
-                    
-                    $val=$jsonArr;
-                    $prevKey='';
-                    foreach ($jsonFmt as $i=>$key){
-                        if($prevKey=='*'){
-                            
-                            $newConfigParams=$configParams;
-                            $newConfigParams['json']=array_slice($jsonFmt, $i);
-                            $newConfigParams['json']=implode('.', $newConfigParams['json']);
-                            init_array($val);
-                            foreach ($val as $vk=>$vv){
-                                
-                                $val[$vk]=$this->rule_module_json_data($newConfigParams,$vv,true,$mergeData);
-                            }
-                            break;
-                        }else{
-                            if($key!='*'){
-                                
-                                if(!is_array($val)){
-                                    
-                                    $val=\util\Funcs::convert_html2json($val);
-                                }
-                                $val=is_array($val)?$val[$key]:'';
-                            }
-                            if(!empty($configParams['json_merge_data'])){
-                                
-                                if(!isset($jsonFmt[$i+1])){
-                                    
-                                    if($configParams['json_url_merge_data']){
-                                        
-                                        if(is_array($val)){
-                                            
-                                            foreach ($val as $vv){
-                                                $mergeData[]=$vv;
-                                            }
-                                        }else{
-                                            $mergeData[]=$val;
-                                        }
-                                    }else{
-                                        $mergeData[]=$val;
-                                    }
-                                }
-                            }
-                        }
-                        
-                        $prevKey=$key;
-                    }
-                }
-            }
-        }
-        if($isSub){
-            
-            return $val;
-        }else{
-            if(!empty($configParams['json_merge_data'])){
-                
-                $val=$mergeData;
-            }
-            return $this->rule_module_json_data_convert($val, $configParams);
-        }
-    }
-    public function rule_module_json_data_convert($val,$configParams){
-        if(is_array($val)){
-            
-            $json_arr=strtolower($configParams['json_arr']);
-            if(empty($json_arr)){
-                $json_arr='implode';
-            }
-            switch ($json_arr){
-                case 'implode':$arrImplode=str_replace(array('\r','\n'), array("\r","\n"), $configParams['json_arr_implode']);$val=\util\Funcs::array_implode($arrImplode,$val);break;
-                case 'jsonencode':$val=json_encode($val);break;
-                case 'serialize':$val=serialize($val);break;
-                case '_original_': break;
-            }
-        }
-        return $val;
-    }
-    
-    /**
-     * 拼接默认设置
-     * @param string $reg 规则
-     * @param string $merge 拼接字符串
-     */
-    public function set_merge_default($reg,$merge){
-        if(empty($merge)){
-            $merge='';
-            if(!empty($reg)){
-                
-                $merge=$this->rule_str_signs($reg);
-                $merge=implode('', $merge);
-            }
-        }
-        return $merge;
-    }
-    
-    
-    /*获取正则规则里的标签列表*/
-    public function rule_str_signs($rule,$returnIds=false){
-        $ruleSigns=array();
-        if(!empty($rule)){
-            static $rule_signs_list=array();
-            $key=md5($rule);
-            $ruleSigns=$rule_signs_list[$key];
-            if(!isset($ruleSigns)){
-                if(preg_match_all('/\<match(?P<id>\w*)\>/i', $rule, $ruleSigns)){
-                    
-                    foreach ($ruleSigns['id'] as $k=>$v){
-                        $ruleSigns[0][$k]=cp_sign('match',$v);
-                    }
-                    $rule_signs_list[$key]=$ruleSigns;
-                }else{
-                    $rule_signs_list[$key]=array();
-                }
+            $urlMsgLink=\util\Tools::echo_url_msg_link($url,true);
+            if($urlMsgLink&&is_array($urlMsgLink)){
+                $strArgs[0].=$urlMsgLink[0];
+                $strArgs[]=$urlMsgLink[1];
             }
         }
         
-        if(!$returnIds){
-            
-            if(is_array($ruleSigns[0])){
-                $ruleSigns=$ruleSigns[0];
-                $ruleSigns=array_unique($ruleSigns);
-                $ruleSigns=array_values($ruleSigns);
-            }else{
-                $ruleSigns=array();
-            }
-            return $ruleSigns;
-        }else{
-            
-            return $ruleSigns;
-        }
-        return $ruleSigns;
-    }
-    
-    /*获取拼接字符串中的标签*/
-    public function merge_str_signs($merge,$returnIds=false){
-        $mergeSigns=array();
-        if(!empty($merge)){
-            static $merge_signs_list=array();
-            $key=md5($merge);
-            $mergeSigns=$merge_signs_list[$key];
-            if(!isset($mergeSigns)){
-                
-                $signMatch=$this->sign_addslashes(cp_sign('match',':id'));
-                if(preg_match_all('/'.$signMatch.'/i',$merge,$mergeSigns)){
-                    
-                    $merge_signs_list[$key]=$mergeSigns;
-                }else{
-                    $merge_signs_list[$key]=array();
-                }
-            }
-        }
-        if(!$returnIds){
-            
-            if(is_array($mergeSigns[0])){
-                $mergeSigns=$mergeSigns[0];
-                $mergeSigns=array_unique($mergeSigns);
-                $mergeSigns=array_values($mergeSigns);
-            }else{
-                $mergeSigns=array();
-            }
-            return $mergeSigns;
-        }else{
-            
-            return $mergeSigns;
-        }
-    }
-    
-    /*排除内容网址的提示信息*/
-    public function exclude_url_msg($val){
-        try{
-            $val=json_decode($val,true);
-        }catch (\Exception $ex){
-            $val=array();
-        }
-        if(!is_array($val)){
-            $val=array();
-        }
-        $type=$val['type'];
-        $msg='排除网址';
-        if($type=='filter'){
-            
-            if(empty($val['filter'])){
-                $msg='字段:'.$val['field'].'»关键词过滤:未检测到关键词';
-            }else{
-                $msg='字段:'.$val['field'].'»关键词过滤:'.$val['filter'];
-            }
-        }elseif($type=='if'){
-            $msg='字段:'.$val['field'].'»条件';
-            
-            switch ($val['if']){
-                case '1':$msg.='假';break;
-                case '2':$msg.='真';break;
-                case '3':$msg.='假';break;
-                case '4':$msg.='真';break;
-            }
-            $msg.='(';
-            if(lang('?p_m_if_'.$val['if'])){
-                $msg.=lang('p_m_if_'.$val['if']);
-            }
-            if(!empty($val['cond'])){
-                $msg.='»'.$val['cond'];
-            }
-            $msg.=')';
-        }elseif(in_array($type,array('func','api','apiapp'))){
-            $msg='[字段:'.$val['field'].'] '.$val['msg'];
-        }
-        return $msg;
-    }
-    /*修正规则中的正则表达式*/
-    public function correct_reg_pattern($str){
-        if(isset($str)){
-            $str=preg_replace('/\\\*([\'\/])/', "\\\\$1",$str);
-            $str=$this->convert_sign_wildcard($str);
-        }else{
-            $str='';
-        }
-        return $str;
-    }
-    /*转换(*)通配符*/
-    public function convert_sign_wildcard($str){
-        return str_replace(lang('sign_wildcard'), '[\s\S]*?', $str);
-    }
-    /*转换[内容]标签*/
-    public function convert_sign_match($str){
-        $str=isset($str)?$str:'';
-        if($str){
-            $str=preg_replace('/\(\?<(content|match|nr)/i', '(?P<match', $str);
-            $sign_match=$this->sign_addslashes(cp_sign('match',':id'));
-            $str=preg_replace_callback('/(\={0,1})(\s*)([\'\"]{0,1})'.$sign_match.'\3/', function($matches){
-                $ruleStr=$matches[1].$matches[2].$matches[3].'(?P<match'.$matches['id'].'>';
-                if(!empty($matches[1])&&!empty($matches[3])){
-                    
-                    $ruleStr.='[^\<\>]*?)';
-                }else{
-                    $ruleStr.='[\s\S]*?)';
-                }
-                $ruleStr.=$matches[3];
-                return $ruleStr;
-            }, $str);
-        }
-        return $str;
-    }
-    
-    /*转换配置中的正则规则*/
-    public function convert_rule_module_config($ruleConfig,$prefix=''){
-        $ruleConfig['reg_'.$prefix.'rule']=$this->convert_sign_match($ruleConfig[$prefix.'rule']);
-        $ruleConfig['reg_'.$prefix.'rule']=$this->correct_reg_pattern($ruleConfig['reg_'.$prefix.'rule']);
-        
-        $ruleConfig['reg_'.$prefix.'rule_merge']=$this->set_merge_default($ruleConfig['reg_'.$prefix.'rule'], $ruleConfig[$prefix.'rule_merge']);
-        if(empty($ruleConfig['reg_'.$prefix.'rule_merge'])){
-            
-            $ruleConfig['reg_'.$prefix.'rule_merge']=cp_sign('match');
-        }
-        return $ruleConfig;
+        $this->echo_msg($strArgs,$color);
     }
     
     public function sign_addslashes($str){
         $str=str_replace(array('[',']'), array('\[','\]'), $str);
         return $str;
-    }
-    /*过滤html标签*/
-    public function filter_html_tags($content,$tags){
-        $tags=$this->clear_tags($tags);
-        $arr1=$arr2=array();
-        foreach ($tags as $tag){
-            $tag=strtolower($tag);
-            if($tag=='script'||$tag=='style'||$tag=='object'){
-                $arr1[$tag]=$tag;
-            }else{
-                $arr2[$tag]=$tag;
-            }
-        }
-        
-        if($arr1){
-            $content=preg_replace('/<('.implode('|', $arr1).')[^<>]*>[\s\S]*?<\/\1>/i', '', $content);
-        }
-        
-        if($arr2){
-            $content=preg_replace('/<[\/]*('.implode('|', $arr2).')[^<>]*>/i', '', $content);
-        }
-        return $content;
-    }
-    /*过滤标签*/
-    public function clear_tags($tags){
-        if(!is_array($tags)){
-            $tags = preg_replace('/[\s\,\x{ff0c}]+/u', ',', $tags);
-            $tags=explode(',', $tags);
-        }
-        if(!empty($tags)&&is_array($tags)){
-            
-            $tags=array_filter($tags);
-            $tags=array_unique($tags);
-            $tags=array_values($tags);
-        }else{
-            $tags=array();
-        }
-        return $tags;
-    }
-    /*保存数据处理时过滤配置参数*/
-    public function set_process($processList){
-        if(is_array($processList)){
-            $processList=trim_input_process(null,$processList);
-            foreach ($processList as $k=>$v){
-                init_array($v);
-                $v['module']=strtolower($v['module']);
-                if(!empty($v['title'])){
-                    $v['title']=str_replace(array("'",'"'),'',strip_tags($v['title']));
-                }
-                if('html'==$v['module']){
-                    $v['html_allow']=$this->clear_tags($v['html_allow']);
-                    $v['html_allow']=implode(',', $v['html_allow']);
-                    $v['html_filter']=$this->clear_tags($v['html_filter']);
-                    $v['html_filter']=implode(',', $v['html_filter']);
-                }elseif('filter'==$v['module']){
-                    if(preg_match_all('/[^\r\n]+/', $v['filter_list'],$filterList)){
-                        $filterList=array_filter(array_unique($filterList[0]));
-                        $v['filter_list']=implode("\r\n",$filterList);
-                    }
-                    $v['filter_list']=trim($v['filter_list']);
-                }elseif('api'==$v['module']){
-                    
-                    init_array($v['api_params']);
-                    \util\Funcs::filter_key_val_list3($v['api_params']['name'],$v['api_params']['val'],$v['api_params']['addon']);
-                    
-                    init_array($v['api_headers']);
-                    \util\Funcs::filter_key_val_list3($v['api_headers']['name'],$v['api_headers']['val'],$v['api_headers']['addon']);
-                }elseif('tool'==$v['module']){
-                    init_array($v['tool_list']);
-                }elseif('if'==$v['module']){
-                    init_array($v['if_addon']);
-                    \util\Funcs::filter_key_val_list5($v['if_cond'],$v['if_logic'],$v['if_val'],$v['if_addon']['func'],$v['if_addon']['turn']);
-                }elseif('download'==$v['module']){
-                    $v['download_file_tag']=\skycaiji\admin\model\Config::process_tag_attr($v['download_file_tag']);
-                }
-                $processList[$k]=$v;
-            }
-            $processList=array_values($processList);
-        }
-        init_array($processList);
-        return $processList;
     }
 
     /*保存页面配置时处理数据*/
@@ -777,7 +163,7 @@ class CpatternBase extends CollectBase{
             $pageConfig['reg_area_merge']=$this->set_merge_default($pageConfig['reg_area'], $pageConfig['area_merge']);
             if(empty($pageConfig['reg_area_merge'])){
                 
-                $pageConfig['reg_area_merge']=cp_sign('match');
+                $pageConfig['reg_area_merge']=coll_sign('match');
             }
         }else{
             
@@ -831,7 +217,7 @@ class CpatternBase extends CollectBase{
             }
             if(empty($pageConfig['reg_url_merge'])){
                 
-                $pageConfig['reg_url_merge']=cp_sign('match');
+                $pageConfig['reg_url_merge']=coll_sign('match');
             }
         }elseif('xpath'==$pageConfig['url_rule_module']){
             if($urlRequired){
@@ -932,7 +318,7 @@ class CpatternBase extends CollectBase{
                 if($whole){
                     
                     foreach ($mergeSignsIds as $v){
-                        $sign=$keyIsMatch?('match'.$v):cp_sign('match',$v);
+                        $sign=$keyIsMatch?('match'.$v):coll_sign('match',$v);
                         if($v!=''){
                             
                             $unknownSigns[$sign]=$sign;
@@ -946,14 +332,14 @@ class CpatternBase extends CollectBase{
                 }else{
                     
                     foreach ($mergeSignsIds as $v){
-                        $sign=$keyIsMatch?('match'.$v):cp_sign('match',$v);
+                        $sign=$keyIsMatch?('match'.$v):coll_sign('match',$v);
                         $unknownSigns[$sign]=$sign;
                     }
                 }
             }else{
                 
                 foreach ($mergeSignsIds as $v){
-                    $sign=$keyIsMatch?('match'.$v):cp_sign('match',$v);
+                    $sign=$keyIsMatch?('match'.$v):coll_sign('match',$v);
                     if(!in_array($v, $ruleSignsIds)){
                         
                         $unknownSigns[$sign]=$sign;
@@ -1069,100 +455,6 @@ class CpatternBase extends CollectBase{
         }
         
         return is_array($data)?$data:array();
-    }
-    
-    /*数据处理:翻译*/
-    public function execute_translate($q,$from,$to){
-        static $retryCur=0;
-        $transConf=g_sc_c('translate');
-        init_array($transConf);
-        $transConf['interval']=intval($transConf['interval']);
-        $transConf['wait']=intval($transConf['wait']);
-        $transConf['retry']=intval($transConf['retry']);
-        
-        $retryMax=$transConf['retry'];
-        $retryParams=null;
-        if($retryMax>0){
-            
-            $retryParams=array(0=>$q,1=>$from,2=>$to);
-        }
-        
-        $result=\util\Translator::translate($q, $from, $to,true);
-        
-        if(is_array($result)){
-            
-            
-            $this->collect_sleep($transConf['interval'],true);
-            
-            if(!empty($result['success'])){
-                
-                $retryCur=0;
-                $result=$result['data'];
-            }else{
-                
-                $tips=($result['error']?('：'.$result['error']):'');
-                
-                $this->retry_first_echo($retryCur,'数据处理»翻译失败'.$tips);
-                
-                $this->collect_sleep($transConf['wait']);
-                
-                if($this->retry_do_func($retryCur,$retryMax,'翻译无效','翻译无效'.$tips)){
-                    
-                    return $this->execute_translate($retryParams[0],$retryParams[1],$retryParams[2]);
-                }
-                
-                $result='';
-            }
-        }
-        return $result;
-    }
-    
-    /**
-     * 执行数据处理»使用函数
-     * @param string $module 模块
-     * @param string $funcName 函数/方法
-     * @param string $defaultVal 默认值
-     * @param string $paramsStr 输入的参数（有换行符）
-     * @param array $paramValList 需要替换的数据列表
-     * @param string $errorTips 错误提示信息
-     */
-    public function execute_plugin_func($module,$funcName,$defaultVal,$paramsStr,$paramValList=null,$errorTips=null,$returnAll=false){
-        $return=model('FuncApp')->execute_func($module,$funcName,$defaultVal,$paramsStr,$paramValList);
-        if(empty($return['success'])&&!empty($return['msg'])){
-            
-            $errorTips=$errorTips?$errorTips:'';
-            $return['msg']=htmlspecialchars($return['msg'].$errorTips);
-            $this->echo_error($return['msg']);
-        }
-        if($returnAll){
-            return $return;
-        }else{
-            return $return['data'];
-        }
-    }
-    /**
-     * 执行数据处理»接口函数
-     * @param string $module 模块
-     * @param string $appName 接口app
-     * @param string $fieldVal 字段值
-     * @param string $appConfig 接口配置
-     * @param array $paramValList 需要替换的数据列表
-     * @param string $errorTips 错误提示信息
-     * @param bool $returnAll 返回所有信息
-     */
-    public function execute_plugin_apiapp($module,$appName,$fieldVal,$appConfig,$paramValList=null,$errorTips=null,$returnAll=false){
-        $return=model('ApiApp')->execute_app($module,$appName,$fieldVal,$appConfig,$paramValList);
-        if(empty($return['success'])&&!empty($return['msg'])){
-            
-            $errorTips=$errorTips?$errorTips:'';
-            $return['msg']=htmlspecialchars($return['msg'].$errorTips);
-            $this->echo_error($return['msg']);
-        }
-        if($returnAll){
-            return $return;
-        }else{
-            return $return['data'];
-        }
     }
 }
 ?>

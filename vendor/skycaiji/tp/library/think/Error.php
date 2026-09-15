@@ -49,7 +49,11 @@ class Error
         if (IS_CLI) {
             $handler->renderForConsole(new ConsoleOutput, $e);
         } else {
-            $handler->render($e)->send();
+            $resp=$handler->render($e);
+            if($resp){
+                //[修改]有实例执行send否则报null错误
+                $resp->send();
+            }
         }
     }
 

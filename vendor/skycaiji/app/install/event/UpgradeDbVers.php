@@ -521,5 +521,28 @@ EOF;
 	        db()->execute($addTable);
 	    }
 	}
+	
+	public function upgrade_db_to_2_9(){
+	    
+	    $dbTables=db()->getConnection()->getTables(config('database.database'));
+	    init_array($dbTables);
+	    $dbPrefix=config('database.prefix');
+	    
+	    $allowTbs=array('api_app','app','cache','collected','collected_info','collector','config','dataapi','dataset','func_app','provider','proxy_group','proxy_ip','release','release_app','rule','task','task_timer','taskgroup','user','usergroup');
+	    foreach ($allowTbs as $k=>$v){
+	        $allowTbs[$k]=strtolower($dbPrefix.$v);
+	    }
+	    foreach ($dbTables as $k=>$v){
+	        $v=strtolower($v);
+	        if(!in_array($v,$allowTbs)&&stripos($v,$dbPrefix.'cache_')!==0){
+	            
+	            unset($dbTables[$k]);
+	        }
+	    }
+	    $dbTables=array_values($dbTables);
+	    foreach ($dbTables as $dbTable){
+	        \util\Db::to_innodb($dbTable);
+	    }
+	}
 }
 ?>

@@ -146,13 +146,15 @@
 					{foreach $tbFields[$dbTable['table']] as $field}
 					{if isset($dbTable['field'][$field['name']])}
 					<tr>
-						<td {if $field['comment']}style="cursor:help;" title="{$field['comment']|htmlspecialchars}"{/if}>
+						<td>
+							<span{if $field['comment']} data-toggle="popover" data-content="{$field['comment']|htmlspecialchars}" data-html="true" data-trigger="hover" data-placement="right"{/if}>
 							{$field['name']}
 							{if $field['comment']}
-							<span style="font-size:10px;color:#ccc;" class="glyphicon glyphicon-question-sign"></span>
+							<em style="font-size:10px;color:#ccc;" class="glyphicon glyphicon-question-sign"></em>
 							{/if}
+							</span>
 						</td>
-						<td>
+						<td class="db-type">
 							{$field['type']}
 							{$field['primary']?' &nbsp; 主键':''}
 							{$field['autoinc']?' &nbsp; 自增':''}
@@ -173,13 +175,15 @@
 					{foreach $tbFields[$dbTable['table']] as $field}
 					{if !isset($dbTable['field'][$field['name']])}
 					<tr>
-						<td {if $field['comment']}style="cursor:help;" title="{$field['comment']|htmlspecialchars}"{/if}>
+						<td>
+							<span{if $field['comment']} data-toggle="popover" data-content="{$field['comment']|htmlspecialchars}" data-html="true" data-trigger="hover" data-placement="right"{/if}>
 							{$field['name']}
 							{if $field['comment']}
-							<span style="font-size:10px;color:#ccc;" class="glyphicon glyphicon-question-sign"></span>
+							<em style="font-size:10px;color:#ccc;" class="glyphicon glyphicon-question-sign"></em>
 							{/if}
+							</span>
 						</td>
-						<td>
+						<td class="db-type">
 							{$field['type']}
 							{$field['primary']?' &nbsp; 主键':''}
 							{$field['autoinc']?' &nbsp; 自增':''}

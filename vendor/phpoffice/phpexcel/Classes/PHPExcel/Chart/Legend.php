@@ -75,8 +75,12 @@ class PHPExcel_Chart_Legend
     /**
      *    Create a new PHPExcel_Chart_Legend
      */
-    public function __construct($position = self::POSITION_RIGHT, PHPExcel_Chart_Layout $layout = null, $overlay = false)
+    public function __construct($position = self::POSITION_RIGHT, $layout = null, $overlay = false)
     {
+if ($layout !== null && !$layout instanceof PHPExcel_Chart_Layout) {
+    throw new \InvalidArgumentException('参数$layout必须是PHPExcel_Chart_Layout实例');//[修改]兼容类型约束
+}
+
         $this->setPosition($position);
         $this->layout = $layout;
         $this->setOverlay($overlay);

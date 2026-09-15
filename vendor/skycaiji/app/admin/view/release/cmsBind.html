@@ -18,8 +18,8 @@
 </div>
 </div>
 {else /}
-{$cmsError}
+	{if $cmsError}<div>{$cmsError}</div>{/if}
 {/if}
 {else /}
-没有“{$cmsName}”相关的发布插件，在<a href="{:\\skycaiji\\admin\\model\\Provider::create_store_url(null,'client/go/cms',array('q'=>$cmsName,'clientinfo'=>g_sc('clientinfo')))}" target="_blank">云平台</a>中查找
+	没有“{$cmsName}”相关的发布插件，在<a href="{:\\skycaiji\\admin\\model\\Provider::create_store_url(null,'client/go/cms',array('q'=>$cmsName,'clientinfo'=>g_sc('clientinfo')))}" target="_blank">云平台</a>中查找
 {/if}

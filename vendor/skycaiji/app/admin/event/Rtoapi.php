@@ -216,7 +216,7 @@ class Rtoapi extends Release{
             $retryMax=intval($this->config['toapi']['retry']);
             static $cpatternBase=null;
             if(!isset($cpatternBase)){
-                $cpatternBase=controller('CpatternBase','event');
+                $cpatternBase=\util\Tools::controller('CpatternBase','event');
             }
             foreach ($collFieldsList as $collFieldsKey=>$collFields){
                 
@@ -226,8 +226,8 @@ class Rtoapi extends Release{
                 $collFields=$collFields['fields'];
                 $this->init_download_config($this->task,$collFields);
                 
-                $postData=$this->_replace_fields($paramVals,$collFields);
-                $url=$this->_replace_fields($apiUrl,$collFields);
+                $postData=$this->txt_replace_fields($paramVals,$collFields);
+                $url=$this->txt_replace_fields($apiUrl,$collFields);
                 $url=\util\Funcs::url_auto_encode($url, $apiCharset);
                 
                 if($apiConfig['type']=='post'){
@@ -239,7 +239,7 @@ class Rtoapi extends Release{
                     $postData=null;
                 }
                 
-                $headerData=$this->_replace_fields($headerVals,$collFields);
+                $headerData=$this->txt_replace_fields($headerVals,$collFields);
                 
                 $retryCur=0;
                 do{
@@ -247,7 +247,7 @@ class Rtoapi extends Release{
                     $htmlInfo=get_html($url,$headerData,array('timeout'=>60,'return_body'=>1,'curlopts'=>$curlopts),$apiCharset,$postData,true);
                     init_array($htmlInfo);
                     $html=$htmlInfo['html']?:'';
-                    $this->collect_sleep($this->config['toapi']['interval'],true);
+                    $this->collect_sleep(g_sc('collect_task_id'),$this->config['toapi']['interval'],true);
                     $returnData=array('id'=>'','target'=>'','desc'=>'','error'=>'');
                     
                     if(empty($apiResponse['module'])){
@@ -302,7 +302,7 @@ class Rtoapi extends Release{
                         
                         $this->retry_first_echo($retryCur,'发布接口调用失败',null,$htmlInfo);
                         
-                        $this->collect_sleep($retryWait);
+                        $this->collect_sleep(g_sc('collect_task_id'),$retryWait);
                         
                         if($this->retry_do_func($retryCur,$retryMax,'发布接口无效')){
                             $doWhile=true;
@@ -315,6 +315,9 @@ class Rtoapi extends Release{
                 
                 $this->record_collected($contUrl,$returnData,$this->release,array('title'=>$contTitle,'content'=>$contContent));
                 
+                $this->exportEnd($returnData,$collFieldsList[$collFieldsKey]);
+                
+                
                 if($testToapi){
                     $html='<form id="win_form_preview" method="post" target="_blank" action="'.url('tool/preview_data').'">'.html_usertoken()
                         .'<p>发布接口响应内容：<a href="javascript:;" onclick="document.getElementById(\'win_form_preview\').submit();">解析</a></p>'
@@ -322,25 +325,9 @@ class Rtoapi extends Release{
                     $this->echo_msg($html,'black');
                 }
                 
-                
-                unset($collFieldsList[$collFieldsKey]['fields']);
             }
         }
         return $addedNum;
-    }
-    
-    private function _replace_fields($data,$collFields){
-        if(is_array($data)){
-            foreach ($data as $k=>$v){
-                $data[$k]=$this->_replace_fields($v,$collFields);
-            }
-        }else{
-            $data=preg_replace_callback('/\[\x{91c7}\x{96c6}\x{5b57}\x{6bb5}\:(.+?)\]/u',function($match)use($collFields){
-                $match=$match[1];
-                return $this->get_field_val($collFields[$match]);
-            },$data);
-        }
-        return $data;
     }
 }
 ?>

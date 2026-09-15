@@ -40,8 +40,12 @@ class PHPExcel_RichText implements PHPExcel_IComparable
      * @param PHPExcel_Cell $pCell
      * @throws PHPExcel_Exception
      */
-    public function __construct(PHPExcel_Cell $pCell = null)
+    public function __construct($pCell = null)
     {
+if ($pCell !== null && !$pCell instanceof PHPExcel_Cell) {
+    throw new \InvalidArgumentException('参数$pCell必须是PHPExcel_Cell实例');//[修改]兼容类型约束
+}
+
         // Initialise variables
         $this->richTextElements = array();
 
@@ -66,8 +70,12 @@ class PHPExcel_RichText implements PHPExcel_IComparable
      * @throws PHPExcel_Exception
      * @return PHPExcel_RichText
      */
-    public function addText(PHPExcel_RichText_ITextElement $pText = null)
+    public function addText($pText = null)
     {
+if ($pText !== null && !$pText instanceof PHPExcel_RichText_ITextElement) {
+    throw new \InvalidArgumentException('参数$pText必须是PHPExcel_RichText_ITextElement实例');//[修改]兼容类型约束
+}
+
         $this->richTextElements[] = $pText;
         return $this;
     }

@@ -12,8 +12,56 @@
 namespace skycaiji\admin\model;
 
 class Collector extends \skycaiji\common\model\BaseModel{
-	
+    
+    public function cacheByTaskData($taskData,$clear=false){
+        static $caches=array();
+        $data=array();
+        $key=$taskData['id'].'_'.$taskData['module'];
+        if(isset($caches[$key])){
+            $data=$caches[$key];
+        }else{
+            $data=$this->getByTaskData($taskData);
+            $caches[$key]=$data;
+        }
+        if($clear){
+            
+            unset($caches[$key]);
+        }
+        return $data;
+    }
+    
+    public function getByTaskId($taskId,$taskModule){
+        $data=$this->where(array('task_id'=>$taskId,'module'=>$taskModule))->find();
+        $data=$this->convert_data($data);
+        return $data;
+    }
+    
+    public function convert_data($data){
+        if(is_object($data)){
+            $data=$data->toArray();
+        }
+        if($data&&is_array($data)){
+            if(!is_array($data['config'])){
+                $data['config']=safe_unserialize($data['config']);
+                init_array($data['config']);
+            }
+        }
+        init_array($data);
+        return $data;
+    }
+    
+    public function getByTaskData($taskData){
+        $data=array();
+        if($taskData){
+            $data=$this->getByTaskId($taskData['id'], $taskData['module']);
+        }
+        return $data;
+    }
+    
 	public function add_new($data){
+	    if(isset($data['config'])&&is_array($data['config'])){
+	        $data['config']=serialize($data['config']);
+	    }
 	    $data['addtime']=time();
 	    $data['uptime']=time();
 		$this->isUpdate(false)->allowField(true)->save($data);
@@ -21,6 +69,9 @@ class Collector extends \skycaiji\common\model\BaseModel{
 	}
 	
 	public function edit_by_id($id,$data){
+	    if(isset($data['config'])&&is_array($data['config'])){
+	        $data['config']=serialize($data['config']);
+	    }
 		unset($data['addtime']);
 		$data['uptime']=time();
 		
@@ -125,6 +176,18 @@ class Collector extends \skycaiji\common\model\BaseModel{
 	        }
 	    }
 	    return $contentSigns;
+	}
+	
+	public function field_names($collData){
+	    $names=array();
+	    if($collData&&is_array($collData['config'])){
+            if(is_array($collData['config']['field_list'])){
+                foreach ($collData['config']['field_list'] as $field){
+                    $names[]=$field['name'];
+                }
+            }
+	    }
+	    return $names;
 	}
 	
 	private function _compatible_processes($processes){
@@ -458,7 +521,7 @@ class Collector extends \skycaiji\common\model\BaseModel{
 	            }
 	            $allParams=http_build_query($allParams);
 	            $url=url('admin/index/collect_process?'.$allParams,null,false,true);
-	            $chList[$pkey]=get_html($url,null,array('return_curl'=>1,'timeout'=>10));
+	            $chList[$pkey]=get_html($url,null,array('return_curl'=>1,'timeout'=>20));
 	            curl_multi_add_handle($mh, $chList[$pkey]);
 	        }
 	        
@@ -487,16 +550,160 @@ class Collector extends \skycaiji\common\model\BaseModel{
 	                        $chCode='';
 	                    }
 	                }else{
-	                    $chCode='服务器'.$chCode.'错误，请<a href="'.url('tool/check_curl_multi').'" target="_blank">'.lang('check_curl_multi').'</a>';
+	                    $chCode='服务器'.$chCode.'错误 <a href="'.url('tool/check_curl_multi').'" target="_blank">请'.lang('check_curl_multi').'</a>';
 	                }
 	                if($chCode){
-	                    write_dir_file($logFilename,$chCode111.'::http_error='.$chCode);
+	                    $chCode='<div style="margin:10px 0;color:red;">'.$chCode.'</div>';
+	                    $body=curl_multi_getcontent($ch);
+	                    if($body){
+	                        $headerPos=strpos($body, "\r\n\r\n");
+	                        if($headerPos!==false){
+	                            $headerPos=intval($headerPos)+strlen("\r\n\r\n");
+	                        }
+	                        $headerSize = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
+	                        $headerSize=intval($headerSize);
+	                        if($headerSize<$headerPos){
+	                            $headerSize=$headerPos;
+	                        }
+	                        $body=substr($body, $headerSize);
+	                    }
+	                    write_dir_file($logFilename,$chCode.$body);
 	                }
 	            }
 	            curl_multi_remove_handle($mh,$ch);
 	        }
 	        curl_multi_close($mh);
 	    }
+	}
+	
+	
+	public static function cont_url_exists($contUrlMd5){
+	    $filename=self::cont_url_filename($contUrlMd5,true);
+	    return file_exists($filename)?true:false;
+	}
+	
+	public static function cont_url_collect($contUrlMd5){
+	    $filename=self::cont_url_filename($contUrlMd5,true);
+	    write_dir_file($filename,1);
+	}
+	
+	public static function cont_url_clear($days=10){
+	    $cacheTime=cache('collector_cont_url_clear');
+	    $now=time();
+	    if(empty($cacheTime)||abs($now-$cacheTime)>3600){
+	        
+	        cache('collector_cont_url_clear',$now);
+	        
+	        if($days<=0){
+	            $days=10;
+	        }
+	        $days=$days*3600*24;
+	        
+	        $path=config('runtime_path').'/cont_url';
+	        $subPaths=is_dir($path)?scandir($path):array();
+	        if($subPaths){
+    	        foreach ($subPaths as $subPath){
+    	            if ($subPath === '.' || $subPath === '..') {
+    	                continue;
+    	            }
+    	            $subPath=$path.DIRECTORY_SEPARATOR.$subPath;
+    	            if(is_dir($subPath)){
+    	                $dh=opendir($subPath);
+    	                if($dh){
+    	                    while (false !== ($file = readdir($dh))) {
+    	                        if ($file === '.' || $file === '..') {
+    	                            continue;
+    	                        }
+    	                        $filename = $subPath . DIRECTORY_SEPARATOR . $file;
+    	                        if(is_file($filename)){
+    	                            $ftime = filemtime($filename);
+    	                            if (($now - $ftime) > $days) {
+    	                                
+    	                                @unlink($filename);
+    	                            }
+    	                        }
+    	                    }
+    	                    closedir($dh);
+    	                }
+    	            }
+    	        }
+	        }
+	    }
+	}
+	
+	
+	public static function cont_url_remove($contUrl,$isMd5=false){
+	    if(is_array($contUrl)){
+	        
+	        foreach ($contUrl as $v){
+	            $filename=self::cont_url_filename($v,$isMd5);
+	            if(file_exists($filename)){
+	                @unlink($filename);
+	            }
+	        }
+	    }else{
+	        
+	        $filename=self::cont_url_filename($contUrl,$isMd5);
+	        if(file_exists($filename)){
+	            @unlink($filename);
+	        }
+	    }
+	}
+	
+	public static function cont_url_filename($contUrl,$isMd5=false){
+	    $key=$isMd5?$contUrl:md5($contUrl);
+	    $filename=config('runtime_path').'/cont_url/'.substr($key,0,2).'/'.substr($key,2);
+	    return $filename;
+	}
+	
+	
+	public static function clear_collect_data($days=7){
+	    if($days<=0){
+	        $days=7;
+	    }
+	    
+	    $cacheTimeout=time()-(3600*24*$days);
+	    CacheModel::getInstance('source_url')->db()->where('dateline','<',$cacheTimeout)->delete();
+	    CacheModel::getInstance('level_url')->db()->where('dateline','<',$cacheTimeout)->delete();
+	    CacheModel::getInstance('collecting')->db()->where('dateline','<',$cacheTimeout)->delete();
+	    
+	    \skycaiji\admin\model\Collector::cont_url_clear($days);
+	}
+	
+	
+	public function datahub_fields($dhTids,$getInfo=false){
+	    if(!is_array($dhTids)){
+	        
+	        $dhTids=array(intval($dhTids));
+	    }
+	    $dfields=array();
+	    if($dhTids){
+	        $tasks=model('Task')->where('id','in',$dhTids)->column('*','id');
+	        foreach ($tasks as $task){
+	            $coll=$this->getByTaskData($task);
+	            if($coll){
+	                $coll['config']=$this->compatible_config($coll['config']);
+	                $dfields=array_merge($dfields,$this->field_names($coll));
+	                $dfields=array_unique($dfields);
+	                $dfields=array_values($dfields);
+	            }
+	        }
+	    }
+	    init_array($dfields);
+	    if($getInfo){
+	        
+	        $str=implode(', ',$dfields);
+	        $key=$dfields;
+	        sort($key);
+	        $key=implode(',',$key);
+	        $key=md5($key);
+	        $dfields=array(
+	            'list'=>$dfields,
+	            'str'=>$str,
+	            'key'=>$key
+	        );
+	    }
+	    return $dfields;
 	}
 }
 

@@ -29,14 +29,14 @@
 	</div>
     <div class="form-group">
         <label>{$Think.lang.task_module}</label>
-        <div class="input-group" style="width:100%;">
+        <div class="input-group" style="width:100%;" id="task_modules">
 	        <select name="module" class="form-control">
 	        	{foreach name="Think.config.allow_coll_modules" item="cmodule"}
 	           	<option value="{$cmodule}">{:lang('task_module_'.$cmodule)}</option>
 	        	{/foreach}
 	        </select>
-	        <div class="input-group-btn dropdown">
-			  <button class="btn btn-default dropdown-toggle" type="button" id="btn_import_rule" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+	        <div class="input-group-btn dropdown" data-module="pattern">
+			  <button class="btn btn-default dropdown-toggle mrl_0 btn-import-rule" type="button" id="btn_import_rule" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
 			  	导入规则 <span class="caret"></span>
 			  </button>
 			  <ul class="dropdown-menu dropdown-menu-right dropdown-import-rule" aria-labelledby="btn_import_rule">
@@ -45,7 +45,23 @@
 			  	<li><a href="javascript:;" onclick="windowModal('导入规则会覆盖该任务的采集器设置，且不可恢复','{:url("mystore/upload?type=rule&from_task=1")}');">导入规则文件</a></li>
 			  </ul>
 			</div>
+	        <div class="input-group-btn" data-module="datahub" style="display:none;">
+				<button class="btn btn-default mrl_0 btn-import-rule" type="button" onclick="windowModal('该操作会覆盖任务的采集器设置，且不可恢复','{:url("collector/list?module=datahub&tpl=task")}');">导入其它任务采集器设置</button>
+			</div>
+	        <div class="input-group-btn" data-module="dataset" style="display:none;">
+				<button class="btn btn-default mrl_0 btn-import-rule" type="button" onclick="windowModal('该操作会覆盖任务的采集器设置，且不可恢复','{:url("collector/list?module=dataset&tpl=task")}');">导入其它任务采集器设置</button>
+			</div>
 		</div>
+    </div>
+    <div class="form-group">
+        <label>{$Think.lang.cdatahub}</label>
+        <div class="input-group">
+	        <label class="radio-inline"><input type="radio" name="config[datahub][open]" value="1">开启</label>
+			<label class="radio-inline"><input type="radio" name="config[datahub][open]" value="0" checked="checked">关闭</label>
+        </div>
+        <p class="help-block">
+        	发布成功后将采集到的数据保存到<a href="{:url('datahub/list')}" target="_blank">{$Think.lang.cdatahub}</a>中，其它任务可在“任务设置”中选择“采集模块»{$Think.lang.task_module_datahub}”直接调取数据用于发布{if $taskData&&$taskData['config']&&$taskData['config']['datahub']&&$taskData['config']['datahub']['open']}，<a href="{:url('datahub/list?task_id='.$taskData['id'])}" target="_blank">查看该任务的{$Think.lang.cdatahub}</a>{/if}
+        </p>
     </div>
     <div class="form-group">
         <label>{$Think.lang.task_auto}</label>
@@ -165,6 +181,11 @@
 					<td class="set" style="vertical-align:middle;"><textarea class="form-control input-sm" rows="1" data-name="config[variables]" placeholder="留空使用默认值"></textarea></td>
 				</tr>
 			</tbody>
+			<tfoot style="display:none;color:#999;">
+				<tr>
+					<td colspan="3"></td>
+				</tr>
+			</tfoot>
 			</table>
 		</div>
 	</div>
@@ -219,13 +240,15 @@
 		    <div class="form-group">
 		        <label>接口网址</label>
 		    	<div>{$singleApiUrl}</div>
+		    	{if $taskData['module']=='pattern'}
 		    	<p class="help-block">
 		    		传入的网址参数必须经过url编码
 		    		{if !empty($singleIptMore)}
-					<br>内容页网址必填，其他网址选填（输入其他网址是因为{:cp_sign('match','N')}或字段调用了该页面）为确保数据完整性建议全部填写
+					<br>内容页网址必填，其他网址选填（输入其他网址是因为{:coll_sign('match','N')}或字段调用了该页面）为确保数据完整性建议全部填写
 					{/if}
 					<br>{:lang('tips_url_param_variable')}
 		    	</p>
+				{/if}
 		    </div>
 		    {/if}
 		    {/if}
@@ -261,7 +284,7 @@
 		        <p class="help-block">留空使用全局设置，可设为0</p>
 		    </div>
 		    <div class="form-group">
-		        <label>不同任务采集同一网址</label>
+		        <label>不同任务采集同一地址</label>
 		        <div class="input-group">
 			        <label class="radio-inline"><input type="radio" name="config[same_url]" value="" checked="checked">
 						全局设置：{$gConfig['same_url']}
@@ -335,7 +358,7 @@
 			    </div>
 		    </div>
 		</div>
-    	<div class="panel-body{$gConfig['download_img']?'':' box-not-enable'}" id="config_download_img" style="border-top:solid 1px #ddd;">
+    	<div data-module="pattern" class="panel-body{$gConfig['download_img']?'':' box-not-enable'}" id="config_download_img" style="border-top:solid 1px #ddd;">
 		    <div class="form-group" style="margin-bottom:0;">
 		        <label>图片本地化</label>
 		        <div class="input-group">
@@ -497,7 +520,7 @@
 				</div>
 			</div>
     	</div>
-    	<div class="panel-body{$gConfig['download_file']?'':' box-not-enable'}" id="config_download_file" style="border-top:solid 1px #ddd;">
+    	<div data-module="pattern" class="panel-body{$gConfig['download_file']?'':' box-not-enable'}" id="config_download_file" style="border-top:solid 1px #ddd;">
 			<div class="form-group" style="margin-bottom:0;">
 				<label>文件本地化</label>
 				<div class="input-group">

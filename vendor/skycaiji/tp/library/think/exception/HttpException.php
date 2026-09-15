@@ -16,8 +16,12 @@ class HttpException extends \RuntimeException
     private $statusCode;
     private $headers;
 
-    public function __construct($statusCode, $message = null, \Exception $previous = null, array $headers = [], $code = 0)
+    public function __construct($statusCode, $message = null, $previous = null, array $headers = [], $code = 0)
     {
+        if ($previous !== null && !$previous instanceof \Exception) {
+            throw new \InvalidArgumentException('参数$previous必须是Exception实例');//[修改]兼容类型约束
+        }
+        
         $this->statusCode = $statusCode;
         $this->headers    = $headers;
 

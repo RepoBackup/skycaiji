@@ -1,0 +1,14 @@
+{if $taskNames}
+<ul class="row" id="win_c_d_datahubs">
+{foreach $taskNames as $taskId=>$taskName}
+<li class="col-xs-6" style="padding:3px 15px 3px 0;{if $dhTaskId==$taskId}font-weight:bold;{/if}">
+	<a href="javascript:;" data-datahub-tid="{$taskId}">{$taskName}</a>
+</li>
+{/foreach}
+</ul>
+<script type="text/javascript">
+c_datahub.init_datahub('{$dhObjid}',{$taskNames|json_encode},{$taskFields|json_encode});
+</script>
+{else/}
+<div>没有{$Think.lang.cdatahub}，可在其他任务的“任务设置”中开启“{$Think.lang.cdatahub}”功能并发布数据后此处才会显示</div>
+{/if}

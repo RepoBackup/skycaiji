@@ -143,8 +143,15 @@ class PHPExcel_Writer_Excel2007_Worksheet extends PHPExcel_Writer_Excel2007_Writ
      * @param    PHPExcel_Worksheet                $pSheet            Worksheet
      * @throws    PHPExcel_Writer_Exception
      */
-    private function writeSheetPr(PHPExcel_Shared_XMLWriter $objWriter = null, PHPExcel_Worksheet $pSheet = null)
+    private function writeSheetPr($objWriter = null, $pSheet = null)
     {
+if ($objWriter !== null && !$objWriter instanceof PHPExcel_Shared_XMLWriter) {
+    throw new \InvalidArgumentException('参数$objWriter必须是PHPExcel_Shared_XMLWriter实例');//[修改]兼容类型约束
+}
+if ($pSheet !== null && !$pSheet instanceof PHPExcel_Worksheet) {
+    throw new \InvalidArgumentException('参数$pSheet必须是PHPExcel_Worksheet实例');//[修改]兼容类型约束
+}
+
         // sheetPr
         $objWriter->startElement('sheetPr');
         //$objWriter->writeAttribute('codeName',        $pSheet->getTitle());
@@ -190,8 +197,15 @@ class PHPExcel_Writer_Excel2007_Worksheet extends PHPExcel_Writer_Excel2007_Writ
      * @param    PHPExcel_Worksheet            $pSheet            Worksheet
      * @throws    PHPExcel_Writer_Exception
      */
-    private function writeDimension(PHPExcel_Shared_XMLWriter $objWriter = null, PHPExcel_Worksheet $pSheet = null)
+    private function writeDimension($objWriter = null, $pSheet = null)
     {
+if ($objWriter !== null && !$objWriter instanceof PHPExcel_Shared_XMLWriter) {
+    throw new \InvalidArgumentException('参数$objWriter必须是PHPExcel_Shared_XMLWriter实例');//[修改]兼容类型约束
+}
+if ($pSheet !== null && !$pSheet instanceof PHPExcel_Worksheet) {
+    throw new \InvalidArgumentException('参数$pSheet必须是PHPExcel_Worksheet实例');//[修改]兼容类型约束
+}
+
         // dimension
         $objWriter->startElement('dimension');
         $objWriter->writeAttribute('ref', $pSheet->calculateWorksheetDimension());
@@ -205,8 +219,15 @@ class PHPExcel_Writer_Excel2007_Worksheet extends PHPExcel_Writer_Excel2007_Writ
      * @param    PHPExcel_Worksheet                    $pSheet            Worksheet
      * @throws    PHPExcel_Writer_Exception
      */
-    private function writeSheetViews(PHPExcel_Shared_XMLWriter $objWriter = null, PHPExcel_Worksheet $pSheet = null)
+    private function writeSheetViews($objWriter = null, $pSheet = null)
     {
+if ($objWriter !== null && !$objWriter instanceof PHPExcel_Shared_XMLWriter) {
+    throw new \InvalidArgumentException('参数$objWriter必须是PHPExcel_Shared_XMLWriter实例');//[修改]兼容类型约束
+}
+if ($pSheet !== null && !$pSheet instanceof PHPExcel_Worksheet) {
+    throw new \InvalidArgumentException('参数$pSheet必须是PHPExcel_Worksheet实例');//[修改]兼容类型约束
+}
+
         // sheetViews
         $objWriter->startElement('sheetViews');
 
@@ -317,8 +338,15 @@ class PHPExcel_Writer_Excel2007_Worksheet extends PHPExcel_Writer_Excel2007_Writ
      * @param    PHPExcel_Worksheet          $pSheet            Worksheet
      * @throws    PHPExcel_Writer_Exception
      */
-    private function writeSheetFormatPr(PHPExcel_Shared_XMLWriter $objWriter = null, PHPExcel_Worksheet $pSheet = null)
+    private function writeSheetFormatPr($objWriter = null, $pSheet = null)
     {
+if ($objWriter !== null && !$objWriter instanceof PHPExcel_Shared_XMLWriter) {
+    throw new \InvalidArgumentException('参数$objWriter必须是PHPExcel_Shared_XMLWriter实例');//[修改]兼容类型约束
+}
+if ($pSheet !== null && !$pSheet instanceof PHPExcel_Worksheet) {
+    throw new \InvalidArgumentException('参数$pSheet必须是PHPExcel_Worksheet实例');//[修改]兼容类型约束
+}
+
         // sheetFormatPr
         $objWriter->startElement('sheetFormatPr');
 
@@ -369,8 +397,15 @@ class PHPExcel_Writer_Excel2007_Worksheet extends PHPExcel_Writer_Excel2007_Writ
      * @param    PHPExcel_Worksheet $pSheet Worksheet
      * @throws    PHPExcel_Writer_Exception
      */
-    private function writeCols(PHPExcel_Shared_XMLWriter $objWriter = null, PHPExcel_Worksheet $pSheet = null)
+    private function writeCols($objWriter = null, $pSheet = null)
     {
+if ($objWriter !== null && !$objWriter instanceof PHPExcel_Shared_XMLWriter) {
+    throw new \InvalidArgumentException('参数$objWriter必须是PHPExcel_Shared_XMLWriter实例');//[修改]兼容类型约束
+}
+if ($pSheet !== null && !$pSheet instanceof PHPExcel_Worksheet) {
+    throw new \InvalidArgumentException('参数$pSheet必须是PHPExcel_Worksheet实例');//[修改]兼容类型约束
+}
+
         // cols
         if (count($pSheet->getColumnDimensions()) > 0) {
             $objWriter->startElement('cols');
@@ -434,8 +469,15 @@ class PHPExcel_Writer_Excel2007_Worksheet extends PHPExcel_Writer_Excel2007_Writ
      * @param    PHPExcel_Worksheet                    $pSheet            Worksheet
      * @throws    PHPExcel_Writer_Exception
      */
-    private function writeSheetProtection(PHPExcel_Shared_XMLWriter $objWriter = null, PHPExcel_Worksheet $pSheet = null)
+    private function writeSheetProtection($objWriter = null, $pSheet = null)
     {
+if ($objWriter !== null && !$objWriter instanceof PHPExcel_Shared_XMLWriter) {
+    throw new \InvalidArgumentException('参数$objWriter必须是PHPExcel_Shared_XMLWriter实例');//[修改]兼容类型约束
+}
+if ($pSheet !== null && !$pSheet instanceof PHPExcel_Worksheet) {
+    throw new \InvalidArgumentException('参数$pSheet必须是PHPExcel_Worksheet实例');//[修改]兼容类型约束
+}
+
         // sheetProtection
         $objWriter->startElement('sheetProtection');
 
@@ -469,8 +511,15 @@ class PHPExcel_Writer_Excel2007_Worksheet extends PHPExcel_Writer_Excel2007_Writ
      * @param    PHPExcel_Worksheet                    $pSheet            Worksheet
      * @throws    PHPExcel_Writer_Exception
      */
-    private function writeConditionalFormatting(PHPExcel_Shared_XMLWriter $objWriter = null, PHPExcel_Worksheet $pSheet = null)
+    private function writeConditionalFormatting($objWriter = null, $pSheet = null)
     {
+if ($objWriter !== null && !$objWriter instanceof PHPExcel_Shared_XMLWriter) {
+    throw new \InvalidArgumentException('参数$objWriter必须是PHPExcel_Shared_XMLWriter实例');//[修改]兼容类型约束
+}
+if ($pSheet !== null && !$pSheet instanceof PHPExcel_Worksheet) {
+    throw new \InvalidArgumentException('参数$pSheet必须是PHPExcel_Worksheet实例');//[修改]兼容类型约束
+}
+
         // Conditional id
         $id = 1;
 
@@ -542,8 +591,15 @@ class PHPExcel_Writer_Excel2007_Worksheet extends PHPExcel_Writer_Excel2007_Writ
      * @param    PHPExcel_Worksheet                    $pSheet            Worksheet
      * @throws    PHPExcel_Writer_Exception
      */
-    private function writeDataValidations(PHPExcel_Shared_XMLWriter $objWriter = null, PHPExcel_Worksheet $pSheet = null)
+    private function writeDataValidations($objWriter = null, $pSheet = null)
     {
+if ($objWriter !== null && !$objWriter instanceof PHPExcel_Shared_XMLWriter) {
+    throw new \InvalidArgumentException('参数$objWriter必须是PHPExcel_Shared_XMLWriter实例');//[修改]兼容类型约束
+}
+if ($pSheet !== null && !$pSheet instanceof PHPExcel_Worksheet) {
+    throw new \InvalidArgumentException('参数$pSheet必须是PHPExcel_Worksheet实例');//[修改]兼容类型约束
+}
+
         // Datavalidation collection
         $dataValidationCollection = $pSheet->getDataValidationCollection();
 
@@ -608,8 +664,15 @@ class PHPExcel_Writer_Excel2007_Worksheet extends PHPExcel_Writer_Excel2007_Writ
      * @param    PHPExcel_Worksheet                    $pSheet            Worksheet
      * @throws    PHPExcel_Writer_Exception
      */
-    private function writeHyperlinks(PHPExcel_Shared_XMLWriter $objWriter = null, PHPExcel_Worksheet $pSheet = null)
+    private function writeHyperlinks($objWriter = null, $pSheet = null)
     {
+if ($objWriter !== null && !$objWriter instanceof PHPExcel_Shared_XMLWriter) {
+    throw new \InvalidArgumentException('参数$objWriter必须是PHPExcel_Shared_XMLWriter实例');//[修改]兼容类型约束
+}
+if ($pSheet !== null && !$pSheet instanceof PHPExcel_Worksheet) {
+    throw new \InvalidArgumentException('参数$pSheet必须是PHPExcel_Worksheet实例');//[修改]兼容类型约束
+}
+
         // Hyperlink collection
         $hyperlinkCollection = $pSheet->getHyperlinkCollection();
 
@@ -649,8 +712,15 @@ class PHPExcel_Writer_Excel2007_Worksheet extends PHPExcel_Writer_Excel2007_Writ
      * @param    PHPExcel_Worksheet                    $pSheet            Worksheet
      * @throws    PHPExcel_Writer_Exception
      */
-    private function writeProtectedRanges(PHPExcel_Shared_XMLWriter $objWriter = null, PHPExcel_Worksheet $pSheet = null)
+    private function writeProtectedRanges($objWriter = null, $pSheet = null)
     {
+if ($objWriter !== null && !$objWriter instanceof PHPExcel_Shared_XMLWriter) {
+    throw new \InvalidArgumentException('参数$objWriter必须是PHPExcel_Shared_XMLWriter实例');//[修改]兼容类型约束
+}
+if ($pSheet !== null && !$pSheet instanceof PHPExcel_Worksheet) {
+    throw new \InvalidArgumentException('参数$pSheet必须是PHPExcel_Worksheet实例');//[修改]兼容类型约束
+}
+
         if (count($pSheet->getProtectedCells()) > 0) {
             // protectedRanges
             $objWriter->startElement('protectedRanges');
@@ -678,8 +748,15 @@ class PHPExcel_Writer_Excel2007_Worksheet extends PHPExcel_Writer_Excel2007_Writ
      * @param    PHPExcel_Worksheet                    $pSheet            Worksheet
      * @throws    PHPExcel_Writer_Exception
      */
-    private function writeMergeCells(PHPExcel_Shared_XMLWriter $objWriter = null, PHPExcel_Worksheet $pSheet = null)
+    private function writeMergeCells($objWriter = null, $pSheet = null)
     {
+if ($objWriter !== null && !$objWriter instanceof PHPExcel_Shared_XMLWriter) {
+    throw new \InvalidArgumentException('参数$objWriter必须是PHPExcel_Shared_XMLWriter实例');//[修改]兼容类型约束
+}
+if ($pSheet !== null && !$pSheet instanceof PHPExcel_Worksheet) {
+    throw new \InvalidArgumentException('参数$pSheet必须是PHPExcel_Worksheet实例');//[修改]兼容类型约束
+}
+
         if (count($pSheet->getMergeCells()) > 0) {
             // mergeCells
             $objWriter->startElement('mergeCells');
@@ -703,8 +780,15 @@ class PHPExcel_Writer_Excel2007_Worksheet extends PHPExcel_Writer_Excel2007_Writ
      * @param    PHPExcel_Worksheet                    $pSheet            Worksheet
      * @throws    PHPExcel_Writer_Exception
      */
-    private function writePrintOptions(PHPExcel_Shared_XMLWriter $objWriter = null, PHPExcel_Worksheet $pSheet = null)
+    private function writePrintOptions($objWriter = null, $pSheet = null)
     {
+if ($objWriter !== null && !$objWriter instanceof PHPExcel_Shared_XMLWriter) {
+    throw new \InvalidArgumentException('参数$objWriter必须是PHPExcel_Shared_XMLWriter实例');//[修改]兼容类型约束
+}
+if ($pSheet !== null && !$pSheet instanceof PHPExcel_Worksheet) {
+    throw new \InvalidArgumentException('参数$pSheet必须是PHPExcel_Worksheet实例');//[修改]兼容类型约束
+}
+
         // printOptions
         $objWriter->startElement('printOptions');
 
@@ -729,8 +813,15 @@ class PHPExcel_Writer_Excel2007_Worksheet extends PHPExcel_Writer_Excel2007_Writ
      * @param    PHPExcel_Worksheet                        $pSheet            Worksheet
      * @throws    PHPExcel_Writer_Exception
      */
-    private function writePageMargins(PHPExcel_Shared_XMLWriter $objWriter = null, PHPExcel_Worksheet $pSheet = null)
+    private function writePageMargins($objWriter = null, $pSheet = null)
     {
+if ($objWriter !== null && !$objWriter instanceof PHPExcel_Shared_XMLWriter) {
+    throw new \InvalidArgumentException('参数$objWriter必须是PHPExcel_Shared_XMLWriter实例');//[修改]兼容类型约束
+}
+if ($pSheet !== null && !$pSheet instanceof PHPExcel_Worksheet) {
+    throw new \InvalidArgumentException('参数$pSheet必须是PHPExcel_Worksheet实例');//[修改]兼容类型约束
+}
+
         // pageMargins
         $objWriter->startElement('pageMargins');
         $objWriter->writeAttribute('left', PHPExcel_Shared_String::FormatNumber($pSheet->getPageMargins()->getLeft()));
@@ -749,8 +840,15 @@ class PHPExcel_Writer_Excel2007_Worksheet extends PHPExcel_Writer_Excel2007_Writ
      * @param    PHPExcel_Worksheet                        $pSheet            Worksheet
      * @throws    PHPExcel_Writer_Exception
      */
-    private function writeAutoFilter(PHPExcel_Shared_XMLWriter $objWriter = null, PHPExcel_Worksheet $pSheet = null)
+    private function writeAutoFilter($objWriter = null, $pSheet = null)
     {
+if ($objWriter !== null && !$objWriter instanceof PHPExcel_Shared_XMLWriter) {
+    throw new \InvalidArgumentException('参数$objWriter必须是PHPExcel_Shared_XMLWriter实例');//[修改]兼容类型约束
+}
+if ($pSheet !== null && !$pSheet instanceof PHPExcel_Worksheet) {
+    throw new \InvalidArgumentException('参数$pSheet必须是PHPExcel_Worksheet实例');//[修改]兼容类型约束
+}
+
         $autoFilterRange = $pSheet->getAutoFilter()->getRange();
         if (!empty($autoFilterRange)) {
             // autoFilter
@@ -842,8 +940,15 @@ class PHPExcel_Writer_Excel2007_Worksheet extends PHPExcel_Writer_Excel2007_Writ
      * @param    PHPExcel_Worksheet                    $pSheet            Worksheet
      * @throws    PHPExcel_Writer_Exception
      */
-    private function writePageSetup(PHPExcel_Shared_XMLWriter $objWriter = null, PHPExcel_Worksheet $pSheet = null)
+    private function writePageSetup($objWriter = null, $pSheet = null)
     {
+if ($objWriter !== null && !$objWriter instanceof PHPExcel_Shared_XMLWriter) {
+    throw new \InvalidArgumentException('参数$objWriter必须是PHPExcel_Shared_XMLWriter实例');//[修改]兼容类型约束
+}
+if ($pSheet !== null && !$pSheet instanceof PHPExcel_Worksheet) {
+    throw new \InvalidArgumentException('参数$pSheet必须是PHPExcel_Worksheet实例');//[修改]兼容类型约束
+}
+
         // pageSetup
         $objWriter->startElement('pageSetup');
         $objWriter->writeAttribute('paperSize', $pSheet->getPageSetup()->getPaperSize());
@@ -877,8 +982,15 @@ class PHPExcel_Writer_Excel2007_Worksheet extends PHPExcel_Writer_Excel2007_Writ
      * @param    PHPExcel_Worksheet                $pSheet            Worksheet
      * @throws    PHPExcel_Writer_Exception
      */
-    private function writeHeaderFooter(PHPExcel_Shared_XMLWriter $objWriter = null, PHPExcel_Worksheet $pSheet = null)
+    private function writeHeaderFooter($objWriter = null, $pSheet = null)
     {
+if ($objWriter !== null && !$objWriter instanceof PHPExcel_Shared_XMLWriter) {
+    throw new \InvalidArgumentException('参数$objWriter必须是PHPExcel_Shared_XMLWriter实例');//[修改]兼容类型约束
+}
+if ($pSheet !== null && !$pSheet instanceof PHPExcel_Worksheet) {
+    throw new \InvalidArgumentException('参数$pSheet必须是PHPExcel_Worksheet实例');//[修改]兼容类型约束
+}
+
         // headerFooter
         $objWriter->startElement('headerFooter');
         $objWriter->writeAttribute('differentOddEven', ($pSheet->getHeaderFooter()->getDifferentOddEven() ? 'true' : 'false'));
@@ -902,8 +1014,15 @@ class PHPExcel_Writer_Excel2007_Worksheet extends PHPExcel_Writer_Excel2007_Writ
      * @param    PHPExcel_Worksheet                $pSheet            Worksheet
      * @throws    PHPExcel_Writer_Exception
      */
-    private function writeBreaks(PHPExcel_Shared_XMLWriter $objWriter = null, PHPExcel_Worksheet $pSheet = null)
+    private function writeBreaks($objWriter = null, $pSheet = null)
     {
+if ($objWriter !== null && !$objWriter instanceof PHPExcel_Shared_XMLWriter) {
+    throw new \InvalidArgumentException('参数$objWriter必须是PHPExcel_Shared_XMLWriter实例');//[修改]兼容类型约束
+}
+if ($pSheet !== null && !$pSheet instanceof PHPExcel_Worksheet) {
+    throw new \InvalidArgumentException('参数$pSheet必须是PHPExcel_Worksheet实例');//[修改]兼容类型约束
+}
+
         // Get row and column breaks
         $aRowBreaks = array();
         $aColumnBreaks = array();
@@ -960,8 +1079,15 @@ class PHPExcel_Writer_Excel2007_Worksheet extends PHPExcel_Writer_Excel2007_Writ
      * @param    string[]                        $pStringTable    String table
      * @throws    PHPExcel_Writer_Exception
      */
-    private function writeSheetData(PHPExcel_Shared_XMLWriter $objWriter = null, PHPExcel_Worksheet $pSheet = null, $pStringTable = null)
+    private function writeSheetData($objWriter = null, $pSheet = null, $pStringTable = null)
     {
+if ($objWriter !== null && !$objWriter instanceof PHPExcel_Shared_XMLWriter) {
+    throw new \InvalidArgumentException('参数$objWriter必须是PHPExcel_Shared_XMLWriter实例');//[修改]兼容类型约束
+}
+if ($pSheet !== null && !$pSheet instanceof PHPExcel_Worksheet) {
+    throw new \InvalidArgumentException('参数$pSheet必须是PHPExcel_Worksheet实例');//[修改]兼容类型约束
+}
+
         if (is_array($pStringTable)) {
             // Flipped stringtable, for faster index searching
             $aFlippedStringTable = $this->getParentWriter()->getWriterPart('stringtable')->flipStringTable($pStringTable);
@@ -1052,8 +1178,15 @@ class PHPExcel_Writer_Excel2007_Worksheet extends PHPExcel_Writer_Excel2007_Writ
      * @param    string[]                    $pFlippedStringTable    String table (flipped), for faster index searching
      * @throws    PHPExcel_Writer_Exception
      */
-    private function writeCell(PHPExcel_Shared_XMLWriter $objWriter = null, PHPExcel_Worksheet $pSheet = null, $pCellAddress = null, $pStringTable = null, $pFlippedStringTable = null)
+    private function writeCell($objWriter = null, $pSheet = null, $pCellAddress = null, $pStringTable = null, $pFlippedStringTable = null)
     {
+if ($objWriter !== null && !$objWriter instanceof PHPExcel_Shared_XMLWriter) {
+    throw new \InvalidArgumentException('参数$objWriter必须是PHPExcel_Shared_XMLWriter实例');//[修改]兼容类型约束
+}
+if ($pSheet !== null && !$pSheet instanceof PHPExcel_Worksheet) {
+    throw new \InvalidArgumentException('参数$pSheet必须是PHPExcel_Worksheet实例');//[修改]兼容类型约束
+}
+
         if (is_array($pStringTable) && is_array($pFlippedStringTable)) {
             // Cell
             $pCell = $pSheet->getCell($pCellAddress);
@@ -1171,8 +1304,15 @@ class PHPExcel_Writer_Excel2007_Worksheet extends PHPExcel_Writer_Excel2007_Writ
      * @param    boolean                        $includeCharts    Flag indicating if we should include drawing details for charts
      * @throws    PHPExcel_Writer_Exception
      */
-    private function writeDrawings(PHPExcel_Shared_XMLWriter $objWriter = null, PHPExcel_Worksheet $pSheet = null, $includeCharts = false)
+    private function writeDrawings($objWriter = null, $pSheet = null, $includeCharts = false)
     {
+if ($objWriter !== null && !$objWriter instanceof PHPExcel_Shared_XMLWriter) {
+    throw new \InvalidArgumentException('参数$objWriter必须是PHPExcel_Shared_XMLWriter实例');//[修改]兼容类型约束
+}
+if ($pSheet !== null && !$pSheet instanceof PHPExcel_Worksheet) {
+    throw new \InvalidArgumentException('参数$pSheet必须是PHPExcel_Worksheet实例');//[修改]兼容类型约束
+}
+
         $chartCount = ($includeCharts) ? $pSheet->getChartCollection()->count() : 0;
         // If sheet contains drawings, add the relationships
         if (($pSheet->getDrawingCollection()->count() > 0) ||
@@ -1190,8 +1330,15 @@ class PHPExcel_Writer_Excel2007_Worksheet extends PHPExcel_Writer_Excel2007_Writ
      * @param    PHPExcel_Worksheet                $pSheet            Worksheet
      * @throws    PHPExcel_Writer_Exception
      */
-    private function writeLegacyDrawing(PHPExcel_Shared_XMLWriter $objWriter = null, PHPExcel_Worksheet $pSheet = null)
+    private function writeLegacyDrawing($objWriter = null, $pSheet = null)
     {
+if ($objWriter !== null && !$objWriter instanceof PHPExcel_Shared_XMLWriter) {
+    throw new \InvalidArgumentException('参数$objWriter必须是PHPExcel_Shared_XMLWriter实例');//[修改]兼容类型约束
+}
+if ($pSheet !== null && !$pSheet instanceof PHPExcel_Worksheet) {
+    throw new \InvalidArgumentException('参数$pSheet必须是PHPExcel_Worksheet实例');//[修改]兼容类型约束
+}
+
         // If sheet contains comments, add the relationships
         if (count($pSheet->getComments()) > 0) {
             $objWriter->startElement('legacyDrawing');
@@ -1207,8 +1354,15 @@ class PHPExcel_Writer_Excel2007_Worksheet extends PHPExcel_Writer_Excel2007_Writ
      * @param    PHPExcel_Worksheet                $pSheet            Worksheet
      * @throws    PHPExcel_Writer_Exception
      */
-    private function writeLegacyDrawingHF(PHPExcel_Shared_XMLWriter $objWriter = null, PHPExcel_Worksheet $pSheet = null)
+    private function writeLegacyDrawingHF($objWriter = null, $pSheet = null)
     {
+if ($objWriter !== null && !$objWriter instanceof PHPExcel_Shared_XMLWriter) {
+    throw new \InvalidArgumentException('参数$objWriter必须是PHPExcel_Shared_XMLWriter实例');//[修改]兼容类型约束
+}
+if ($pSheet !== null && !$pSheet instanceof PHPExcel_Worksheet) {
+    throw new \InvalidArgumentException('参数$pSheet必须是PHPExcel_Worksheet实例');//[修改]兼容类型约束
+}
+
         // If sheet contains images, add the relationships
         if (count($pSheet->getHeaderFooter()->getImages()) > 0) {
             $objWriter->startElement('legacyDrawingHF');

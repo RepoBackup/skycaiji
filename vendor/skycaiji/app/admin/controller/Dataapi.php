@@ -61,7 +61,7 @@ class Dataapi extends BaseController {
         $this->set_html_tags(
             '数据接口',
             '数据接口'.($cond?'：搜索结果':''),
-            breadcrumb(array(array('url'=>url('dataapi/list'),'title'=>'数据接口'),array('url'=>url('dataapi/list'),'title'=>'列表')))
+            breadcrumb(array(array('url'=>url('dataset/list'),'title'=>'数据集'),array('url'=>url('dataapi/list'),'title'=>'数据接口')))
         );
         
         $this->assign('dsNames',$dsNames);
@@ -116,6 +116,10 @@ class Dataapi extends BaseController {
             if(empty($newData['name'])){
                 $this->error('请输入名称');
             }
+            if(mb_strlen($newData['name'])>50){
+                $this->error('名称长度不能超过50个字符');
+            }
+            
             if(empty($daData)||$newData['name']!=$daData['name']){
                 if($mda->where('name',$newData['name'])->count()>0){
                     $this->error('名称已存在');

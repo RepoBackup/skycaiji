@@ -13,6 +13,42 @@ namespace skycaiji\admin\model;
 
 class Release extends \skycaiji\common\model\BaseModel{
     
+    public function cacheByTaskId($taskId,$clear=false){
+        static $caches=array();
+        $data=array();
+        if(isset($caches[$taskId])){
+            $data=$caches[$taskId];
+        }else{
+            $data=$this->getByTaskId($taskId);
+            $caches[$taskId]=$data;
+        }
+        if($clear){
+            
+            unset($caches[$taskId]);
+        }
+        return $data;
+    }
+    
+    public function getByTaskId($taskId){
+        $data=$this->where('task_id',$taskId)->find();
+        $data=$this->convert_data($data);
+        return $data;
+    }
+    
+    public function convert_data($data){
+        if(is_object($data)){
+            $data=$data->toArray();
+        }
+        if($data&&is_array($data)){
+            if(!is_array($data['config'])){
+                $data['config']=safe_unserialize($data['config']);
+                init_array($data['config']);
+            }
+        }
+        init_array($data);
+        return $data;
+    }
+    
     public function compatible_config($config){
         if(!is_array($config)){
             $config=safe_unserialize($config);

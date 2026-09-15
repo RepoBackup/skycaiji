@@ -78,7 +78,7 @@ class Rcms extends Release{
 			}
 			$this->record_collected($collFields['url'],$return,$this->release,array('title'=>$collFields['title'],'content'=>$collFields['content']));
 			
-			unset($collFieldsList[$collFieldsKey]['fields']);
+			$this->exportEnd($return,$collFieldsList[$collFieldsKey]);
 		}
 		return $addedNum;
 	}

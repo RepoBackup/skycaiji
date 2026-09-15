@@ -1,0 +1,49 @@
+<form id="form_dataset_info" method="post" action="{:url('dataset/info')}">
+{:html_usertoken()}
+	<input type="hidden" name="di_id" value="" />
+	<input type="hidden" name="ds_id" value="" />
+	<input type="hidden" name="dt_id" value="" />
+	<input type="hidden" name="is_submit" value="1" />
+	{if !$hasData}
+	<div class="alert alert-warning">数据不存在！可重新添加</div>
+	{/if}
+	<div class="form-group">
+		<label>源网址</label>
+		<input class="form-control" name="url" placeholder="选填" />
+	</div>
+	<table class="table table-bordered table-hover">
+	<thead>
+		<tr>
+			<th style="width:150px;">字段名</th>
+			<th>字段值</th>
+		</tr>
+	</thead>
+	<tbody>
+		{foreach $fields as $fk=>$field}
+		<tr>
+			<td>{$field['name']}</td>
+			<td>
+			{if $field['_code']}
+			<div class="input-group">
+			{/if}
+				{if $field['type']=='mediumtext'}
+				<textarea class="form-control" name="field_vals[{$fk}]" rows="3" placeholder="{:lang('ds_f_type_'.$field['type'])}"></textarea>
+				{else/}
+	        	<input type="{if $field['type']=='bigint'}number{else/}text{/if}" name="field_vals[{$fk}]" class="form-control{if $field['type']=='datetime'} db-time{/if}" placeholder="{:lang('ds_f_type_'.$field['type'])}" autocomplete="off" />
+	        	{/if}
+	        {if $field['_code']}
+				<div class="input-group-addon"><a href="javascript:;" class="glyphicon glyphicon-eye-open ds-info-f-visualize" title="预览"></a></div>
+			</div>
+			{/if}
+			</td>
+		</tr>
+		{/foreach}
+	</tbody>
+	</table>
+	<div class="form-group form-group-sm" style="margin-bottom:0;">
+ 		<button type="submit" class="btn btn-primary btn-block">保存</button>
+ 	</div>
+</form>
+<script type="text/javascript">
+datasetClass.init_info({$dbData|json_encode},{$fields|json_encode});
+</script>

@@ -1,0 +1,8 @@
+<div id="coll_process_load">
+	{include file="collector:c_process_module" /}
+</div>
+<script type="text/javascript">
+{if condition="$type eq 'common'"}
+	c_{:g_sc('coll_module')}.collCommon.collProcess.init({$process|json_encode},true,true);
+{/if}
+</script>

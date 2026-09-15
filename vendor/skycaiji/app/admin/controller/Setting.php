@@ -776,9 +776,16 @@ class Setting extends BaseController {
             $isSaved=input('saved');
             $isSaved=$isSaved?'1':'';
             
+            $showTest=true;
+            if(IS_WIN){
+                
+                $showTest=false;
+            }
+            
             $this->assign('config',$config);
             $this->assign('isSaved',$isSaved);
             $this->assign('defDir',$defDir);
+            $this->assign('showTest',$showTest);
             return $this->fetch('page_render');
         }
     }

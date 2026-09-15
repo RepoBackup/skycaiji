@@ -12,9 +12,9 @@
 		<table id="dataset_list" class="table table-hover datatable">
 			<thead>
 	            <tr>
-					<th>{$Think.lang.sort}</th>
-					<th style="width:40px;">ID</th>
-					<th style="width:150px;">名称</th>
+					<th class="sort">{$Think.lang.sort}</th>
+					<th style="width:50px;">ID</th>
+					<th style="width:100px;">数据集</th>
 					<th>字段</th>
 					<th style="width:80px;">数据量</th>
 					<th style="width:70px;">接口</th>
@@ -22,12 +22,13 @@
 	            </tr>
 			</thead>
 			<tbody>
+			{if $dsList}
 			{foreach name="dsList" item="item"}
 				<tr data-ds-id="{$item['id']}">
 					<td class="sort"><input type="text" name="newsort[{$item['id']}]" class="form-control" value="{$item['sort']}" autocomplete="off" /></td>
 	                <td>{$item['id']}</td>
-	                <td><a href="{:url('dataset/set?id='.$item['id'])}">{$item['name']}</a></td>
-	                <td>{if !empty($dsFields[$item['id']])}<input type="text" class="form-control fields" readonly="true" value="{$dsFields[$item['id']]|htmlspecialchars}">{/if}</td>
+	                <td class="name"><a href="{:url('dataset/set?id='.$item['id'])}">{$item['name']}</a></td>
+	                <td>{if !empty($dsFields[$item['id']])}<input type="text" class="form-control fields" readonly="true" value="{$dsFields[$item['id']]|htmlspecialchars}" />{/if}</td>
 	                <td>共<a href="{:url('dataset/db?ds_id='.$item['id'])}" class="db-count" target="_blank">0</a>条</td>
 	                <td>共<a href="{:url('dataapi/list?ds='.$item['id'])}" class="da-count" target="_blank">0</a>个</td>
 	                <td>
@@ -43,6 +44,13 @@
 	                </td>
 	            </tr>
 			{/foreach}
+			{else/}
+				<tr>
+					<td colspan="7" style="text-align:center;">
+						<p class="help-block">没有数据集</p>
+					</td>
+				</tr>
+			{/if}
 			</tbody>
 			<tfoot>
 				<tr>
@@ -70,7 +78,7 @@
 		    <input type="number" name="id" class="form-control" value="" placeholder="精确搜索" autocomplete="off" />
 	    </div>
 	    <div class="form-group form-group-sm">
-			<label>名称</label>
+			<label>数据集名称</label>
 		    <input type="text" name="name" class="form-control" value="" placeholder="模糊搜索" autocomplete="off" />
 	    </div>
 	    <div class="form-group form-group-sm">

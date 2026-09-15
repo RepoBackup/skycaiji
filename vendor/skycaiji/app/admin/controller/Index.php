@@ -196,6 +196,8 @@ class Index extends CollectController{
     
     /*验证码*/
     public function verifyAction(){
+        $this->check_usertoken();
+        
         $len=g_sc_c('site','verifycode_len');
         $len=intval($len);
         $len=min(max(3,$len),20);
@@ -207,7 +209,10 @@ class Index extends CollectController{
             'useCurve'=>true,
             'useNoise'=>true 
         );
-        ob_clean();
+        if(ob_get_level()){
+            
+            ob_clean();
+        }
         
         $captcha = new \think\captcha\Captcha($config);
         return $captcha->entry();
@@ -550,7 +555,6 @@ class Index extends CollectController{
             $autoIds=model('Task')->where(array(
                 'id'=>array('in',$taskIds),
                 'auto'=>array('>',0),
-                'module'=>'pattern',
             ))->order('caijitime asc')->column('id');
             foreach ($taskIds as $k=>$v){
                 if(in_array($v, $autoIds)){
@@ -582,6 +586,14 @@ class Index extends CollectController{
             }
         }
         
+        
+        $cacheClear=cache('index_auto_collect_auto_clear');
+        if(empty($cacheClear)||abs(time()-$cacheClear)>36000){
+            
+            cache('index_auto_collect_auto_clear',time());
+            @get_html(url('admin/index/auto_clear?key='.\util\Param::set_cache_key('auto_clear'),null,false,true),null,array('timeout'=>1));
+        }
+        
         $cond=array();
         $taskIds=input('task_ids','');
         if($taskIds){
@@ -595,7 +607,6 @@ class Index extends CollectController{
         if(empty($noAuto)){
             
             $cond['auto']=array('>',0);
-            $cond['module']='pattern';
         }
         
         $urlParams=input('param.',array(),'trim');
@@ -617,6 +628,15 @@ class Index extends CollectController{
             return $taskIds;
         },null,true,\skycaiji\admin\model\Collector::url_backstage_run(),$urlParams);
             
+    }
+    
+    public function auto_clearAction(){
+        ignore_user_abort(true);
+        
+        if(!$this->_collect_check_key()){
+            $this->cj_error('密钥错误');
+        }
+        \skycaiji\admin\model\Collector::clear_collect_data();
     }
     
     public function collect_processAction(){

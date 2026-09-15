@@ -720,7 +720,8 @@ class Tools{
     public static function collect_output($strArgs,$color='red',$exit=true){
         static $class=null;
         if(!isset($class)){
-            $class=controller('admin/CollectController');
+            
+            $class=controller('admin/CollectBase','event');
         }
         if($exit){
             $class->echo_msg_exit($strArgs,$color);
@@ -893,6 +894,79 @@ class Tools{
             
             $class->set($name,$value);
         }
+    }
+    
+    
+    public static function skycaiji2url($url,$domain=false){
+        $data=self::parse_skycaiji_url($url);
+        if($data['module']){
+            
+            if($data['module']=='datahub'){
+                $url=url('admin/datahub/info',array('id'=>$data['param1']),true,$domain);
+            }elseif($data['module']=='dataset'){
+                $url=url('admin/dataset/info',array('ds_id'=>$data['param1'],'dt_id'=>$data['param2']),true,$domain);
+            }else{
+                $url='';
+            }
+        }
+        return $url;
+    }
+    
+    public static function parse_skycaiji_url($url){
+        $data=array('module'=>'','param1'=>'','param2'=>'');
+        if(strpos($url,'skycaiji://')===0){
+            $url=str_replace('skycaiji://','',$url);
+            if(strpos($url,'#')!==false){
+                
+                $url=preg_replace('/\#.*$/', '', $url);
+            }
+            $url=explode('/',$url);;
+            $data['module']=$url[0];
+            $data['param1']=$url[1];
+            if(isset($url[2])){
+                $data['param2']=$url[2];
+            }
+        }
+        return $data;
+    }
+    
+    public static function create_skycaiji_url($module,$str1,$str2=''){
+        $url=$str1;
+        if($str2){
+            $url.='/'.$str2;
+        }
+        $url='skycaiji://'.$module.'/'.$url;
+        return $url;
+    }
+    
+    
+    public static function action_search_num($key,$iptName=null){
+        $iptName=$iptName?:'num';
+        $num=input($iptName.'/d',0);
+        $mcache=\skycaiji\admin\model\CacheModel::getInstance();
+        $key='action_'.$key.'_list_num';
+        if($num<=0){
+            
+            $num=$mcache->getCache($key,'data');
+            $num=intval($num);
+            if($num<=0){
+                $num=200;
+            }
+        }else{
+            $mcache->setCache($key,$num);
+        }
+        $num=min(1000,$num);
+        return $num;
+    }
+    
+    
+    public static function controller($name, $layer = 'controller'){
+        static $list=array();
+        $id=$name.':'.$layer;
+        if(empty($list[$id])){
+            $list[$id]=controller($name,$layer);
+        }
+        return $list[$id];
     }
 }
 ?>

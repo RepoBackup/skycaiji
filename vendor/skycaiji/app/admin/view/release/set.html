@@ -32,6 +32,14 @@
 			</div>
 		</div>
 	</div>
+	<div class="rele-module" id="rele_module_datahub" module="datahub" style="display:none;">
+		<div class="alert alert-success">
+			<ul class="row">
+				<li>将采集到的数据保存到<a href="{:url('datahub/list')}" target="_blank">{$Think.lang.cdatahub}</a>中，其它任务可在“任务设置”中选择“采集模块»{$Think.lang.task_module_datahub}”直接调取数据用于发布</li>
+				<li>如需使用其它发布方式，在<a href="{:url('task/set?id='.$taskData['id'])}">任务设置</a>中开启“{$Think.lang.cdatahub}”功能即可同时发布</li>
+			</ul>
+		</div>
+	</div>
 	<div class="rele-module" id="rele_module_dataset" module="dataset" style="display:none;">
 		<div class="form-group">
 			<input type="hidden" name="dataset[auto_create]" class="form-control" value="" />
@@ -211,15 +219,19 @@
 					<input name="file[max_line]" type="number" class="form-control" value="" />
 					<p class="help-block">文件超过最大行数时创建新的文件并自动编号，填0表示不限制</p>
 				</div>
-				{if !empty($collFields)}
+				{if !empty($fileSortFields)}
 				<div class="form-group">
 					<label>隐藏采集字段</label>
-					<div>
-					{foreach $collFields as $v}
-					<label class="checkbox-inline"><input type="checkbox" name="file[hide_fields][]" value="{$v}" />{$v}</label>
+					<div class="file-fields">
+					{foreach $fileSortFields as $v}
+					<div class="file-field">
+						<label class="checkbox-inline"><input type="checkbox" name="file[hide_fields][]" value="{$v}" />{$v}</label>
+						<em class="glyphicon icon-drag-move" title="移动"></em>
+						<input type="hidden" name="file[sort_fields][]" value="{$v}" />
+					</div>
 					{/foreach}
 					</div>
-					<p class="help-block">勾选的字段不写入文件</p>
+					<p class="help-block">勾选的字段不写入文件，移动字段可以改变存入文件时的顺序 <a href="javascript:;" id="btn_file_sort_def">恢复默认字段顺序</a></p>
 				</div>
 				{/if}
 			</div>
@@ -462,9 +474,9 @@
 										        <p class="help-block" data-module="rule">
 										        	使用正则表达式
 													<a href="javascript:;" data-rule-sign="sign_wildcard" title="{$Think.lang.tips_sign_wildcard}">{$Think.lang.sign_wildcard}</a>
-									      			<a href="javascript:;" data-rule-sign="sign_match" title="{$Think.lang.tips_sign_match}">{:cp_sign('match')}</a>
+									      			<a href="javascript:;" data-rule-sign="sign_match" title="{$Think.lang.tips_sign_match}">{:coll_sign('match')}</a>
 									      			<a href="javascript:;" data-rule-sign="sign_group" title="{$Think.lang.tips_sign_group}">捕获组</a>
-									      			，规则中有{:cp_sign('match')}标签时将所有{:cp_sign('match')}拼接为结果，否则将完全匹配的值作为结果
+									      			，规则中有{:coll_sign('match')}标签时将所有{:coll_sign('match')}拼接为结果，否则将完全匹配的值作为结果
 			    									<a href="javascript:;" title="提示信息" class="glyphicon glyphicon-info-sign icon-info-tips" onclick="ruleInsertSign.tips()"></a>
 										        </p>
 						            		</td>
@@ -601,7 +613,7 @@
 							<textarea name="diy[code]" class="form-control" style="display:none;"></textarea>
 							<iframe id="diy_editor_ifr" style="width:100%;height:300px;border:0"></iframe>
 							<div class="help-block">
-								可用变量：$fields = 采集到的字段数据列表，$url = 采集的页面网址，$this->db() = 数据库操作， 可参考thinkphp5的数据库操作
+								可用变量：$fields = 采集到的字段数据列表，$url = 采集的页面网址，$this->db() = <a href="https://www.skycaiji.com/manual/doc/db" target="_blank">数据库操作</a>
 								<br>获取字段值必须使用 $this->get_field_val($field);方法(可处理图片、文件本地化等)，否则使用$field['value']调用字段原始值
 		
 		<p style="border-top:dashed 1px #ccc;padding-top:10px;margin-top:10px;">
@@ -612,7 +624,7 @@
 		<br>error（可选）入库的错误信息
 		<br>return array('id'=>0,'target'=>'','desc'=>'','error'=>'');
 		</p>
-		入库的信息可在“已采集数据”中查看
+		入库的信息可在“已发布数据”中查看
 							</div>
 						</div>
 {/if}

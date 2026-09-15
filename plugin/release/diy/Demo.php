@@ -32,7 +32,7 @@ class Demo extends BaseDiy{
 		 * target（可选）记录入库的数据位置（发布的网址等）
 		 * desc（可选）记录入库的数据位置附加信息
 		 * error（可选）记录入库失败的错误信息
-		 * 入库的信息可在“已采集数据”中查看
+		 * 入库的信息可在“已发布数据”中查看
 		 */
 		return array('id'=>0,'target'=>'','desc'=>'','error'=>'');
 		

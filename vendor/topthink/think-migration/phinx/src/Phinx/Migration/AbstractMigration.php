@@ -72,8 +72,15 @@ abstract class AbstractMigration implements MigrationInterface
      * @param InputInterface|null $input
      * @param OutputInterface|null $output
      */
-    final public function __construct($version, InputInterface $input = null, OutputInterface $output = null)
+    final public function __construct($version, $input = null, $output = null)
     {
+if ($input !== null && !$input instanceof InputInterface) {
+    throw new \InvalidArgumentException('参数$input必须是InputInterface实例');//[修改]兼容类型约束
+}
+if ($output !== null && !$output instanceof OutputInterface) {
+    throw new \InvalidArgumentException('参数$output必须是OutputInterface实例');//[修改]兼容类型约束
+}
+
         $this->version = $version;
         if (!is_null($input)){
             $this->setInput($input);

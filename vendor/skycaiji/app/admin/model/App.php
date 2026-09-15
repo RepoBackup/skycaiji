@@ -33,14 +33,27 @@ class App extends \skycaiji\common\model\BaseModel{
 							$appClass=new \stdClass();
 							if(preg_match('/public\s*\$config\s*=(\s*[\s\S]+?[\]\)]\s*\;)/i', $appFile,$config)){
 								
-								set_error_handler(null);
+							    set_error_handler(function($errno, $errstr) {
+							        return true;
+							    });
 								
 								$config=trim($config[1]);
-								try {
-									$config=@eval('return '.$config);
-								}catch(\Exception $e){
-									$config=array();
+								
+								if(class_exists('\\ParseError')){
+								    
+								    try {
+								        $config=@eval('return '.$config);
+								    }catch(\ParseError $e){
+								        $config=array();
+								    }
+								}else{
+								    try {
+								        $config=@eval('return '.$config);
+								    }catch(\Exception $e){
+								        $config=array();
+								    }
 								}
+								
 								$appClass->config=is_array($config)?$config:array();
 							}else{
 								$appClass->config=array();

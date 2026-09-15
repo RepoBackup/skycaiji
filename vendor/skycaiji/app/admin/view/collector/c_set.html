@@ -1,0 +1,53 @@
+{assign name="_tpl_coll_module" value="[_module]" /}
+<div class="panel panel-default">
+	<div class="panel-body">
+    		<div class="h-title">
+    			<label class="control-label">字段列表</label>
+     			<a href="javascript:;" class="glyphicon glyphicon-plus add-field" title="添加"></a>
+     			<a href="javascript:;" class="add-field-default" style="float:right;font-weight:normal;">添加默认</a>
+     		</div>
+  			<div class="table-responsive">
+           	<table class="table table-hover coll-field-list" style="margin-bottom:0px;">
+                  <thead>
+                      <tr>
+                          <th>字段 <a href="javascript:;" class="glyphicon glyphicon-sort sort-field" title="调整字段顺序（按执行采集时的字段顺序排列）将获取方式为“{$Think.lang.field_module_extract}”和“{$Think.lang.field_module_merge}”的字段排在最后"></a></th>
+                          <th>数据来源</th>
+                          <th>获取方式</th>
+                          <th>操作</th>
+                          <th title="把字段作为标题进行排重，默认无">
+					      <label class="radio-inline"><input type="radio" name="config[field_title]" value=""><b>标题排重</b></label>
+					   </th>
+					   <th title="把字段作为内容进行排重">内容排重</th>
+                      </tr>
+                  </thead>
+                  <tbody>
+                  </tbody>
+           	</table>
+       	</div>
+       	<p id="coll_field_loop_tips" class="help-block" style="margin-bottom:0px;display:none;">开启循环入库后，将以第一个循环字段的数量为准，后面的循环字段会映射第一个循环字段的索引并自动获取相应位置的值入库，非循环字段则以当前值入库{if $_tpl_coll_module=='pattern'}；如开启了分页，分页内容也会循环入库{/if}</p>
+	</div>
+</div>
+{if $_tpl_coll_module=='datahub'}
+<div id="coll_field_datahub_tips" class="alert alert-warning" style="display:none;">
+</div>
+{elseif $_tpl_coll_module=='dataset' /}
+<div id="coll_field_dataset_tips" class="alert alert-warning" style="display:none;">
+</div>
+{/if}
+<div class="panel panel-default">
+	<div class="panel-heading">
+    	<h4 class="panel-title">
+        	<a data-toggle="collapse" href="#coll_{$_tpl_coll_module}_process" aria-expanded="false">数据处理（通用）</a>
+    	</h4>
+    </div>
+    <div id="coll_{$_tpl_coll_module}_process" class="panel-collapse collapse">
+    	<div class="panel-body">
+    		<div class="h-title" style="border-bottom:0;">
+     			<label class="control-label">通用数据处理</label>
+      			<a href="javascript:;" class="glyphicon glyphicon-plus add-process" title="添加"></a>
+      		</div>
+    		<div class="panel-group coll-process-accordion" style="margin-bottom:0;">
+			</div>
+    	</div>
+    </div>
+</div>

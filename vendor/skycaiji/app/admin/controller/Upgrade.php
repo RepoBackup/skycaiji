@@ -144,11 +144,10 @@ class Upgrade extends BaseController{
             $this->error($result['msg']);
         }
     }
-    /*
-     * 下载的文件完整性检测
-     * 注意：执行该方法时，旧代码已经编译了，替换文件后还是执行的旧文件代码
-     * 还要注意thinkphp缓存的问题
-     * */
+    
+    
+    
+    
     public function downCompleteAction(){
         $this->check_usertoken();
         

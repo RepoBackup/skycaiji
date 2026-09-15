@@ -263,8 +263,12 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate, JsonSeria
      * @param callable|null $callback 回调函数
      * @return static
      */
-    public function filter(callable $callback = null)
+    public function filter($callback = null)
     {
+        if ($callback !== null && !is_callable($callback)) {
+            throw new \InvalidArgumentException('参数$callback必须是callable类型');//[修改]兼容类型约束
+        }
+        
         return new static(array_filter($this->items, $callback ?: null));
     }
 
@@ -317,8 +321,12 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate, JsonSeria
      * @param  callable|null $callback 回调函数
      * @return static
      */
-    public function sort(callable $callback = null)
+    public function sort($callback = null)
     {
+        if ($callback !== null && !is_callable($callback)) {
+            throw new \InvalidArgumentException('参数$callback必须是callable类型');//[修改]兼容类型约束
+        }
+        
         $items    = $this->items;
         $callback = $callback ?: function ($a, $b) {
             return $a == $b ? 0 : (($a < $b) ? -1 : 1);

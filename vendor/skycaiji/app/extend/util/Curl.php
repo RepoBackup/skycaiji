@@ -44,6 +44,13 @@ class Curl{
 	 * @return \util\Curl
 	 */
 	public static function request($url,$rHeaders=array(),$rOptions=array(),$rPostData=null,$curRedirs=0){
+	    static $phpVerIs8=null;
+	    if(!isset($phpVerIs8)){
+	        if(version_compare(PHP_VERSION, '8.0.0', '>=')){
+	            $phpVerIs8=true;
+	        }
+	    }
+	    
 	    $headers=$rHeaders;
 	    $options=$rOptions;
 	    $postData=$rPostData;
@@ -217,14 +224,17 @@ class Curl{
 		            if($curRedirs<$maxRedirs){
 		                
 		                $curRedirs++;
-		                curl_close($ch);
+		                if(!$phpVerIs8){
+		                    curl_close($ch);
+		                }
 		                return self::request($rurl,$rHeaders,$rOptions,$rPostData,$curRedirs);
 		            }
 		        }
 		    }
 		}
-		
-		curl_close($ch);
+		if(!$phpVerIs8){
+		    curl_close($ch);
+		}
 		return $instance;
 	}
 

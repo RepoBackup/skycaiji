@@ -64,8 +64,12 @@ class PHPExcel_Worksheet_ColumnIterator implements Iterator
      * @param    string                $startColumn    The column address at which to start iterating
      * @param    string                $endColumn        Optionally, the column address at which to stop iterating
      */
-    public function __construct(PHPExcel_Worksheet $subject = null, $startColumn = 'A', $endColumn = null)
+    public function __construct($subject = null, $startColumn = 'A', $endColumn = null)
     {
+if ($subject !== null && !$subject instanceof PHPExcel_Worksheet) {
+    throw new \InvalidArgumentException('参数$subject必须是PHPExcel_Worksheet实例');//[修改]兼容类型约束
+}
+
         // Set subject
         $this->subject = $subject;
         $this->resetEnd($endColumn);

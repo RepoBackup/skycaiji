@@ -434,11 +434,14 @@ class ApiApp extends \skycaiji\common\model\BaseModel{
 	 * @param string $fieldVal 字段值
 	 * @param string $appConfig 输入的配置
 	 * @param array $paramValList 所有参数值（调用参数时使用）
+     * @param bool $isTest 测试模式
+     * @param string $errorTips 错误提示信息
 	 */
-	public function execute_app($module,$appName,$fieldVal,$appConfig,$paramValList=null,$isTest=false){
+	public function execute_app($module,$appName,$fieldVal,$appConfig,$paramValList=null,$isTest=false,$errorTips=null){
 	    static $app_class_list=array('process'=>array());
 	    static $app_config_globals=array('process'=>array());
-	   
+	    
+	    $errorTips=$errorTips?$errorTips:'';
 	    $class_list=&$app_class_list[$module];
 	    $config_globals=&$app_config_globals[$module];
 	    
@@ -547,7 +550,7 @@ class ApiApp extends \skycaiji\common\model\BaseModel{
     	                    $opFunc=$this->filter_variable_func($opFunc);
     	                    foreach ($opFunc['names'] as $fk=>$fv){
     	                        $opVals['variable:###']=$opVal;
-    	                        $funcResult=$this->_op_variable_func($module,$appName,$class_list[$appName],$fv,$opFunc['params'][$fk],$opVals);
+    	                        $funcResult=$this->_op_variable_func($module,$appName,$class_list[$appName],$fv,$opFunc['params'][$fk],$opVals,$opMsg,$errorTips);
     	                        if(!$funcResult['success']){
     	                            $funcResult['msg']=$opMsg.$funcResult['msg'];
     	                            if($isTest){
@@ -607,7 +610,7 @@ class ApiApp extends \skycaiji\common\model\BaseModel{
 	    return $result;
 	}
 	
-	private function _op_variable_func($module,$appName,$appClass,$funcName,$funcParam,$opVals){
+	private function _op_variable_func($module,$appName,$appClass,$funcName,$funcParam,$opVals,$opMsg,$errorTips){
 	    static $func_param_num_list=array('process'=>array());
 	    $param_num_list=&$func_param_num_list[$module];
 	    if(is_empty($funcParam,true)){
@@ -670,7 +673,9 @@ class ApiApp extends \skycaiji\common\model\BaseModel{
 	                        
 	                        $funcParam=array_slice($funcParam,0,$paramNum['num']);
 	                    }
+	                    set_g_sc('coll_execute_func_error', $opMsg.$funcTips.$errorTips.'»');
 	                    $result['data']=call_user_func_array($callback, $funcParam);
+	                    set_g_sc('coll_execute_func_error', null);
 	                    $result['success']=true;
 	                }
 	            }else{
@@ -859,7 +864,7 @@ class ApiApp extends \skycaiji\common\model\BaseModel{
 	    if($content){
 	        static $cpatternBase=null;
 	        if(!isset($cpatternBase)){
-	            $cpatternBase=controller('CpatternBase','event');
+	            $cpatternBase=\util\Tools::controller('CpatternBase','event');
 	        }
     	    if($config['type']=='rule'){
     	        
@@ -988,6 +993,25 @@ class ApiApp extends \skycaiji\common\model\BaseModel{
 	        $configStr=\util\Funcs::txt_replace_params(false, false, $configStr, $defaultVal, $fieldRule, $paramValList);
 	        return $configStr;
 	    }
+	}
+	
+	
+	public static function clear_desc_html($info){
+	    if($info){
+	        $info=strip_tags($info,'<a><p><br>');
+	        $info=preg_replace('/(<p\b[^<>]*>)|(<\/p>)/i', '<br/>', $info);
+	        $info=preg_replace_callback('/<a\b[^<>]*>/i', function($match){
+	            if(preg_match('/\bhref\s*=\s*[\'\"]([^\'\"]+?)[\'\"]/i',$match[0],$mhref)){
+	                return '<a href="'.htmlspecialchars($mhref[1]).'" target="_blank">';
+	            }else{
+	                return '<a>';
+	            }
+	        }, $info);
+	        $info=preg_replace('/<br[^<>]*>/i', '<br/>', $info);
+	        $info=preg_replace('/(^<br\/>)|(<br\/>$)/', '', $info);
+	        $info=preg_replace('/(<br\/>[\s\r\n]*)+/', '<br/>', $info);
+	    }
+	    return $info;
 	}
 }
 

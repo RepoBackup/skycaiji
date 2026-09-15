@@ -14,6 +14,7 @@ use skycaiji\admin\model\CacheModel;
 use skycaiji\common\model\DatasetTable;
 class Rdataset extends Release{
     protected $dataset_db=array();
+    protected $dataset_fields=array();
     /**
      * 设置页面post过来的config
      * @param unknown $config
@@ -74,29 +75,38 @@ class Rdataset extends Release{
         $dsConfig=$this->config['dataset'];
         init_array($dsConfig['fields']);
         $dsId=intval($dsConfig['dataset_id']);
-        if(empty($this->dataset_db[$dsId])){
-            $dsData=model('Dataset')->getById($dsId);
+        $mds=model('Dataset');
+        if(empty($this->dataset_fields[$dsId])){
+            $dsData=$mds->getById($dsId);
             if(empty($dsData)){
                 $this->echo_msg('数据集id'.$dsId.'不存在');
                 return $addedNum;
             }
+            $this->dataset_fields[$dsId]=$dsData['config']['fields'];
+        }
+        if(empty($this->dataset_db[$dsId])){
             $this->dataset_db[$dsId]=DatasetTable::getInstance($dsId)->db();
         }
-        $db=&$this->dataset_db[$dsId];
+        $dst=DatasetTable::getInstance($dsId);
+        $dsFields=$this->dataset_fields[$dsId];
+        $db=$this->dataset_db[$dsId];
         foreach ($collFieldsList as $collFieldsKey=>$collFields){
             $contTitle=$collFields['title'];
             $contContent=$collFields['content'];
             $contUrl=$collFields['url'];
+            $contSourceUrl=isset($collFields['data_module_source_url'])?$collFields['data_module_source_url']:$contUrl;
             $collFields=$collFields['fields'];
             $this->init_download_config($this->task,$collFields);
             $db->startTrans();
             $returnData=array('id'=>'','target'=>'','desc'=>'','error'=>'');
             try{
-                $dbData=$this->_replace_fields($dsConfig['fields'],$collFields);
-                $returnData['id']=$db->strict(false)->insert($dbData,false,true);
+                $dbData=$this->txt_replace_fields($dsConfig['fields'],$collFields);
+                $returnData['id']=$dst->setData(0,$dbData,$dsFields,$contSourceUrl,false);
                 if($returnData['id']>0){
                     $addedNum++;
                     $returnData['target']=sprintf('@%d:%d',$dsId,$returnData['id']);
+                }else{
+                    $returnData['error']='发布时数据为空';
                 }
             }catch (\Exception $ex){
                 $returnData['error']=$ex->getMessage();
@@ -108,23 +118,9 @@ class Rdataset extends Release{
             }
             $this->record_collected($contUrl,$returnData,$this->release,array('title'=>$contTitle,'content'=>$contContent));
             
-            unset($collFieldsList[$collFieldsKey]['fields']);
+            $this->exportEnd($returnData,$collFieldsList[$collFieldsKey]);
         }
         return $addedNum;
-    }
-    
-    private function _replace_fields($data,$collFields){
-        if(is_array($data)){
-            foreach ($data as $k=>$v){
-                $data[$k]=$this->_replace_fields($v,$collFields);
-            }
-        }else{
-            $data=preg_replace_callback('/\[\x{91c7}\x{96c6}\x{5b57}\x{6bb5}\:(.+?)\]/u',function($match)use($collFields){
-                $match=$match[1];
-                return $this->get_field_val($collFields[$match]);
-            },$data);
-        }
-        return $data;
     }
 }
 ?>

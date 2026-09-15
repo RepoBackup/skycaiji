@@ -1,0 +1,20 @@
+<div id="win_test_data">
+	<div class="form-group">
+	<ul style="margin-left:-15px;margin-right:5px;">
+	{foreach $list as $item}
+	<li><p style="width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">[<a href="{:url('cdatahub/test?coll_id='.$coll_id.'&data_id='.$item['id'])}" target="_blank">测试</a>] [<a href="{:url('datahub/info?id='.$item['id'])}" target="_blank">源数据:{$item['id']}</a>] {$item['data']|htmlspecialchars}</p></li>
+	{/foreach}
+	</ul>
+	</div>
+	<div style="padding:0 10px;">{$pagenav}</div>
+</div>
+<script type="text/javascript">
+'use strict';
+(function(){
+	$('#win_test_data .pagination a').bind('click',function(e){
+		e.preventDefault();
+		windowModal('测试抓取数据',$(this).attr('href'));
+		return false;
+	});
+})();
+</script>

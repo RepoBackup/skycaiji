@@ -1,5 +1,5 @@
 <ul id="coll_tab" class="nav nav-tabs coll-tab">
-<li{$curTab['']}><a href="#coll_pattern_coll" data-toggle="tab" aria-expanded="{$curTab['']?'true':'false'}">采集器设置</a></li>
+<li{$curTab['']}{$curTab['coll_pattern_coll']}><a href="#coll_pattern_coll" data-toggle="tab" aria-expanded="{$curTab['']?'true':($curTab['coll_pattern_coll']?'true':'false')}">采集器设置</a></li>
 	<li{$curTab['coll_pattern_source']}><a href="#coll_pattern_source" data-toggle="tab" aria-expanded="{$curTab['coll_pattern_source']?'true':'false'}">起始页网址</a></li>
 	<li{$curTab['coll_pattern_link']}><a href="#coll_pattern_link" data-toggle="tab" aria-expanded="{$curTab['coll_pattern_link']?'true':'false'}">内容页网址</a></li>
 	<li{$curTab['coll_pattern_field']}><a href="#coll_pattern_field" data-toggle="tab" aria-expanded="{$curTab['coll_pattern_field']?'true':'false'}">获取内容</a></li>
@@ -10,7 +10,7 @@
 	{/if}
 </ul>
 <div id="coll_tab_content" class="tab-content" style="margin-top:-1px">
-	<div class="tab-pane{$curTabCont['']}" id="coll_pattern_coll">
+	<div class="tab-pane{$curTabCont['']}{$curTabCont['coll_pattern_coll']}" id="coll_pattern_coll">
 		<div class="panel panel-default">
 			<div class="panel-body">
 	     		<div class="form-group">
@@ -98,7 +98,7 @@
        				</div>
        				<p class="help-block">需先配置<a href="{:url('setting/page_render')}" target="_blank">页面渲染</a>，可自动加载ajax内容，注意：渲染后的html源码与未渲染时的不相同，html的变动可能会导致原来的规则失效！</p>
 				</div>
-	     		<div class="form-group">
+	     		<div class="form-group" style="display:none;">
 					<label class="control-label">正则匹配模式</label>
 					<div>
 						<label class="checkbox-inline">
@@ -108,7 +108,7 @@
 							<input type="checkbox" name="config[regexp_flags][]" value="unicode"> 识别unicode字符
 						</label>
 					</div>
-					<p class="help-block">使用正则规则时进行以上模式匹配，默认情况下仅忽略大小写</p>
+					<p class="help-block">使用正则规则时进行以上模式匹配，默认情况下忽略大小写</p>
 				</div>
 			</div>
 		</div>
@@ -473,51 +473,8 @@
 		{/if}
 	</div>
 	<div class="tab-pane{$curTabCont['coll_pattern_field']}" id="coll_pattern_field">
-		<div class="panel panel-default">
-			<div class="panel-body">
-	     		<div class="h-title">
-	     			<label class="control-label">字段列表</label>
-	      			<a href="javascript:;" class="glyphicon glyphicon-plus add-field" title="添加"></a>
-	      			<a href="javascript:;" class="add-field-default" style="float:right;font-weight:normal;">添加默认</a>
-	      		</div>
-	   			<div class="table-responsive">
-	            	<table class="table table-hover c-p-field-list" style="margin-bottom:0px;">
-	                   <thead>
-	                       <tr>
-	                           <th>字段 <a href="javascript:;" class="glyphicon glyphicon-sort sort-field" title="调整字段顺序（按执行采集时的字段顺序排列）将获取方式为字段提取和字段组合的字段排在最后"></a></th>
-	                           <th>数据来源</th>
-	                           <th>获取方式</th>
-	                           <th>操作</th>
-	                           <th title="把字段作为标题进行排重，默认无">
-							      <label class="radio-inline"><input type="radio" name="config[field_title]" value=""><b>标题排重</b></label>
-							   </th>
-							   <th title="把字段作为内容进行排重">内容排重</th>
-	                       </tr>
-	                   </thead>
-	                   <tbody>
-	                   </tbody>
-	            	</table>
-	        	</div>
-	        	<p id="c_p_field_loop_tips" class="help-block" style="margin-bottom:0px;display:none;">开启循环入库后，将以第一个循环字段的数量为准，后面的循环字段会映射第一个循环字段的索引并自动获取相应位置的值入库，非循环字段则以当前值入库；如开启了分页，分页内容也会循环入库</p>
-			</div>
-		</div>
-		<div class="panel panel-default">
-			<div class="panel-heading">
-		    	<h4 class="panel-title">
-		        	<a data-toggle="collapse" href="#coll_pattern_process" aria-expanded="false">数据处理（通用）</a>
-		    	</h4>
-		    </div>
-		    <div id="coll_pattern_process" class="panel-collapse collapse">
-		    	<div class="panel-body">
-		    		<div class="h-title" style="border-bottom:0;">
-		     			<label class="control-label">通用数据处理</label>
-		      			<a href="javascript:;" class="glyphicon glyphicon-plus add-process" title="添加"></a>
-		      		</div>
-		    		<div class="panel-group c-p-process-accordion" style="margin-bottom:0;">
-					</div>
-		    	</div>
-		    </div>
-		</div>
+		
+		{include file="collector:c_set" _module="pattern" /}
 		
 		{include file="cpattern:set_pagination" _page_type="url" /}
 		

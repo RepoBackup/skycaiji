@@ -11,22 +11,45 @@
 
 namespace skycaiji\admin\model;
 class Task extends \skycaiji\common\model\BaseModel{
-    public function getById($id){
-        $data=$this->where('id',$id)->find();
-        if($data){
-            $data=$data->toArray();
-            if(!empty($data['config'])){
-                $data['config']=safe_unserialize($data['config']);
-            }
-            if(empty($data['config'])){
-                $data['config']=array();
-            }
+    
+    public function cacheById($id,$clear=false){
+        static $caches=array();
+        $data=array();
+        if(isset($caches[$id])){
+            $data=$caches[$id];
         }else{
-            $data=array();
+            $data=$this->getById($id);
+            $caches[$id]=$data;
+        }
+        if($clear){
+            
+            unset($caches[$id]);
         }
         return $data;
     }
+    
+    public function getById($id){
+        $data=$this->where('id',$id)->find();
+        $data=$this->convert_data($data);
+        return $data;
+    }
+    
+    public function convert_data($data){
+        if(is_object($data)){
+            $data=$data->toArray();
+        }
+        if($data&&is_array($data)){
+            if(!is_array($data['config'])){
+                $data['config']=safe_unserialize($data['config']);
+                init_array($data['config']);
+            }
+        }
+        init_array($data);
+        return $data;
+    }
+    
     public function loadConfig($taskData){
+        set_g_sc('collect_task_name', $taskData['name']);
         $config=$taskData['config'];
 		if(empty($config)){
 			$config=array();
@@ -48,6 +71,8 @@ class Task extends \skycaiji\common\model\BaseModel{
 		
 		
 		set_g_sc('task_variables',is_array($config['variables'])?$config['variables']:array());
+		
+		set_g_sc('task_datahub',is_array($config['datahub'])?$config['datahub']:array());
 		
 		
 		if(empty($config['same_url'])){
@@ -187,6 +212,12 @@ class Task extends \skycaiji\common\model\BaseModel{
 		    set_g_sc(['c','download_file','name_custom_name'],$original_config['download_file']['name_custom_name']);
 		}
 		$this->set_c_num_names('download_file', array('file_interval'=>'file_interval'), $config, $original_config);
+		
+		if($taskData['module']!='pattern'){
+		    
+		    set_g_sc(['c','download_img','download_img'],0);
+		    set_g_sc(['c','download_file','download_file'],0);
+		}
     }
     
     private function set_c_num_names($cKey,$names,&$config,&$original_config){
@@ -194,6 +225,7 @@ class Task extends \skycaiji\common\model\BaseModel{
             set_g_sc(['c',$cKey,$k],is_empty($config[$v],true)?$original_config[$cKey][$k]:$config[$v]);
         }
     }
+    
     public function compatible_config($config){
         
         if(!empty($config)&&is_array($config)){
@@ -215,6 +247,15 @@ class Task extends \skycaiji\common\model\BaseModel{
         }
         return $config;
     }
+    
+    public function module_is_pattern($module){
+        if($module=='pattern'){
+            return true;
+        }else{
+            return false;
+        }
+    }
+    
 	
 	public function set_backstage($taskId){
 	    if($taskId>0){

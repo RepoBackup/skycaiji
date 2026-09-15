@@ -46,8 +46,12 @@ class PHPExcel_Writer_Excel5_Font
      *
      * @param PHPExcel_Style_Font $font
      */
-    public function __construct(PHPExcel_Style_Font $font = null)
+    public function __construct($font = null)
     {
+if ($font !== null && !$font instanceof PHPExcel_Style_Font) {
+    throw new \InvalidArgumentException('参数$font必须是PHPExcel_Style_Font实例');//[修改]兼容类型约束
+}
+
         $this->colorIndex = 0x7FFF;
         $this->font = $font;
     }

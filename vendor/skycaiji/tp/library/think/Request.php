@@ -1151,7 +1151,7 @@ class Request
                 break;
             // 布尔
             case 'b':
-                $data = (boolean) $data;
+                $data = (bool) $data;
                 break;
             // 字符串
             case 's':

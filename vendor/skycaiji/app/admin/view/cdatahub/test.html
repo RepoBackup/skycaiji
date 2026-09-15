@@ -1,0 +1,34 @@
+{extend name="common:main" /}
+{block name="cssjs"}
+<link rel="stylesheet" href="__PUBLIC__/static/css/collector.css?{$Think.config.html_v}">
+{/block}
+{block name="content"}
+<div class="box box-default" id="win_test">
+	<div class="box-body">
+		<div class="form-group">
+		  	<div class="input-group">
+		  		<div class="input-group-addon" style="background:#f4f4f4;">输入数据ID</div>
+		  		<input type="text" class="form-control" name="data_id" value="{$dataId?$dataId:''}" />
+		 		<div class="input-group-btn"><button type="button" class="btn btn-default test-sub">确定</button></div>
+		  	</div>
+		</div>
+		<div class="field-vals"></div>
+		<div class="panel panel-default echo-msg-box" style="display:none;margin-top:20px;margin-bottom:5px;">
+			<div class="panel-heading">
+		    	<h4 class="panel-title"><a data-toggle="collapse" href="#win_test_echo_msg_box" aria-expanded="false" class="collapsed">插件中 \plugin\skycaiji::output 输出的内容</a></h4>
+		   	</div>
+		    <div class="panel-collapse collapse" id="win_test_echo_msg_box">
+		    	<div class="panel-body">
+		    	</div>
+		    </div>
+		</div>
+		<script type="text/javascript">
+		'use strict';
+		$.getScript("__PUBLIC__/static/js/admin/cdata.js?{$Think.config.html_v}", function() {
+			var cdataTest=new CdataTest("{$collData['id']}",'datahub');
+			cdataTest.test();
+		});
+		</script>
+	</div>
+</div>
+{/block}

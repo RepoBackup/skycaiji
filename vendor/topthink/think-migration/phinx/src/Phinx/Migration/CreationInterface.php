@@ -44,7 +44,7 @@ interface CreationInterface
      * @param InputInterface|null  $input
      * @param OutputInterface|null $output
      */
-    public function __construct(InputInterface $input = null, OutputInterface $output = null);
+    public function __construct($input = null, $output = null);
 
     /**
      * @param InputInterface $input

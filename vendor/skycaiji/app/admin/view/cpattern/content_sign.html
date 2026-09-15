@@ -17,13 +17,13 @@
 	</div>
 	<div class="form-group" id="c_p_content_sign_module">
 		<div class="c-p-content-sign-module" data-module="rule">
-			{include file="cpattern:rule_module" _type="rule" _name="content_sign" _name_pre="" _allow_loop="" /}
+			{include file="collector:c_rule_module" _type="rule" _name="content_sign" _name_pre="" _allow_loop="" /}
 		</div>
 		<div class="c-p-content-sign-module" data-module="xpath" style="display:none;">
-			{include file="cpattern:rule_module" _type="xpath" _name="content_sign" _name_pre="" _allow_loop="" /}
+			{include file="collector:c_rule_module" _type="xpath" _name="content_sign" _name_pre="" _allow_loop="" /}
 		</div>
 		<div class="c-p-content-sign-module" data-module="json" style="display:none;">
-			{include file="cpattern:rule_module" _type="json" _name="content_sign" _name_pre="" _allow_loop="" /}
+			{include file="collector:c_rule_module" _type="json" _name="content_sign" _name_pre="" _allow_loop="" /}
 		</div>
 	</div>
 	
@@ -73,7 +73,7 @@
 			    		<textarea rows="3" data-func-func-param="1" class="form-control" data-merge-type="content_sign" data-placeholder="默认传入当前内容标签的值" placeholder="默认传入当前内容标签的值"></textarea>
 			    		<div class="input-group-addon">
 			    			<a href="javascript:;" title="调用全局内容标签" role="button" class="dropdown-toggle btn-page-signs" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-				            	{:cp_sign('match','N')}
+				            	{:coll_sign('match','N')}
 				            	<span class="caret"></span>
 				            </a>
 							<div class="dropdown-menu dropdown-menu-right"></div>

@@ -78,8 +78,15 @@ abstract class PdoAdapter implements AdapterInterface
      * @param InputInterface $input Input Interface
      * @param OutputInterface $output Output Interface
      */
-    public function __construct(array $options, InputInterface $input = null, OutputInterface $output = null)
+    public function __construct(array $options, $input = null, $output = null)
     {
+if ($input !== null && !$input instanceof InputInterface) {
+    throw new \InvalidArgumentException('参数$input必须是InputInterface实例');//[修改]兼容类型约束
+}
+if ($output !== null && !$output instanceof OutputInterface) {
+    throw new \InvalidArgumentException('参数$output必须是OutputInterface实例');//[修改]兼容类型约束
+}
+
         $this->setOptions($options);
         if (null !== $input) {
             $this->setInput($input);

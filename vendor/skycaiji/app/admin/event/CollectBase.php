@@ -12,23 +12,10 @@
 namespace skycaiji\admin\event;
 
 class CollectBase extends \skycaiji\admin\controller\CollectController {
-	/*防止执行采集时出现错误模板后终止采集*/
-	public function echo_error($msg = '', $url = null, $data = array(), $wait = 3, array $header = []){
-	    if($this->is_collecting()){
-	        
-	        $this->echo_msg($msg,'red');
-	        return null;
-	    }else{
-		    $url=$url?$url:'';
-		    $msg=$this->_echo_msg_str($msg,'red');
-		    $txt=g_sc('collect_echo_msg_txt');
-		    $txt=$txt?($txt."\r\n".$msg):$msg;
-		    parent::error($txt,$url,$data,$wait,$header);
-		}
-	}
-	/*采集器的输出内容需要重写，只有正在采集时才输出内容*/
+	
 	public function echo_msg($strArgs,$color='red',$echo=true,$end_str='',$div_style=''){
-	    if($this->is_collecting()){
+	    if($this->is_collecting(true)){
+	        
 			parent::echo_msg($strArgs,$color,$echo,$end_str,$div_style);
 		}else{
 		    $msg=$this->_echo_msg_str($strArgs,$color,$end_str,$div_style);
@@ -38,39 +25,47 @@ class CollectBase extends \skycaiji\admin\controller\CollectController {
 		}
 	}
 	
-	public function echo_url_msg($strArgs,$url,$opened='',$color='black'){
-	    init_array($strArgs);
-	    if($opened){
+	public function echo_msg_exit($strArgs,$color='red',$echo=true,$end_str='',$div_style=''){
+	    if($this->is_collecting(true)){
 	        
-	        $strArgs[0].='：%s';
-	        $strArgs[]=$opened.$url;
+	        parent::echo_msg_exit($strArgs,$color,$echo,$end_str,$div_style);
 	    }else{
-	        
-	        $strArgs[0].='：<a href="%s" target="_blank">%s</a>';
-	        $strArgs[]=$url;
-	        $strArgs[]=$url;
-	    }
-	    
-	    if(!\util\Param::is_task_close_echo()){
-	        
-	        $urlMsgLink=\util\Tools::echo_url_msg_link($url,true);
-	        if($urlMsgLink&&is_array($urlMsgLink)){
-	            $strArgs[0].=$urlMsgLink[0];
-	            $strArgs[]=$urlMsgLink[1];
+	        $msg=$this->_echo_msg_str($strArgs,$color,$end_str,$div_style);
+	        $txt=g_sc('collect_echo_msg_txt');
+	        $txt=$txt?($txt."\r\n".$msg):$msg;
+	        if(\util\Param::is_collector_single()){
+	            
+	            $txt=strip_tags($txt);
+	            $this->jsonSend($txt);
+	        }else{
+	            
+	            parent::error($txt,'');
 	        }
 	    }
-	    
-	    $this->echo_msg($strArgs,$color);
 	}
 	
 	/*判断采集器正在执行中*/
-	public function is_collecting(){
-	    return \util\Param::is_collector_collecting();
+	public function is_collecting($notIsSingle=false){
+	    if($notIsSingle){
+	        
+	        return \util\Param::is_collector_collecting()&&!\util\Param::is_collector_single();
+	    }else{
+	        
+	        return \util\Param::is_collector_collecting();
+	    }
+	}
+	
+	
+	public function set_single_collecting(){
+	    \util\Param::set_collector_collecting();
+	    \util\Param::set_task_close_echo();
+	    \util\Param::set_collector_single();
 	}
 	
 	
 	public function collect_stopped($taskId,$interval=5){
-	    if($this->is_collecting()){
+	    if($this->is_collecting(true)&&$taskId>0){
+	        
     	    $lastData=g_sc('collect_stopped_last_data');
     	    init_array($lastData);
     	    $nowTime=time();
@@ -79,83 +74,85 @@ class CollectBase extends \skycaiji\admin\controller\CollectController {
     	    if($lastData['id']!=$taskId||($nowTime-$lastData['time'])>$interval){
     	        
     	        set_g_sc('collect_stopped_last_data',array('id'=>$taskId,'time'=>$nowTime));
-    	        if($taskId>0){
-    	            $stop=false;
-    	            if(!\skycaiji\admin\model\Collector::url_backstage_run()){
-    	                
-    	                $logFilename=\skycaiji\admin\model\Collector::echo_msg_filename();
-    	                if(!empty($logFilename)){
-    	                    
-    	                    if(!file_exists($logFilename)){
-    	                        $stop=true;
-    	                    }
-    	                }
-    	            }
-    	            if(!$stop){
-    	                
-    	                if(\skycaiji\admin\model\CacheModel::getInstance('backstage_task')->getCount($taskId)<=0){
-    	                    
-    	                    $stop=true;
-    	                }
-    	            }
-    	            if($stop){
-    	                $this->echo_msg('已终止运行');
-    	                $this->echo_msg_end();
-    	                throw new \Exception('[exception_exit_collect]');
-    	            }
-    	        }
-    	    }
+    	        
+	            $stop=false;
+	            if(!\skycaiji\admin\model\Collector::url_backstage_run()){
+	                
+	                $logFilename=\skycaiji\admin\model\Collector::echo_msg_filename();
+	                if(!empty($logFilename)){
+	                    
+	                    if(!file_exists($logFilename)){
+	                        $stop=true;
+	                    }
+	                }
+	            }
+	            if(!$stop){
+	                
+	                if(\skycaiji\admin\model\CacheModel::getInstance('backstage_task')->getCount($taskId)<=0){
+	                    
+	                    $stop=true;
+	                }
+	            }
+	            if($stop){
+	                $this->echo_msg('已终止运行');
+	                $this->echo_msg_end();
+	                
+	                set_error_handler(function($errno, $errstr) {
+	                    return false;
+	                });
+	                trigger_error('',E_USER_ERROR);
+	                
+	                
+	            }
+	        }
 	    }
 	}
 	
 	/*间隔执行sleep*/
-	public function collect_sleep($num,$isMillisecond=false,$isHtmlInterval=false){
+	public function collect_sleep($taskId,$num,$isMillisecond=false,$isHtmlInterval=false){
 	    $num=intval($num);
-	    if($num>0){
-    	    if($this->is_collecting()){
-    	        
-    	        $taskId=g_sc('collect_task_id');
-    	        if($taskId>0){
-            	    $interval=10;
-            	    if($isMillisecond){
-            	        
-            	        $interval=$interval*1000;
-            	    }
-            	    if($num>$interval){
-            	        
-            	        if($isHtmlInterval){
-            	            
-            	            $this->echo_msg(array('暂停%s%s后继续执行',$num,$isMillisecond?('毫秒（'.floatval($num/1000).'秒）'):'秒'),'black');
-            	        }
-            	        $zheng=floor($num/$interval);
-            	        $yu=$num%$interval;
-            	        for($i=1;$i<=$zheng;$i++){
-            	            if($isMillisecond){
-            	                usleep($interval*1000);
-            	            }else{
-            	                sleep($interval);
-            	            }
-            	            $this->collect_stopped($taskId);
-            	        }
-            	        if($yu>0){
-            	            if($isMillisecond){
-            	                usleep($yu*1000);
-            	            }else{
-            	                sleep($yu);
-            	            }
-            	            $this->collect_stopped($taskId);
-            	        }
-            	    }else{
-            	        
-            	        if($isMillisecond){
-            	            usleep($num*1000);
-            	        }else{
-            	            sleep($num);
-            	        }
-            	        $this->collect_stopped($taskId);
-            	    }
-    	        }
-    	    }
+	    if($num>0&&$this->is_collecting(true)){
+            
+            if($taskId>0){
+        	    $interval=10;
+        	    if($isMillisecond){
+        	        
+        	        $interval=$interval*1000;
+        	    }
+        	    if($num>$interval){
+        	        
+        	        if($isHtmlInterval){
+        	            
+        	            $this->echo_msg(array('暂停%s%s后继续执行',$num,$isMillisecond?('毫秒（'.floatval($num/1000).'秒）'):'秒'),'black');
+        	        }
+        	        $zheng=floor($num/$interval);
+        	        $yu=$num%$interval;
+        	        for($i=1;$i<=$zheng;$i++){
+        	            if($isMillisecond){
+        	                usleep($interval*1000);
+        	            }else{
+        	                sleep($interval);
+        	            }
+        	            $this->collect_stopped($taskId);
+        	        }
+        	        if($yu>0){
+        	            if($isMillisecond){
+        	                usleep($yu*1000);
+        	            }else{
+        	                sleep($yu);
+        	            }
+        	            $this->collect_stopped($taskId);
+        	        }
+        	    }else{
+        	        
+        	        if($isMillisecond){
+        	            usleep($num*1000);
+        	        }else{
+        	            sleep($num);
+        	        }
+        	        $this->collect_stopped($taskId);
+        	    }
+            }
 	    }
 	}
 	
@@ -280,7 +277,7 @@ class CollectBase extends \skycaiji\admin\controller\CollectController {
 	    }
 	}
 	
-	public function retry_do_func(&$retryCur,$retryMax,$echoMsg,$echoError=null){
+	public function retry_do_func(&$retryCur,$retryMax,$echoMsg){
 	    $do=false;
 	    if($retryMax>0){
 	        
@@ -291,18 +288,15 @@ class CollectBase extends \skycaiji\admin\controller\CollectController {
 	            $do=true;
 	        }else{
 	            $retryCur=0;
-	            if($this->is_collecting()){
+	            if($this->is_collecting(true)){
 	                
 	                if($echoMsg){
 	                    $this->echo_msg(' / '.htmlspecialchars($echoMsg),'black',true,'','display:inline;margin-right:5px;');
 	                }
 	            }else{
 	                
-	                if($echoError){
-	                    $this->echo_error(htmlspecialchars($echoError));
-	                }
+	                $do=0;
 	            }
-	            
 	        }
 	    }
 	    return $do;

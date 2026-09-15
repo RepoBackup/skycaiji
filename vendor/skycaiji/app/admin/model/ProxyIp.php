@@ -197,7 +197,7 @@ class ProxyIp extends \skycaiji\common\model\BaseModel {
 		static $list=array();
 		$md5=md5($format);
 		if(!isset($list[$md5])){
-		    $format=controller('admin/Cpattern','event')->correct_reg_pattern($format);
+		    $format=\util\Tools::controller('admin/Cpattern','event')->correct_reg_pattern($format);
 			$format=str_replace(array('[ip]','[端口]','[用户名]','[密码]','(*)')
 				,array('(?P<ip>(\d+\.){3}\d+)','(?P<port>\d+)','(?P<user>[^\s\\\'\"\<\>\,]*)','(?P<pwd>[^\s\\\'\"\<\>\,]*)','[\s\S]*?')
 				,$format);

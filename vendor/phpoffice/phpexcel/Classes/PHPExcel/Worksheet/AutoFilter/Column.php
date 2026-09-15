@@ -120,8 +120,12 @@ class PHPExcel_Worksheet_AutoFilter_Column
      *    @param    string                           $pColumn        Column (e.g. A)
      *    @param    PHPExcel_Worksheet_AutoFilter  $pParent        Autofilter for this column
      */
-    public function __construct($pColumn, PHPExcel_Worksheet_AutoFilter $pParent = null)
+    public function __construct($pColumn, $pParent = null)
     {
+if ($pParent !== null && !$pParent instanceof PHPExcel_Worksheet_AutoFilter) {
+    throw new \InvalidArgumentException('参数$pParent必须是PHPExcel_Worksheet_AutoFilter实例');//[修改]兼容类型约束
+}
+
         $this->columnIndex = $pColumn;
         $this->parent = $pParent;
     }
@@ -172,8 +176,12 @@ class PHPExcel_Worksheet_AutoFilter_Column
      * @param PHPExcel_Worksheet_AutoFilter
      * @return PHPExcel_Worksheet_AutoFilter_Column
      */
-    public function setParent(PHPExcel_Worksheet_AutoFilter $pParent = null)
+    public function setParent($pParent = null)
     {
+if ($pParent !== null && !$pParent instanceof PHPExcel_Worksheet_AutoFilter) {
+    throw new \InvalidArgumentException('参数$pParent必须是PHPExcel_Worksheet_AutoFilter实例');//[修改]兼容类型约束
+}
+
         $this->parent = $pParent;
 
         return $this;

@@ -15,8 +15,8 @@ use skycaiji\admin\model\CacheModel;
 
 class CpatternTest extends BaseController {
     public $eCpattern=null;
-    public function __construct($request = null){
-        parent::__construct($request);
+    protected function _initialize(){
+        parent::_initialize();
         $this->eCpattern= new \skycaiji\admin\event\CpatternSingle();
     }
     
@@ -176,7 +176,7 @@ class CpatternTest extends BaseController {
             if(is_array($contentSign)){
                 foreach ($contentSign as $csk=>$csv){
                     $csk=preg_replace('/^match/', '', $csk);
-                    $frontData['content_sign'][cp_sign('match', $csk)]=$csv;
+                    $frontData['content_sign'][coll_sign('match', $csk)]=$csv;
                 }
             }
             $frontDataList[]=$frontData;
@@ -603,7 +603,7 @@ class CpatternTest extends BaseController {
                 
                 
                 $scjNames=array();
-                $html=preg_replace_callback('/(<[a-zA-Z]+\b[^<>]*)(>)/', function($match)use(&$scjNames){
+                $html=preg_replace_callback('/(<[a-zA-Z]+\b[^<>]*?)(\/{0,1}>)/', function($match)use(&$scjNames){
                     do{
                         $scjName=\util\Funcs::uniqid();
                     }while($scjNames[$scjName]);
@@ -673,9 +673,12 @@ class CpatternTest extends BaseController {
         
         if('get_fields'==$testName){
             $val_list=$this->eCpattern->getFields($test_url);
+            $is_loop=false;
             if(empty($this->eCpattern->first_loop_field)){
                 
                 $val_list=array($val_list);
+            }else{
+                $is_loop=true;
             }
             
             $md5Url=md5($test_url);
@@ -695,14 +698,8 @@ class CpatternTest extends BaseController {
                     $msg='通过数据处理筛除了'.$num.'条数据';
                 }
             }
-            foreach ($val_list as $v_k=>$vals){
-                foreach ($vals as $k=>$v){
-                    $vals[$k]=$v['value'];
-                }
-                $val_list[$v_k]=$vals;
-            }
             
-            $returnData=array('val_list'=>$val_list);
+            $returnData=array('val_list'=>$val_list,'is_loop'=>$is_loop);
             
             if(count($val_list)>1){
                 
@@ -818,7 +815,7 @@ class CpatternTest extends BaseController {
                 
                 $data['list']=$matchList;
                 
-                $this->success('<b>以下是调用的其他页面'.cp_sign('match').'标签</b>',null,$data);
+                $this->success('<b>以下是调用的其他页面'.coll_sign('match').'标签</b>',null,$data);
             }
         }elseif('get_pagination'==$testName){
             
@@ -1077,25 +1074,5 @@ class CpatternTest extends BaseController {
                 return $this->fetch('cpattern:test_match');
             }
         }
-    }
-    
-    public function loop_tableAction(){
-        $collId=input('coll_id/d',0);
-        $op=input('op');
-        
-        $cname='cp_test_loop_tb_'.$collId;
-        
-        $mcache=CacheModel::getInstance();
-        $data=$mcache->getCache($cname,'data');
-        if(empty($data)&&!is_array($data)){
-            $data=array();
-        }
-        
-        $field=input('field','');
-        $width=input('width/d',0);
-        $data[$field]=array('width'=>$width);
-        
-        $mcache->setCache($cname,$data);
-        $this->success();
     }
 }

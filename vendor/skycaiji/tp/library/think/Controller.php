@@ -19,45 +19,52 @@ Loader::import('controller/Jump', TRAIT_PATH, EXT);
 class Controller
 {
     use Jump;
-
+    
     /**
      * @var \think\View 视图类实例
      */
     protected $view;
-
+    
     /**
      * @var \think\Request Request 实例
      */
     protected $request;
-
+    
     /**
      * @var bool 验证失败是否抛出异常
      */
     protected $failException = false;
-
+    
     /**
      * @var bool 是否批量验证
      */
     protected $batchValidate = false;
-
+    
     /**
      * @var array 前置操作方法列表
      */
     protected $beforeActionList = [];
-
+    
     /**
      * 构造方法
      * @access public
      * @param Request $request Request 对象
      */
-    public function __construct(Request $request = null)
+    public function __construct($_skycaiji_request = null)
     {
+        //注意：由于url参数会自动注入Controller的__construct中，如果url有request参数，$request没有Request约束就会变成参数值，所以改一个复杂的名称
+        $request=$_skycaiji_request;
+        unset($_skycaiji_request);
+        if ($request !== null && !$request instanceof Request) {
+            throw new \InvalidArgumentException('参数$request必须是Request实例');//[修改]兼容类型约束
+        }
+        
         $this->view    = View::instance(Config::get('template'), Config::get('view_replace_str'));
         $this->request = is_null($request) ? Request::instance() : $request;
-
+        
         // 控制器初始化
         $this->_initialize();
-
+        
         // 前置操作方法
         if ($this->beforeActionList) {
             foreach ($this->beforeActionList as $method => $options) {
@@ -67,7 +74,7 @@ class Controller
             }
         }
     }
-
+    
     /**
      * 初始化操作
      * @access protected
@@ -75,7 +82,7 @@ class Controller
     protected function _initialize()
     {
     }
-
+    
     /**
      * 前置操作
      * @access protected
@@ -89,7 +96,7 @@ class Controller
             if (is_string($options['only'])) {
                 $options['only'] = explode(',', $options['only']);
             }
-
+            
             if (!in_array($this->request->action(), $options['only'])) {
                 return;
             }
@@ -97,15 +104,15 @@ class Controller
             if (is_string($options['except'])) {
                 $options['except'] = explode(',', $options['except']);
             }
-
+            
             if (in_array($this->request->action(), $options['except'])) {
                 return;
             }
         }
-
+        
         call_user_func([$this, $method]);
     }
-
+    
     /**
      * 加载模板输出
      * @access protected
@@ -119,7 +126,7 @@ class Controller
     {
         return $this->view->fetch($template, $vars, $replace, $config);
     }
-
+    
     /**
      * 渲染内容输出
      * @access protected
@@ -133,7 +140,7 @@ class Controller
     {
         return $this->view->display($content, $vars, $replace, $config);
     }
-
+    
     /**
      * 模板变量赋值
      * @access protected
@@ -144,10 +151,10 @@ class Controller
     protected function assign($name, $value = '')
     {
         $this->view->assign($name, $value);
-
+        
         return $this;
     }
-
+    
     /**
      * 初始化模板引擎
      * @access protected
@@ -157,10 +164,10 @@ class Controller
     protected function engine($engine)
     {
         $this->view->engine($engine);
-
+        
         return $this;
     }
-
+    
     /**
      * 设置验证失败后是否抛出异常
      * @access protected
@@ -170,10 +177,10 @@ class Controller
     protected function validateFailException($fail = true)
     {
         $this->failException = $fail;
-
+        
         return $this;
     }
-
+    
     /**
      * 验证数据
      * @access protected
@@ -195,35 +202,35 @@ class Controller
             if (strpos($validate, '.')) {
                 list($validate, $scene) = explode('.', $validate);
             }
-
+            
             $v = Loader::validate($validate);
-
+            
             !empty($scene) && $v->scene($scene);
         }
-
+        
         // 批量验证
         if ($batch || $this->batchValidate) {
             $v->batch(true);
         }
-
+        
         // 设置错误信息
         if (is_array($message)) {
             $v->message($message);
         }
-
+        
         // 使用回调验证
         if ($callback && is_callable($callback)) {
             call_user_func_array($callback, [$v, &$data]);
         }
-
+        
         if (!$v->check($data)) {
             if ($this->failException) {
                 throw new ValidateException($v->getError());
             }
-
+            
             return $v->getError();
         }
-
+        
         return true;
     }
 }

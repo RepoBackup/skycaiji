@@ -336,8 +336,9 @@ class FuncApp extends \skycaiji\common\model\BaseModel{
 	 * @param string $defaultVal 默认传入值
 	 * @param string $paramsStr 输入的参数（有换行符）
 	 * @param array $paramValList 所有参数值（调用参数时使用）
+     * @param string $errorTips 错误提示信息
 	 */
-	public function execute_func($module,$funcName,$defaultVal,$paramsStr,$paramValList=null){
+	public function execute_func($module,$funcName,$defaultVal,$paramsStr,$paramValList=null,$errorTips=null){
 	    
 	    static $func_class_list=array('process'=>array(),'processIf'=>array(),'contentSign'=>array(),'variable'=>array(),'downloadImg'=>array(),'downloadFile'=>array());
 	    static $func_param_num_list=array('process'=>array(),'processIf'=>array(),'contentSign'=>array(),'variable'=>array(),'downloadImg'=>array(),'downloadFile'=>array());
@@ -349,6 +350,8 @@ class FuncApp extends \skycaiji\common\model\BaseModel{
 	        'downloadImg'=>'/\[\x{56fe}\x{7247}\:.+?\]/u',
 	        'downloadFile'=>'/\[\x{6587}\x{4ef6}\:.+?\]/u',
 	    );
+	    
+	    $errorTips=$errorTips?$errorTips:'';
 	    $class_list=&$func_class_list[$module];
 	    $param_num_list=&$func_param_num_list[$module];
 	    $param_rule=$func_param_rules[$module];
@@ -364,7 +367,7 @@ class FuncApp extends \skycaiji\common\model\BaseModel{
 	            if(!function_exists($funcNameFmt)&&$funcNameFmt!='empty'){
 	                
 	                $result['msg']=$options['loc'].'»无效的函数：'.$funcNameFmt;
-	            }elseif(!array_key_exists($funcNameFmt, config($options['config']))&&!array_key_exists($funcNameFmt, config($options['extend']))){
+	            }elseif(!array_key_exists($funcNameFmt,(array)config($options['config']))&&!array_key_exists($funcNameFmt,(array)config($options['extend']))){
 	                
 	                $result['msg']=$options['loc'].'»未配置函数：'.$funcNameFmt;
 	            }else{
@@ -456,7 +459,9 @@ class FuncApp extends \skycaiji\common\model\BaseModel{
 	                            $funcParams=array_slice($funcParams,0,$paramNum['num']);
 	                        }
 	                        if($result['success']){
+	                            set_g_sc('coll_execute_func_error', $options['loc'].'»'.$funcName.$errorTips.'»');
 	                            $result['data']=call_user_func_array($callback, $funcParams);
+	                            set_g_sc('coll_execute_func_error', null);
 	                        }
 	                    }
 	                }catch (\Exception $ex){

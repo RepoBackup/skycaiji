@@ -72,8 +72,12 @@ class Command
      * 设置控制台
      * @param Console $console
      */
-    public function setConsole(Console $console = null)
+    public function setConsole($console = null)
     {
+        if ($console !== null && !$console instanceof Console) {
+            throw new \InvalidArgumentException('参数$console必须是Console实例');//[修改]兼容类型约束
+        }
+        
         $this->console = $console;
     }
 

@@ -37,8 +37,12 @@ class PHPExcel_Writer_Excel2007_Chart extends PHPExcel_Writer_Excel2007_WriterPa
      * @return  string            XML Output
      * @throws  PHPExcel_Writer_Exception
      */
-    public function writeChart(PHPExcel_Chart $pChart = null, $calculateCellValues = true)
+    public function writeChart($pChart = null, $calculateCellValues = true)
     {
+if ($pChart !== null && !$pChart instanceof PHPExcel_Chart) {
+    throw new \InvalidArgumentException('参数$pChart必须是PHPExcel_Chart实例');//[修改]兼容类型约束
+}
+
         $this->calculateCellValues = $calculateCellValues;
 
         // Create XML writer
@@ -116,7 +120,7 @@ class PHPExcel_Writer_Excel2007_Chart extends PHPExcel_Writer_Excel2007_WriterPa
      *
      * @throws  PHPExcel_Writer_Exception
      */
-    private function writeTitle(PHPExcel_Chart_Title $title = null, $objWriter)
+    private function writeTitle(PHPExcel_Chart_Title $title, $objWriter)
     {
         if (is_null($title)) {
             return;
@@ -161,7 +165,7 @@ class PHPExcel_Writer_Excel2007_Chart extends PHPExcel_Writer_Excel2007_WriterPa
      *
      * @throws  PHPExcel_Writer_Exception
      */
-    private function writeLegend(PHPExcel_Chart_Legend $legend = null, $objWriter)
+    private function writeLegend(PHPExcel_Chart_Legend $legend, $objWriter)
     {
         if (is_null($legend)) {
             return;
@@ -216,8 +220,15 @@ class PHPExcel_Writer_Excel2007_Chart extends PHPExcel_Writer_Excel2007_WriterPa
      *
      * @throws  PHPExcel_Writer_Exception
      */
-    private function writePlotArea(PHPExcel_Chart_PlotArea $plotArea, PHPExcel_Chart_Title $xAxisLabel = null, PHPExcel_Chart_Title $yAxisLabel = null, $objWriter, PHPExcel_Worksheet $pSheet, PHPExcel_Chart_Axis $xAxis, PHPExcel_Chart_Axis $yAxis, PHPExcel_Chart_GridLines $majorGridlines, PHPExcel_Chart_GridLines $minorGridlines)
+    private function writePlotArea(PHPExcel_Chart_PlotArea $plotArea, $xAxisLabel, $yAxisLabel, $objWriter, PHPExcel_Worksheet $pSheet, PHPExcel_Chart_Axis $xAxis, PHPExcel_Chart_Axis $yAxis, PHPExcel_Chart_GridLines $majorGridlines, PHPExcel_Chart_GridLines $minorGridlines)
     {
+if ($xAxisLabel !== null && !$xAxisLabel instanceof PHPExcel_Chart_Title) {
+    throw new \InvalidArgumentException('参数$xAxisLabel必须是PHPExcel_Chart_Title实例');//[修改]兼容类型约束
+}
+if ($yAxisLabel !== null && !$yAxisLabel instanceof PHPExcel_Chart_Title) {
+    throw new \InvalidArgumentException('参数$yAxisLabel必须是PHPExcel_Chart_Title实例');//[修改]兼容类型约束
+}
+
         if (is_null($plotArea)) {
             return;
         }
@@ -262,7 +273,7 @@ class PHPExcel_Writer_Excel2007_Chart extends PHPExcel_Writer_Excel2007_WriterPa
                 //    Line only, Line3D can't be smoothed
 
                 $objWriter->startElement('c:smooth');
-                $objWriter->writeAttribute('val', (integer) $plotGroup->getSmoothLine());
+                $objWriter->writeAttribute('val', (int) $plotGroup->getSmoothLine());
                 $objWriter->endElement();
             } elseif (($chartType === PHPExcel_Chart_DataSeries::TYPE_BARCHART) ||($chartType === PHPExcel_Chart_DataSeries::TYPE_BARCHART_3D)) {
                 $objWriter->startElement('c:gapWidth');
@@ -1257,8 +1268,12 @@ class PHPExcel_Writer_Excel2007_Chart extends PHPExcel_Writer_Excel2007_WriterPa
      *
      * @throws  PHPExcel_Writer_Exception
      */
-    private function writePlotSeriesValues($plotSeriesValues, $objWriter, $groupType, $dataType = 'str', PHPExcel_Worksheet $pSheet=null)
+    private function writePlotSeriesValues($plotSeriesValues, $objWriter, $groupType, $dataType = 'str', $pSheet=null)
     {
+if ($pSheet !== null && !$pSheet instanceof PHPExcel_Worksheet) {
+    throw new \InvalidArgumentException('参数$pSheet必须是PHPExcel_Worksheet实例');//[修改]兼容类型约束
+}
+
         if (is_null($plotSeriesValues)) {
             return;
         }
@@ -1396,7 +1411,7 @@ class PHPExcel_Writer_Excel2007_Chart extends PHPExcel_Writer_Excel2007_WriterPa
      *
      * @throws  PHPExcel_Writer_Exception
      */
-    private function writeLayout(PHPExcel_Chart_Layout $layout = null, $objWriter)
+    private function writeLayout(PHPExcel_Chart_Layout $layout, $objWriter)
     {
         $objWriter->startElement('c:layout');
 

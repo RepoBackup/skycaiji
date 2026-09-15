@@ -1,0 +1,14 @@
+{if $dsNames}
+<ul class="row" id="win_c_d_datasets">
+{foreach $dsNames as $k=>$v}
+<li class="col-xs-6" style="padding:3px 15px 3px 0;{if $dsId==$k}font-weight:bold;{/if}">
+	<a href="javascript:;" data-dataset-id="{$k}">{$v}</a>
+</li>
+{/foreach}
+</ul>
+<script type="text/javascript">
+c_dataset.init_dataset('{$dsObjid}',{$dsNames|json_encode},{$dsFields|json_encode});
+</script>
+{else/}
+<div>没有{$Think.lang.cdataset}，请先添加<a href="{:url('dataset/set')}" target="_blank">{$Think.lang.cdataset}</a></div>
+{/if}

@@ -109,6 +109,8 @@
 .treeview>ul.treeview-menu>li>ul.treeview-menu>li:FIRST-CHILD{padding-top:0px!important;}
 .treeview>ul.treeview-menu>li>ul.treeview-menu>li:LAST-CHILD{padding-bottom:0px!important;}
 
+.sidebar-menu .opened-menu > .treeview-menu{display:block;}
+
 .modal-body .form-group:last-child>button[type="submit"]{margin-bottom:-15px;}
 .modal-body .form-group .help-block:last-child{margin-bottom:0;}
 
@@ -128,6 +130,8 @@
 
 .pdb_0{padding-bottom:0;}
 
+.mrl_0{margin-left:-1px;}
+
 .h-title{
     color: #666;
     font-weight: bold;
@@ -137,9 +141,7 @@
 }
 .h-title label{font-size:16px;}
 
-.verify-img{cursor:pointer;height:32px;display:table-cell}
-
-.cur-menu > .treeview-menu{display:block;}
+.verify-img{min-width:78px;cursor:pointer;height:32px;display:table-cell}
 
 .treeview-skins{color:#8aa4af;}
 .treeview-skins li{padding:5px 15px 5px 0px;margin:0;font-size:14px;vertical-align:middle;overflow:hidden;}
@@ -249,10 +251,10 @@ div.in-line-mg{display:inline;margin-right:5px;}
 .datatable th.chk,.datatable td.chk{min-width:50px;width:50px;text-align:center;}
 .datatable .chk-all{line-height:14px;margin:0;}
 .datatable .chk-all span{display:block;font-size:12px;}
-.datatable .name{max-width:450px;overflow:hidden;text-overflow:ellipsis;}
+.datatable .name{max-width:350px;overflow:hidden;text-overflow:ellipsis;}
 .datatable .url{max-width:260px;overflow:hidden;text-overflow:ellipsis;}
 .datatable .desc{max-width:400px;white-space:normal;overflow:hidden;word-wrap:break-word;word-break:break-all;}
-.datatable .sort{width:80px;min-width:80px;}
+.datatable .sort{width:65px;min-width:65px;}
 .datatable .sort input{height:auto;padding:0 5px;min-width:100%!important;}
 .datatable .bg0{background:#fcfcfc}
 .datatable .chk-inline{vertical-align:baseline;margin-right:5px;}
@@ -306,6 +308,7 @@ table.table thead .sorting_desc:after {
 
 /*错误提示框*/
 .toast-top-center{margin-top:10px;}
+.toast-top-center .toast-error .toast-message div{color:#fff!important;}
 
 /*modal框*/
 .myModal{}

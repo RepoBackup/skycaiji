@@ -1,0 +1,7 @@
+{foreach $collFields as $v}
+<div class="file-field">
+	<label class="checkbox-inline"><input type="checkbox" name="file[hide_fields][]" value="{$v}" {if in_array($v,$hideFields)} checked="checked"{/if} />{$v}</label>
+	<em class="glyphicon icon-drag-move" title="移动"></em>
+	<input type="hidden" name="file[sort_fields][]" value="{$v}" />
+</div>
+{/foreach}

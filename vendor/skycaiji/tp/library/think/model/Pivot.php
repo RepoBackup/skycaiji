@@ -28,8 +28,12 @@ class Pivot extends Model
      * @param Model         $parent 上级模型
      * @param string        $table 中间数据表名
      */
-    public function __construct($data = [], Model $parent = null, $table = '')
+    public function __construct($data = [], $parent = null, $table = '')
     {
+        if ($parent !== null && !$parent instanceof Model) {
+            throw new \InvalidArgumentException('参数$parent必须是Model实例');//[修改]兼容类型约束
+        }
+        
         $this->parent = $parent;
 
         if (is_null($this->name)) {

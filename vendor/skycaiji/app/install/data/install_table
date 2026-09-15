@@ -11,8 +11,8 @@ CREATE TABLE `skycaiji_api_app` (
   `name` varchar(100) NOT NULL DEFAULT '',
   `desc` text,
   `enable` tinyint(1) NOT NULL DEFAULT '0',
-  `addtime` int(11) NOT NULL DEFAULT '0',
-  `uptime` int(11) NOT NULL DEFAULT '0',
+  `addtime` bigint(20) NOT NULL DEFAULT '0',
+  `uptime` bigint(20) NOT NULL DEFAULT '0',
   `provider_id` int(11) NOT NULL DEFAULT '0',
   `config` mediumtext,
   PRIMARY KEY (`id`),
@@ -31,8 +31,8 @@ CREATE TABLE `skycaiji_app` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `app` varchar(100) NOT NULL,
   `provider_id` int(11) NOT NULL DEFAULT '0',
-  `addtime` int(11) NOT NULL DEFAULT '0',
-  `uptime` int(11) NOT NULL DEFAULT '0',
+  `addtime` bigint(20) NOT NULL DEFAULT '0',
+  `uptime` bigint(20) NOT NULL DEFAULT '0',
   `config` mediumtext,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
@@ -46,7 +46,7 @@ DROP TABLE IF EXISTS `skycaiji_cache_backstage_task`;
 CREATE TABLE `skycaiji_cache_backstage_task` (
   `cname` varchar(32) NOT NULL,
   `ctype` tinyint(3) unsigned NOT NULL,
-  `dateline` int(10) unsigned NOT NULL,
+  `dateline` bigint(20) NOT NULL DEFAULT '0',
   `data` mediumblob NOT NULL,
   PRIMARY KEY (`cname`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
@@ -60,7 +60,7 @@ DROP TABLE IF EXISTS `skycaiji_cache_collecting`;
 CREATE TABLE `skycaiji_cache_collecting` (
   `cname` varchar(32) NOT NULL,
   `ctype` tinyint(3) unsigned NOT NULL,
-  `dateline` int(10) unsigned NOT NULL,
+  `dateline` bigint(20) NOT NULL DEFAULT '0',
   `data` mediumblob NOT NULL,
   PRIMARY KEY (`cname`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
@@ -74,7 +74,7 @@ DROP TABLE IF EXISTS `skycaiji_cache_cont_url`;
 CREATE TABLE `skycaiji_cache_cont_url` (
   `cname` varchar(32) NOT NULL,
   `ctype` tinyint(3) unsigned NOT NULL,
-  `dateline` int(10) unsigned NOT NULL,
+  `dateline` bigint(20) NOT NULL DEFAULT '0',
   `data` mediumblob NOT NULL,
   PRIMARY KEY (`cname`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
@@ -88,7 +88,7 @@ DROP TABLE IF EXISTS `skycaiji_cache_level_url`;
 CREATE TABLE `skycaiji_cache_level_url` (
   `cname` varchar(32) NOT NULL,
   `ctype` tinyint(3) unsigned NOT NULL,
-  `dateline` int(10) unsigned NOT NULL,
+  `dateline` bigint(20) NOT NULL DEFAULT '0',
   `data` mediumblob NOT NULL,
   PRIMARY KEY (`cname`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
@@ -102,7 +102,7 @@ DROP TABLE IF EXISTS `skycaiji_cache_login`;
 CREATE TABLE `skycaiji_cache_login` (
   `cname` varchar(32) NOT NULL,
   `ctype` tinyint(3) unsigned NOT NULL,
-  `dateline` int(10) unsigned NOT NULL,
+  `dateline` bigint(20) NOT NULL DEFAULT '0',
   `data` mediumblob NOT NULL,
   PRIMARY KEY (`cname`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
@@ -116,7 +116,7 @@ DROP TABLE IF EXISTS `skycaiji_cache_source_url`;
 CREATE TABLE `skycaiji_cache_source_url` (
   `cname` varchar(32) NOT NULL,
   `ctype` tinyint(3) unsigned NOT NULL,
-  `dateline` int(10) unsigned NOT NULL,
+  `dateline` bigint(20) NOT NULL DEFAULT '0',
   `data` mediumblob NOT NULL,
   PRIMARY KEY (`cname`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
@@ -128,21 +128,21 @@ CREATE TABLE `skycaiji_cache_source_url` (
 DROP TABLE IF EXISTS `skycaiji_collected`;
 
 CREATE TABLE `skycaiji_collected` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
   `urlMd5` varchar(32) NOT NULL DEFAULT '',
   `release` varchar(10) NOT NULL DEFAULT '',
   `task_id` int(11) NOT NULL DEFAULT '0',
-  `addtime` int(11) NOT NULL DEFAULT '0',
+  `addtime` bigint(20) NOT NULL DEFAULT '0',
   `titleMd5` varchar(32) NOT NULL DEFAULT '',
   `contentMd5` varchar(32) NOT NULL DEFAULT '',
   `status` tinyint(1) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
-  KEY `ix_urlmd5` (`urlMd5`),
   KEY `ix_taskid` (`task_id`),
   KEY `ix_addtime` (`addtime`),
   KEY `ix_titlemd5` (`titleMd5`),
   KEY `ix_contentmd5` (`contentMd5`),
-  KEY `ix_status` (`status`)
+  KEY `ix_status` (`status`),
+  KEY `ix_u5_tid` (`urlMd5`,`task_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 /*Data for the table `skycaiji_collected` */
@@ -152,7 +152,7 @@ CREATE TABLE `skycaiji_collected` (
 DROP TABLE IF EXISTS `skycaiji_collected_info`;
 
 CREATE TABLE `skycaiji_collected_info` (
-  `id` int(11) NOT NULL DEFAULT '0',
+  `id` bigint(20) NOT NULL DEFAULT '0',
   `url` text,
   `target` text,
   `desc` text,
@@ -171,8 +171,8 @@ CREATE TABLE `skycaiji_collector` (
   `task_id` int(11) NOT NULL DEFAULT '0',
   `name` varchar(50) NOT NULL,
   `module` varchar(10) NOT NULL DEFAULT '',
-  `addtime` int(11) NOT NULL DEFAULT '0',
-  `uptime` int(11) NOT NULL DEFAULT '0',
+  `addtime` bigint(20) NOT NULL DEFAULT '0',
+  `uptime` bigint(20) NOT NULL DEFAULT '0',
   `config` mediumtext,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
@@ -186,7 +186,7 @@ DROP TABLE IF EXISTS `skycaiji_config`;
 CREATE TABLE `skycaiji_config` (
   `cname` varchar(32) NOT NULL,
   `ctype` tinyint(3) unsigned NOT NULL,
-  `dateline` int(10) unsigned NOT NULL,
+  `dateline` bigint(20) NOT NULL DEFAULT '0',
   `data` mediumblob NOT NULL,
   PRIMARY KEY (`cname`),
   KEY `dateline` (`dateline`)
@@ -194,7 +194,7 @@ CREATE TABLE `skycaiji_config` (
 
 /*Data for the table `skycaiji_config` */
 
-insert  into `skycaiji_config`(`cname`,`ctype`,`dateline`,`data`) values ('version',0,0,'2.9'),('caiji',2,0,'a:12:{s:6:"robots";i:1;s:4:"auto";i:0;s:3:"run";s:9:"backstage";s:6:"server";s:0:"";s:10:"server_php";s:0:"";s:3:"num";i:10;s:8:"interval";i:30;s:7:"timeout";i:60;s:13:"interval_html";i:0;s:9:"real_time";i:1;s:5:"retry";i:0;s:4:"wait";i:0;}'),('site',2,0,'a:3:{s:10:"verifycode";i:1;s:8:"hidehome";i:0;s:5:"login";a:3:{s:5:"limit";i:1;s:6:"failed";i:20;s:4:"time";i:1;}}');
+insert  into `skycaiji_config`(`cname`,`ctype`,`dateline`,`data`) values ('version',0,0,'3.1'),('caiji',2,0,'a:12:{s:6:"robots";i:1;s:4:"auto";i:0;s:3:"run";s:9:"backstage";s:6:"server";s:0:"";s:10:"server_php";s:0:"";s:3:"num";i:10;s:8:"interval";i:30;s:7:"timeout";i:60;s:13:"interval_html";i:0;s:9:"real_time";i:1;s:5:"retry";i:0;s:4:"wait";i:0;}'),('site',2,0,'a:3:{s:10:"verifycode";i:1;s:8:"hidehome";i:0;s:5:"login";a:3:{s:5:"limit";i:1;s:6:"failed";i:20;s:4:"time";i:1;}}');
 
 /*Table structure for table `skycaiji_dataapi` */
 
@@ -217,6 +217,55 @@ CREATE TABLE `skycaiji_dataapi` (
 
 /*Data for the table `skycaiji_dataapi` */
 
+/*Table structure for table `skycaiji_datahub` */
+
+DROP TABLE IF EXISTS `skycaiji_datahub`;
+
+CREATE TABLE `skycaiji_datahub` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `task_id` int(11) NOT NULL DEFAULT '0',
+  `c_url_md5` varchar(32) NOT NULL DEFAULT '',
+  `url` text,
+  `addtime` bigint(20) NOT NULL DEFAULT '0',
+  `uptime` bigint(20) NOT NULL DEFAULT '0',
+  PRIMARY KEY (`id`),
+  KEY `tid` (`task_id`,`id`),
+  KEY `c_url_md5` (`c_url_md5`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+/*Data for the table `skycaiji_datahub` */
+
+/*Table structure for table `skycaiji_datahub_field` */
+
+DROP TABLE IF EXISTS `skycaiji_datahub_field`;
+
+CREATE TABLE `skycaiji_datahub_field` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `name_md5` varchar(32) NOT NULL DEFAULT '',
+  `name` text,
+  PRIMARY KEY (`id`),
+  KEY `name_md5` (`name_md5`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+/*Data for the table `skycaiji_datahub_field` */
+
+/*Table structure for table `skycaiji_datahub_info` */
+
+DROP TABLE IF EXISTS `skycaiji_datahub_info`;
+
+CREATE TABLE `skycaiji_datahub_info` (
+  `id` bigint(20) NOT NULL DEFAULT '0',
+  `task_id` int(11) NOT NULL DEFAULT '0',
+  `field_id` int(11) NOT NULL DEFAULT '0',
+  `content` mediumtext,
+  KEY `id` (`id`),
+  KEY `t_f_c` (`task_id`,`field_id`,`content`(5))
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+/*!50100 PARTITION BY HASH (id)
+PARTITIONS 128 */;
+
+/*Data for the table `skycaiji_datahub_info` */
+
 /*Table structure for table `skycaiji_dataset` */
 
 DROP TABLE IF EXISTS `skycaiji_dataset`;
@@ -232,6 +281,26 @@ CREATE TABLE `skycaiji_dataset` (
 
 /*Data for the table `skycaiji_dataset` */
 
+/*Table structure for table `skycaiji_dataset_index` */
+
+DROP TABLE IF EXISTS `skycaiji_dataset_index`;
+
+CREATE TABLE `skycaiji_dataset_index` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `ds_id` int(11) NOT NULL DEFAULT '0',
+  `dt_id` int(11) NOT NULL DEFAULT '0',
+  `c_url_md5` varchar(32) NOT NULL DEFAULT '',
+  `url` text,
+  `addtime` bigint(20) NOT NULL DEFAULT '0',
+  `uptime` bigint(20) NOT NULL DEFAULT '0',
+  PRIMARY KEY (`id`),
+  KEY `c_url_md5` (`c_url_md5`),
+  KEY `ds_id` (`ds_id`,`id`),
+  KEY `dt_id` (`dt_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+/*Data for the table `skycaiji_dataset_index` */
+
 /*Table structure for table `skycaiji_func_app` */
 
 DROP TABLE IF EXISTS `skycaiji_func_app`;
@@ -243,8 +312,8 @@ CREATE TABLE `skycaiji_func_app` (
   `name` varchar(100) NOT NULL DEFAULT '',
   `desc` text,
   `enable` tinyint(1) NOT NULL DEFAULT '0',
-  `addtime` int(11) NOT NULL DEFAULT '0',
-  `uptime` int(11) NOT NULL DEFAULT '0',
+  `addtime` bigint(20) NOT NULL DEFAULT '0',
+  `uptime` bigint(20) NOT NULL DEFAULT '0',
   `provider_id` int(11) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `ix_app` (`app`),
@@ -299,7 +368,7 @@ CREATE TABLE `skycaiji_proxy_ip` (
   `num` int(11) NOT NULL DEFAULT '0',
   `time` int(11) NOT NULL DEFAULT '0',
   `type` varchar(20) NOT NULL DEFAULT '',
-  `addtime` int(11) NOT NULL DEFAULT '0',
+  `addtime` bigint(20) NOT NULL DEFAULT '0',
   `no` bigint(20) NOT NULL AUTO_INCREMENT,
   `group_id` int(11) NOT NULL DEFAULT '0',
   PRIMARY KEY (`ip`),
@@ -321,7 +390,7 @@ CREATE TABLE `skycaiji_release` (
   `task_id` int(11) NOT NULL DEFAULT '0',
   `name` varchar(50) NOT NULL DEFAULT '',
   `module` varchar(10) NOT NULL DEFAULT '',
-  `addtime` int(11) NOT NULL DEFAULT '0',
+  `addtime` bigint(20) NOT NULL DEFAULT '0',
   `config` mediumtext,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
@@ -338,8 +407,8 @@ CREATE TABLE `skycaiji_release_app` (
   `app` varchar(50) NOT NULL DEFAULT '',
   `name` varchar(100) NOT NULL DEFAULT '',
   `desc` text,
-  `addtime` int(11) NOT NULL DEFAULT '0',
-  `uptime` int(11) NOT NULL DEFAULT '0',
+  `addtime` bigint(20) NOT NULL DEFAULT '0',
+  `uptime` bigint(20) NOT NULL DEFAULT '0',
   `provider_id` int(11) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `module_app` (`module`,`app`),
@@ -358,8 +427,8 @@ CREATE TABLE `skycaiji_rule` (
   `type` varchar(20) NOT NULL DEFAULT '',
   `module` varchar(20) NOT NULL DEFAULT '',
   `store_id` int(11) NOT NULL DEFAULT '0',
-  `addtime` int(11) NOT NULL DEFAULT '0',
-  `uptime` int(11) NOT NULL DEFAULT '0',
+  `addtime` bigint(20) NOT NULL DEFAULT '0',
+  `uptime` bigint(20) NOT NULL DEFAULT '0',
   `provider_id` int(11) NOT NULL DEFAULT '0',
   `config` mediumtext,
   PRIMARY KEY (`id`),
@@ -379,8 +448,8 @@ CREATE TABLE `skycaiji_task` (
   `module` varchar(10) NOT NULL DEFAULT '',
   `auto` tinyint(4) NOT NULL DEFAULT '0',
   `sort` mediumint(9) NOT NULL DEFAULT '0',
-  `addtime` int(11) NOT NULL DEFAULT '0',
-  `caijitime` int(11) NOT NULL DEFAULT '0',
+  `addtime` bigint(20) NOT NULL DEFAULT '0',
+  `caijitime` bigint(20) NOT NULL DEFAULT '0',
   `config` mediumtext,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
@@ -426,11 +495,13 @@ CREATE TABLE `skycaiji_user` (
   `salt` varchar(50) NOT NULL DEFAULT '',
   `groupid` int(11) NOT NULL DEFAULT '0',
   `email` varchar(255) NOT NULL DEFAULT '',
-  `regtime` int(11) NOT NULL DEFAULT '0',
+  `regtime` bigint(20) NOT NULL DEFAULT '0',
   PRIMARY KEY (`uid`),
   UNIQUE KEY `username` (`username`(191)),
   KEY `email` (`email`(191))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+/*Data for the table `skycaiji_user` */
 
 /*Table structure for table `skycaiji_usergroup` */
 

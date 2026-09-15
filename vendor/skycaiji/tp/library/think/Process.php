@@ -123,8 +123,12 @@ class Process
      * @throws \RuntimeException
      * @api
      */
-    public function __construct($commandline, $cwd = null, array $env = null, $input = null, $timeout = 60, array $options = [])
+    public function __construct($commandline, $cwd = null, $env = null, $input = null, $timeout = 60, array $options = [])
     {
+        if ($env !== null && !is_array($env)) {
+            throw new \InvalidArgumentException('参数$env必须是array类型');//[修改]兼容类型约束
+        }
+        
         if (!function_exists('proc_open')) {
             throw new \RuntimeException('The Process class relies on proc_open, which is not available on your PHP installation.');
         }

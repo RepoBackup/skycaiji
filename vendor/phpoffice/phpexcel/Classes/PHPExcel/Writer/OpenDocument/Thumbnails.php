@@ -34,8 +34,12 @@ class PHPExcel_Writer_OpenDocument_Thumbnails extends PHPExcel_Writer_OpenDocume
      * @return  string                     XML Output
      * @throws  PHPExcel_Writer_Exception
      */
-    public function writeThumbnail(PHPExcel $pPHPExcel = null)
+    public function writeThumbnail($pPHPExcel = null)
     {
+if ($pPHPExcel !== null && !$pPHPExcel instanceof PHPExcel) {
+    throw new \InvalidArgumentException('参数$pPHPExcel必须是PHPExcel实例');//[修改]兼容类型约束
+}
+
         return '';
     }
 }

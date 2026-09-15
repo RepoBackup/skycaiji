@@ -803,8 +803,12 @@ class PHPExcel
      * @param  PHPExcel_Worksheet|null $pSheet Scope. Use null for global scope
      * @return PHPExcel_NamedRange|null
      */
-    public function getNamedRange($namedRange, PHPExcel_Worksheet $pSheet = null)
+    public function getNamedRange($namedRange, $pSheet = null)
     {
+if ($pSheet !== null && !$pSheet instanceof PHPExcel_Worksheet) {
+    throw new \InvalidArgumentException('参数$pSheet必须是PHPExcel_Worksheet实例');//[修改]兼容类型约束
+}
+
         $returnValue = null;
 
         if ($namedRange != '' && ($namedRange !== null)) {
@@ -829,8 +833,12 @@ class PHPExcel
      * @param  PHPExcel_Worksheet|null  $pSheet  Scope: use null for global scope.
      * @return PHPExcel
      */
-    public function removeNamedRange($namedRange, PHPExcel_Worksheet $pSheet = null)
+    public function removeNamedRange($namedRange, $pSheet = null)
     {
+if ($pSheet !== null && !$pSheet instanceof PHPExcel_Worksheet) {
+    throw new \InvalidArgumentException('参数$pSheet必须是PHPExcel_Worksheet实例');//[修改]兼容类型约束
+}
+
         if ($pSheet === null) {
             if (isset($this->namedRanges[$namedRange])) {
                 unset($this->namedRanges[$namedRange]);

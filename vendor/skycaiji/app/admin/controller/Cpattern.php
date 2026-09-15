@@ -14,7 +14,7 @@ namespace skycaiji\admin\controller;
 use skycaiji\admin\model\CacheModel;
 
 /*采集器：规则采集*/
-class Cpattern extends BaseController {
+class Cpattern extends CollectorController {
 	/**
 	 * 起始页网址
 	 */
@@ -33,8 +33,8 @@ class Cpattern extends BaseController {
                     $this->error('请输入正确的网址格式');
                 }
                 
-                if(stripos($source['url'],cp_sign('match'))===false){
-                    $this->error('请在网址格式中添加 '.cp_sign('match').' 才能批量生成网址！');
+                if(stripos($source['url'],coll_sign('match'))===false){
+                    $this->error('请在网址格式中添加 '.coll_sign('match').' 才能批量生成网址！');
                 }
                 if(empty($source['param'])){
                     $this->error('请选择参数类型');
@@ -45,11 +45,11 @@ class Cpattern extends BaseController {
                     
                     $urls=\util\Funcs::increase_nums($source['param_num_start'],$source['param_num_end'],$source['param_num_inc'],$source['param_num_desc'],$source['param_num_len']);
                     foreach ($urls as $k=>$v){
-                        $urls[$k]=str_replace(cp_sign('match'), $v, $source['url']);
+                        $urls[$k]=str_replace(coll_sign('match'), $v, $source['url']);
                     }
                     $urlParamNum="{$source['param_num_start']}\t{$source['param_num_end']}\t{$source['param_num_inc']}\t{$source['param_num_desc']}\t{$source['param_num_len']}";
                     $urlParamNum=trim($urlParamNum);
-                    $urlFmt=str_replace(cp_sign('match'),"{param:num,{$urlParamNum}}",$urlFmt);
+                    $urlFmt=str_replace(coll_sign('match'),"{param:num,{$urlParamNum}}",$urlFmt);
                 }elseif($source['param']=='letter'){
                     
                     $letter_start=ord($source['param_letter_start']);
@@ -60,22 +60,22 @@ class Cpattern extends BaseController {
                     if($source['param_letter_desc']){
                         
                         for($i=$letter_end;$i>=$letter_start;$i--) {
-                            $urls[]=str_replace(cp_sign('match'), chr($i), $source['url']);
+                            $urls[]=str_replace(coll_sign('match'), chr($i), $source['url']);
                         }
                     }else{
                         for($i=$letter_start;$i<=$letter_end;$i++) {
-                            $urls[]=str_replace(cp_sign('match'), chr($i), $source['url']);
+                            $urls[]=str_replace(coll_sign('match'), chr($i), $source['url']);
                         }
                     }
-                    $urlFmt=str_replace(cp_sign('match'),"{param:letter,{$source['param_letter_start']}\t{$source['param_letter_end']}\t{$source['param_letter_desc']}}",$urlFmt);
+                    $urlFmt=str_replace(coll_sign('match'),"{param:letter,{$source['param_letter_start']}\t{$source['param_letter_end']}\t{$source['param_letter_desc']}}",$urlFmt);
                 }elseif($source['param']=='custom'){
                     
                     if(preg_match_all('/[^\r\n]+/', $source['param_custom'],$cusParams)){
                         $cusParams=array_unique($cusParams[0]);
                         foreach ($cusParams as $cusParam){
-                            $urls[]=str_replace(cp_sign('match'), $cusParam, $source['url']);
+                            $urls[]=str_replace(coll_sign('match'), $cusParam, $source['url']);
                         }
-                        $urlFmt=str_replace(cp_sign('match'),"{param:custom,".implode("\t", $cusParams)."}",$urlFmt);
+                        $urlFmt=str_replace(coll_sign('match'),"{param:custom,".implode("\t", $cusParams)."}",$urlFmt);
                     }
                 }
             }elseif($source['type']=='large'){
@@ -107,7 +107,7 @@ class Cpattern extends BaseController {
                 
                 if(preg_match('/\{param\:(\w+)\,([^\}]*)\}/i',$sourceUrl,$param)){
                     
-                    $source['url']= preg_replace('/\{param\:(\w+)\,([^\}]*)\}/i', cp_sign('match'), $sourceUrl);
+                    $source['url']= preg_replace('/\{param\:(\w+)\,([^\}]*)\}/i', coll_sign('match'), $sourceUrl);
                     $source['type']='batch';
                     $source['param']=strtolower($param[1]);
                     $param_val=explode("\t", $param[2]);
@@ -144,261 +144,7 @@ class Cpattern extends BaseController {
             return $this->fetch();
         }
     }
-    /**
-     * 字段
-     */
-    public function fieldAction(){
-    	if(request()->isPost()&&input('is_submit')){
-    		$objid=input('post.objid');
-    		$field=input('post.field/a',array(),'trim');
-    		if(empty($field['name'])){
-    			$this->error('请输入字段名称');
-    		}
-    		$this->_check_name($field['name'],'字段名称');
-    		
-    		$field['module']=strtolower($field['module']);
-    		
-    		switch ($field['module']){
-    			case 'rule':if(empty($field['rule']))$this->error('规则不能为空！');break;
-    			case 'auto':if(empty($field['auto']))$this->error('请选择自动获取的类型');break;
-    			case 'xpath':if(empty($field['xpath']))$this->error('XPath规则不能为空！');break;
-    			case 'json':if(empty($field['json']))$this->error('提取规则不能为空！');break;
-    			case 'num':
-    				$field['num_start']=intval($field['num_start']);
-    				$field['num_end']=intval($field['num_end']);
-    				$field['num_end'] = max ( $field['num_start'], $field ['num_end'] );
-    				break;
-    			case 'no':
-    			    $field['no_start']=intval($field['no_start']);
-    			    $field['no_inc']=intval($field['no_inc']);
-    			    $field['no_len']=intval($field['no_len']);
-    			    break;
-    			
-    			case 'list':if(empty($field['list']))$this->error('列表数据不能为空！');break;
-    			case 'extract':if(empty($field['extract']))$this->error('请选择字段！');break;
-    			
-    			case 'sign':
-    			    if(empty($field['sign']))$this->error('请输入'.lang('field_module_sign'));
-    			    break;
-    		}
-    		
-			$modules = array (
-				'rule' =>array('rule','rule_multi','rule_multi_type','rule_multi_str','rule_merge'),
-				'auto' =>'auto',
-				'xpath' =>array('xpath','xpath_multi','xpath_multi_type','xpath_multi_str','xpath_attr','xpath_attr_custom'),
-				'json' =>array('json','json_merge_data','json_arr','json_arr_implode','json_loop'),
-				'words' =>'words',
-			    'variable'=>'variable',
-			    'num' => array('num_start','num_end'),
-			    'no' => array('no_start','no_inc','no_len'),
-				'time' => array ('time_format','time_start','time_end','time_stamp'),
-				'list' => array('list','list_type'),
-			    'extract' =>array('extract','extract_module','extract_rule','extract_rule_merge','extract_rule_multi','extract_rule_multi_type','extract_rule_multi_str','extract_xpath','extract_xpath_attr','extract_xpath_attr_custom','extract_xpath_multi','extract_xpath_multi_type','extract_xpath_multi_str','extract_json','extract_json_merge_data','extract_json_arr','extract_json_arr_implode','extract_json_loop'),
-				'merge' => 'merge',
-			    'sign' => 'sign'
-			);
-			$returnField=array('name'=>$field['name'],'desc'=>$field['desc'],'source'=>$field['source'],'module'=>$field['module']);
-    		
-    		if(is_array($modules[$field['module']])){
-    			foreach($modules[$field['module']] as $mparam){
-    				$returnField[$mparam]=$field[$mparam];
-    			}
-    		}else{
-    			$returnField[$modules[$field['module']]]=$field[$modules[$field['module']]];
-    		}
-    		$this->success('',null,array('field'=>$returnField,'objid'=>$objid));
-    	}else{
-    		$field=input('field','','url_b64decode');
-    		$objid=input('objid');
-    		$field=$field?json_decode($field,true):array();
-    		if(!is_array($field)){
-    		    $field=array();
-    		}
-    		$field['time_format']=$field['time_format']?$field['time_format']:'[年]/[月]/[日] [时]:[分]';
-    		$field['num_start']=isset($field['num_start'])?intval($field['num_start']):1;
-    		$field['num_end']=isset($field['num_end'])?intval($field['num_end']):100;
-    		
-    		
-    		$sortField=array();
-    		foreach(array('source','module') as $k){
-    		    if(isset($field[$k])){
-    		        $sortField[$k]=$field[$k];
-    		        unset($field[$k]);
-    		    }
-    		}
-    		
-    		foreach ($field as $k=>$v){
-    		    $sortField[$k]=$v;
-    		}
-    		$field=$sortField;
-    		
-    		$this->assign('field',$field);
-    		$this->assign('objid',$objid);
-    		return $this->fetch();
-    	}
-    }
-    /*复制字段*/
-    public function clone_fieldAction(){
-        if(request()->isPost()){
-            $field=input('field','','url_b64decode');
-            $field=$field?json_decode($field,true):array();
-            $process=input('process','','url_b64decode');
-            $process=$process?json_decode($process,true):'';
-            
-            $this->success('',null,array('field'=>$field,'process'=>$process));
-        }else{
-            $this->error('复制失败');
-        }
-    }
     
-    public function reset_field_noAction(){
-        if(request()->isPost()){
-            $taskId=input('task_id/d',0);
-            $fieldName=input('field_name','');
-            $ckey='taskFNo_'.$taskId.'_'.$fieldName;
-            CacheModel::getInstance()->deleteCache($ckey);
-            $this->success('已重置');
-        }else{
-            $this->error('操作失败');
-        }
-    }
-    
-    /*数据处理*/
-    public function processAction(){
-    	$type=input('type');
-
-	    $this->assign('type',$type);
-	    $op=input('op');
-	    
-	    $taskId=input('task_id/d',0);
-	    
-	    $downImgUrl='';
-	    $downFileUrl='';
-	    if(is_empty(g_sc_c('download_img','download_img'))){
-	        $downImgUrl=url('setting/download_img');
-	    }
-	    if(is_empty(g_sc_c('download_file','download_file'))){
-	        $downFileUrl=url('setting/download_file');
-	    }
-	    
-	    $transUrl='';
-	    if(is_empty(g_sc_c('translate','open'))){
-	        $transUrl=url('setting/translate');
-	    }
-	    
-	    $transApiLangs=\util\Translator::get_api_langs(g_sc_c('translate','api'));
-	    init_array($transApiLangs);
-	    $this->assign('transApiLangs',$transApiLangs);
-	    
-	    
-	    if($taskId>0){
-	        $taskData=model('Task')->getById($taskId);
-	        model('Task')->loadConfig($taskData);
-	        
-	        if(is_empty(g_sc_c('download_img','download_img'))){
-	            if(!empty($taskData['config']['download_img'])){
-	                $downImgUrl=url('task/set?id='.$taskId);
-	            }
-	        }else{
-	            $downImgUrl='';
-	        }
-	        if(is_empty(g_sc_c('download_file','download_file'))){
-	            if(!empty($taskData['config']['download_file'])){
-	                $downFileUrl=url('task/set?id='.$taskId);
-	            }
-	        }else{
-	            $downFileUrl='';
-	        }
-	        
-	        if(is_empty(g_sc_c('translate','open'))){
-	            if(!empty($taskData['config']['translate'])){
-	                $transUrl=url('task/set?id='.$taskId);
-	            }
-	        }else{
-	            $transUrl='';
-	        }
-	    }
-	    
-	    $this->assign('downImgUrl',$downImgUrl);
-	    $this->assign('downFileUrl',$downFileUrl);
-	    $this->assign('transUrl',$transUrl);
-	    
-    	if(empty($type)){
-    		
-    		if(empty($op)){
-    		    $field=input('field','');
-    			$objid=input('objid');
-    			$process=input('process','','url_b64decode');
-    			$process=$process?json_decode($process,true):'';
-    			$this->assign('field',$field);
-    			$this->assign('objid',$objid);
-    			$this->assign('process',$process);
-    			return $this->fetch();
-    		}elseif($op=='sub'){
-    			
-    		    $process=trim_input_process('process/a');
-    			if(empty($process)){
-    				$process='';
-    			}else{
-    			    $process=controller('admin/Cpattern','event')->set_process($process);
-    			}
-    			$objid=input('objid','');
-    			$this->success('',null,array('process'=>$process,'objid'=>$objid));
-    		}
-    	}elseif('common'==$type){
-    		
-    		if(empty($op)){
-    			return $this->fetch();
-    		}elseif($op=='load'){
-    			
-    		    $process=trim_input_process('process/a');
-    			$this->assign('process',$process);
-    			return $this->fetch('process_load');
-    		}
-    	}
-    }
-    /*复制数据处理*/
-    public function clone_processAction(){
-        $op=input('op','');
-        if(empty($op)||$op=='copy'){
-            
-            if(request()->isPost()){
-                
-                $process=trim_input_process('process/a');
-                if(is_array($process)){
-                    
-                    $process=reset($process);
-                }else{
-                    $process=array();
-                }
-                
-                $msg='';
-                if($op=='copy'){
-                    
-                    cache('cpattern_clone_process_data',$process);
-                    $msg='已拷贝，可在任意数据处理中粘贴';
-                }else{
-                    $msg='已复制';
-                }
-                
-                $this->success($msg,null,$process);
-            }else{
-                $this->error('无效的操作');
-            }
-        }elseif($op=='paste'){
-            
-            
-            $process=cache('cpattern_clone_process_data');
-            
-            if(!empty($process)){
-                $this->success('已粘贴',null,$process);
-            }else{
-                $this->error('请先拷贝一个处理内容');
-            }
-        }else{
-            $this->error('无效的操作');
-        }
-    }
     /**
      * 内容分页
      * 添加分页字段
@@ -598,13 +344,8 @@ class Cpattern extends BaseController {
     	
     	$taskData=model('Task')->getById($taskId);
     	
-    	$collId=$mcoll->where('task_id',$taskId)->value('id');
-    	$collData=$mcoll->where(array('id'=>$collId))->find();
-    	if(empty($collData)){
-    	    $collData=array();
-    	}else{
-    	    $collData=$collData->toArray();
-    	}
+    	$collData=$mcoll->getByTaskData($taskData);
+    	$collId=$collData['id'];
     	
     	$eCpattern=controller('admin/Cpattern','event');
     	$eCpattern->init($collData);
@@ -685,7 +426,7 @@ class Cpattern extends BaseController {
             if(strpos($mergeType,'content_sign:')===0){
                 
                 $mergeCsIdentity=str_replace('content_sign:', '', $mergeType);
-                $mergeCsIdentity=cp_sign('match',$mergeCsIdentity);
+                $mergeCsIdentity=coll_sign('match',$mergeCsIdentity);
             }
             
             $eCpattern=controller('admin/Cpattern','event');
@@ -917,18 +658,6 @@ class Cpattern extends BaseController {
             $this->error();
         }
     }
-    /*名称命名规范*/
-    public function _check_name($name,$nameStr=''){
-        if(!preg_match('/^[\x{4e00}-\x{9fa5}\w\-]+$/u', $name)){
-            $this->error(($nameStr?$nameStr:'名称').'只能由汉字、字母、数字和下划线组成');
-            return false;
-        }elseif(mb_strlen($name,'utf-8')>50){
-            $this->error(($nameStr?$nameStr:'名称').'长度50字以内');
-            return false;
-        }else{
-            return true;
-        }
-    }
     
     
     private function _get_content_signs($contentSigns){
@@ -936,7 +665,7 @@ class Cpattern extends BaseController {
             $csSigns=array();
             foreach ($contentSigns as $v){
                 if(is_array($v)&&$v['identity']){
-                    $csSigns[$v['identity']]=cp_sign('match',$v['identity']);
+                    $csSigns[$v['identity']]=coll_sign('match',$v['identity']);
                 }
             }
             $contentSigns=array_values($csSigns);
@@ -953,7 +682,7 @@ class Cpattern extends BaseController {
         $rule=$eCpattern->convert_sign_match($rule);
         $signs=$eCpattern->rule_str_signs($rule);
         if(empty($signs)){
-            $signs=array(cp_sign('match'));
+            $signs=array(coll_sign('match'));
         }
         return $signs;
     }
@@ -987,123 +716,6 @@ class Cpattern extends BaseController {
         }
     }
     
-    
-    private function _replace_str($from,$to,$str){
-        if($str&&is_string($str)&&!is_numeric($str)){
-            $str=str_replace($from, $to, $str);
-        }
-        return $str;
-    }
-    
-    
-    public function element_replace_fieldAction(){
-        if($this->request->isPost()){
-            $vals=input('vals','','url_b64decode');
-            $names=input('names','','url_b64decode');
-            $vals=$vals?json_decode($vals,true):array();
-            $names=$names?json_decode($names,true):array();
-            init_array($vals);
-            init_array($names);
-            
-            $originalName=input('originalName','','trim');
-            $newName=input('newName','','trim');
-            
-            $fmtOriginalName='[字段:'.$originalName.']';
-            $fmtNewName='[字段:'.$newName.']';
-            
-            $updated=array();
-            
-            foreach ($vals as $k=>$v){
-                $eleName=$names[$k];
-                if(empty($eleName)&&is_numeric($eleName)){
-                    continue;
-                }
-                if($eleName=='config[field_list][]'||$eleName=='config[field_process][]'){
-                    try{
-                        $vDecode=url_b64decode($v);
-                        if($vDecode){
-                            $vDecode=json_decode($vDecode,true);
-                            if(!empty($vDecode)&&is_array($vDecode)){
-                                
-                                if($eleName=='config[field_list][]'){
-                                    
-                                    if($vDecode['module']=='extract'||$vDecode['module']=='merge'){
-                                        if($vDecode['extract']&&$vDecode['extract']==$originalName){
-                                            $vDecode['extract']=$newName;
-                                        }
-                                        if($vDecode['merge']){
-                                            $vDecode['merge']=$this->_replace_str($fmtOriginalName, $fmtNewName, $vDecode['merge']);
-                                        }
-                                        $updated[$k]=true;
-                                    }
-                                }elseif($eleName=='config[field_process][]'){
-                                    
-                                    $isUpdated=false;
-                                    foreach ($vDecode as $vk=>$vv){
-                                        if($vv&&is_array($vv)){
-                                            if($vv['module']=='insert'){
-                                                $isUpdated=true;
-                                                $vv['insert_txt']=$this->_replace_str($fmtOriginalName, $fmtNewName, $vv['insert_txt']);
-                                            }elseif($vv['module']=='if'){
-                                                $isUpdated=true;
-                                                if($vv['if_val']&&is_array($vv['if_val'])){
-                                                    foreach ($vv['if_val'] as $vvk=>$vvv){
-                                                        $vv['if_val'][$vvk]=$this->_replace_str($fmtOriginalName, $fmtNewName, $vvv);
-                                                    }
-                                                }
-                                            }elseif($vv['module']=='api'){
-                                                $isUpdated=true;
-                                                if($vv['api_url']){
-                                                    $vv['api_url']=$this->_replace_str($fmtOriginalName, $fmtNewName, $vv['api_url']);
-                                                }
-                                                if($vv['api_params']&&is_array($vv['api_params'])){
-                                                    if($vv['api_params']['addon']&&is_array($vv['api_params']['addon'])){
-                                                        foreach ($vv['api_params']['addon'] as $vvk=>$vvv){
-                                                            $vv['api_params']['addon'][$vvk]=$this->_replace_str($fmtOriginalName, $fmtNewName, $vvv);
-                                                        }
-                                                    }
-                                                }
-                                                if($vv['api_headers']&&is_array($vv['api_headers'])){
-                                                    if($vv['api_headers']['addon']&&is_array($vv['api_headers']['addon'])){
-                                                        foreach ($vv['api_headers']['addon'] as $vvk=>$vvv){
-                                                            $vv['api_headers']['addon'][$vvk]=$this->_replace_str($fmtOriginalName, $fmtNewName, $vvv);
-                                                        }
-                                                    }
-                                                }
-                                            }elseif($vv['module']=='apiapp'){
-                                                $isUpdated=true;
-                                                if($vv['apiapp_config']&&is_array($vv['apiapp_config'])){
-                                                    foreach ($vv['apiapp_config'] as $vvk=>$vvv){
-                                                        $vv['apiapp_config'][$vvk]=$this->_replace_str($fmtOriginalName, $fmtNewName, $vvv);
-                                                    }
-                                                }
-                                            }elseif($vv['module']=='func'){
-                                                $isUpdated=true;
-                                                $vv['func_param']=$this->_replace_str($fmtOriginalName, $fmtNewName, $vv['func_param']);
-                                            }
-                                            $vDecode[$vk]=$vv;
-                                        }
-                                    }
-                                    if($isUpdated){
-                                        $updated[$k]=true;
-                                    }
-                                }
-                                
-                                
-                                $v=url_b64encode(json_encode($vDecode));
-                                $vals[$k]=$v;
-                            }
-                        }
-                    }catch (\Exception $ex){
-                        
-                    }
-                }
-            }
-            
-            $this->success('已同步修改','',array('vals'=>$vals,'updated'=>$updated));
-        }
-        $this->error('同步修改失败');
-    }
     
     public function element_replace_variableAction(){
         if($this->request->isPost()){

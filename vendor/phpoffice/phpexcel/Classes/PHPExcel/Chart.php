@@ -169,8 +169,36 @@ class PHPExcel_Chart
     /**
      * Create a new PHPExcel_Chart
      */
-    public function __construct($name, PHPExcel_Chart_Title $title = null, PHPExcel_Chart_Legend $legend = null, PHPExcel_Chart_PlotArea $plotArea = null, $plotVisibleOnly = true, $displayBlanksAs = '0', PHPExcel_Chart_Title $xAxisLabel = null, PHPExcel_Chart_Title $yAxisLabel = null, PHPExcel_Chart_Axis $xAxis = null, PHPExcel_Chart_Axis $yAxis = null, PHPExcel_Chart_GridLines $majorGridlines = null, PHPExcel_Chart_GridLines $minorGridlines = null)
+    public function __construct($name, $title = null, $legend = null, $plotArea = null, $plotVisibleOnly = true, $displayBlanksAs = '0', $xAxisLabel = null, $yAxisLabel = null, $xAxis = null, $yAxis = null, $majorGridlines = null, $minorGridlines = null)
     {
+if ($title !== null && !$title instanceof PHPExcel_Chart_Title) {
+    throw new \InvalidArgumentException('参数$title必须是PHPExcel_Chart_Title实例');//[修改]兼容类型约束
+}
+if ($legend !== null && !$legend instanceof PHPExcel_Chart_Legend) {
+    throw new \InvalidArgumentException('参数$legend必须是PHPExcel_Chart_Legend实例');//[修改]兼容类型约束
+}
+if ($plotArea !== null && !$plotArea instanceof PHPExcel_Chart_PlotArea) {
+    throw new \InvalidArgumentException('参数$plotArea必须是PHPExcel_Chart_PlotArea实例');//[修改]兼容类型约束
+}
+if ($xAxisLabel !== null && !$xAxisLabel instanceof PHPExcel_Chart_Title) {
+    throw new \InvalidArgumentException('参数$xAxisLabel必须是PHPExcel_Chart_Title实例');//[修改]兼容类型约束
+}
+if ($yAxisLabel !== null && !$yAxisLabel instanceof PHPExcel_Chart_Title) {
+    throw new \InvalidArgumentException('参数$yAxisLabel必须是PHPExcel_Chart_Title实例');//[修改]兼容类型约束
+}
+if ($xAxis !== null && !$xAxis instanceof PHPExcel_Chart_Axis) {
+    throw new \InvalidArgumentException('参数$xAxis必须是PHPExcel_Chart_Axis实例');//[修改]兼容类型约束
+}
+if ($yAxis !== null && !$yAxis instanceof PHPExcel_Chart_Axis) {
+    throw new \InvalidArgumentException('参数$yAxis必须是PHPExcel_Chart_Axis实例');//[修改]兼容类型约束
+}
+if ($majorGridlines !== null && !$majorGridlines instanceof PHPExcel_Chart_GridLines) {
+    throw new \InvalidArgumentException('参数$majorGridlines必须是PHPExcel_Chart_GridLines实例');//[修改]兼容类型约束
+}
+if ($minorGridlines !== null && !$minorGridlines instanceof PHPExcel_Chart_GridLines) {
+    throw new \InvalidArgumentException('参数$minorGridlines必须是PHPExcel_Chart_GridLines实例');//[修改]兼容类型约束
+}
+
         $this->name = $name;
         $this->title = $title;
         $this->legend = $legend;
@@ -212,8 +240,12 @@ class PHPExcel_Chart
      * @throws    PHPExcel_Chart_Exception
      * @return PHPExcel_Chart
      */
-    public function setWorksheet(PHPExcel_Worksheet $pValue = null)
+    public function setWorksheet($pValue = null)
     {
+if ($pValue !== null && !$pValue instanceof PHPExcel_Worksheet) {
+    throw new \InvalidArgumentException('参数$pValue必须是PHPExcel_Worksheet实例');//[修改]兼容类型约束
+}
+
         $this->worksheet = $pValue;
 
         return $this;

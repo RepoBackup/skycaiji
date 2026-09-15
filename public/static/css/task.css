@@ -5,3 +5,9 @@
 
 #task_list_folder .icon-folder-pre:before{font-size:12px;content:"\002b"}
 #task_list_folder .icon-folder:before{content:"\e117";margin-right:5px;}
+
+#task_list_folder .glyphicon-th-list{color:#bbb;margin-right:5px;font-size:13px;}
+#task_list_folder td.name{max-width:250px!important;}
+
+#task_list td.name{max-width:200px!important;}
+.datatable td.tgname{max-width:120px;overflow:hidden;text-overflow:ellipsis;}

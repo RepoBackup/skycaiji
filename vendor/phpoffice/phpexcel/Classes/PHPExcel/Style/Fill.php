@@ -88,6 +88,9 @@ class PHPExcel_Style_Fill extends PHPExcel_Style_Supervisor implements PHPExcel_
      *                                    Leave this value at default unless you understand exactly what
      *                                        its ramifications are
      */
+    public $startcolorIndex;
+    public $endcolorIndex;
+    
     public function __construct($isSupervisor = false, $isConditional = false)
     {
         // Supervisor?
@@ -256,8 +259,12 @@ class PHPExcel_Style_Fill extends PHPExcel_Style_Supervisor implements PHPExcel_
      * @throws    PHPExcel_Exception
      * @return PHPExcel_Style_Fill
      */
-    public function setStartColor(PHPExcel_Style_Color $pValue = null)
+    public function setStartColor($pValue = null)
     {
+if ($pValue !== null && !$pValue instanceof PHPExcel_Style_Color) {
+    throw new \InvalidArgumentException('参数$pValue必须是PHPExcel_Style_Color实例');//[修改]兼容类型约束
+}
+
         // make sure parameter is a real color and not a supervisor
         $color = $pValue->getIsSupervisor() ? $pValue->getSharedComponent() : $pValue;
 
@@ -287,8 +294,12 @@ class PHPExcel_Style_Fill extends PHPExcel_Style_Supervisor implements PHPExcel_
      * @throws    PHPExcel_Exception
      * @return PHPExcel_Style_Fill
      */
-    public function setEndColor(PHPExcel_Style_Color $pValue = null)
+    public function setEndColor($pValue = null)
     {
+if ($pValue !== null && !$pValue instanceof PHPExcel_Style_Color) {
+    throw new \InvalidArgumentException('参数$pValue必须是PHPExcel_Style_Color实例');//[修改]兼容类型约束
+}
+
         // make sure parameter is a real color and not a supervisor
         $color = $pValue->getIsSupervisor() ? $pValue->getSharedComponent() : $pValue;
 

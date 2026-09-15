@@ -34,8 +34,12 @@ class PHPExcel_Writer_Excel2007_Comments extends PHPExcel_Writer_Excel2007_Write
      * @return     string                                 XML Output
      * @throws     PHPExcel_Writer_Exception
      */
-    public function writeComments(PHPExcel_Worksheet $pWorksheet = null)
+    public function writeComments($pWorksheet = null)
     {
+if ($pWorksheet !== null && !$pWorksheet instanceof PHPExcel_Worksheet) {
+    throw new \InvalidArgumentException('参数$pWorksheet必须是PHPExcel_Worksheet实例');//[修改]兼容类型约束
+}
+
         // Create XML writer
         $objWriter = null;
         if ($this->getParentWriter()->getUseDiskCaching()) {
@@ -92,8 +96,15 @@ class PHPExcel_Writer_Excel2007_Comments extends PHPExcel_Writer_Excel2007_Write
      * @param    array                            $pAuthors            Array of authors
      * @throws     PHPExcel_Writer_Exception
      */
-    private function writeComment(PHPExcel_Shared_XMLWriter $objWriter = null, $pCellReference = 'A1', PHPExcel_Comment $pComment = null, $pAuthors = null)
+    private function writeComment($objWriter = null, $pCellReference = 'A1', $pComment = null, $pAuthors = null)
     {
+if ($objWriter !== null && !$objWriter instanceof PHPExcel_Shared_XMLWriter) {
+    throw new \InvalidArgumentException('参数$objWriter必须是PHPExcel_Shared_XMLWriter实例');//[修改]兼容类型约束
+}
+if ($pComment !== null && !$pComment instanceof PHPExcel_Comment) {
+    throw new \InvalidArgumentException('参数$pComment必须是PHPExcel_Comment实例');//[修改]兼容类型约束
+}
+
         // comment
         $objWriter->startElement('comment');
         $objWriter->writeAttribute('ref', $pCellReference);
@@ -114,8 +125,12 @@ class PHPExcel_Writer_Excel2007_Comments extends PHPExcel_Writer_Excel2007_Write
      * @return     string                                 XML Output
      * @throws     PHPExcel_Writer_Exception
      */
-    public function writeVMLComments(PHPExcel_Worksheet $pWorksheet = null)
+    public function writeVMLComments($pWorksheet = null)
     {
+if ($pWorksheet !== null && !$pWorksheet instanceof PHPExcel_Worksheet) {
+    throw new \InvalidArgumentException('参数$pWorksheet必须是PHPExcel_Worksheet实例');//[修改]兼容类型约束
+}
+
         // Create XML writer
         $objWriter = null;
         if ($this->getParentWriter()->getUseDiskCaching()) {
@@ -187,8 +202,15 @@ class PHPExcel_Writer_Excel2007_Comments extends PHPExcel_Writer_Excel2007_Write
      * @param     PHPExcel_Comment                $pComment            Comment
      * @throws     PHPExcel_Writer_Exception
      */
-    private function writeVMLComment(PHPExcel_Shared_XMLWriter $objWriter = null, $pCellReference = 'A1', PHPExcel_Comment $pComment = null)
+    private function writeVMLComment($objWriter = null, $pCellReference = 'A1', $pComment = null)
     {
+if ($objWriter !== null && !$objWriter instanceof PHPExcel_Shared_XMLWriter) {
+    throw new \InvalidArgumentException('参数$objWriter必须是PHPExcel_Shared_XMLWriter实例');//[修改]兼容类型约束
+}
+if ($pComment !== null && !$pComment instanceof PHPExcel_Comment) {
+    throw new \InvalidArgumentException('参数$pComment必须是PHPExcel_Comment实例');//[修改]兼容类型约束
+}
+
          // Metadata
          list($column, $row) = PHPExcel_Cell::coordinateFromString($pCellReference);
          $column = PHPExcel_Cell::columnIndexFromString($column);

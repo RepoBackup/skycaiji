@@ -49,8 +49,15 @@ abstract class AbstractTemplateCreation implements CreationInterface
      * @param InputInterface|null  $input
      * @param OutputInterface|null $output
      */
-    public function __construct(InputInterface $input = null, OutputInterface $output = null)
+    public function __construct($input = null, $output = null)
     {
+if ($input !== null && !$input instanceof InputInterface) {
+    throw new \InvalidArgumentException('参数$input必须是InputInterface实例');//[修改]兼容类型约束
+}
+if ($output !== null && !$output instanceof OutputInterface) {
+    throw new \InvalidArgumentException('参数$output必须是OutputInterface实例');//[修改]兼容类型约束
+}
+
         if (!is_null($input)) {
             $this->setInput($input);
         }

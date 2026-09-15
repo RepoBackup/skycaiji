@@ -36,7 +36,7 @@ class PHPExcel_Writer_Excel2007_Drawing extends PHPExcel_Writer_Excel2007_Writer
      * @return     string                 XML Output
      * @throws     PHPExcel_Writer_Exception
      */
-    public function writeDrawings(PHPExcel_Worksheet $pWorksheet = null, &$chartRef, $includeCharts = false)
+    public function writeDrawings(PHPExcel_Worksheet $pWorksheet, &$chartRef, $includeCharts = false)
     {
         // Create XML writer
         $objWriter = null;
@@ -88,8 +88,15 @@ class PHPExcel_Writer_Excel2007_Drawing extends PHPExcel_Writer_Excel2007_Writer
      * @param     int                            $pRelationId
      * @throws     PHPExcel_Writer_Exception
      */
-    public function writeChart(PHPExcel_Shared_XMLWriter $objWriter = null, PHPExcel_Chart $pChart = null, $pRelationId = -1)
+    public function writeChart($objWriter = null, $pChart = null, $pRelationId = -1)
     {
+if ($objWriter !== null && !$objWriter instanceof PHPExcel_Shared_XMLWriter) {
+    throw new \InvalidArgumentException('参数$objWriter必须是PHPExcel_Shared_XMLWriter实例');//[修改]兼容类型约束
+}
+if ($pChart !== null && !$pChart instanceof PHPExcel_Chart) {
+    throw new \InvalidArgumentException('参数$pChart必须是PHPExcel_Chart实例');//[修改]兼容类型约束
+}
+
         $tl = $pChart->getTopLeftPosition();
         $tl['colRow'] = PHPExcel_Cell::coordinateFromString($tl['cell']);
         $br = $pChart->getBottomRightPosition();
@@ -160,8 +167,15 @@ class PHPExcel_Writer_Excel2007_Drawing extends PHPExcel_Writer_Excel2007_Writer
      * @param     int                                    $pRelationId
      * @throws     PHPExcel_Writer_Exception
      */
-    public function writeDrawing(PHPExcel_Shared_XMLWriter $objWriter = null, PHPExcel_Worksheet_BaseDrawing $pDrawing = null, $pRelationId = -1)
+    public function writeDrawing($objWriter = null, $pDrawing = null, $pRelationId = -1)
     {
+if ($objWriter !== null && !$objWriter instanceof PHPExcel_Shared_XMLWriter) {
+    throw new \InvalidArgumentException('参数$objWriter必须是PHPExcel_Shared_XMLWriter实例');//[修改]兼容类型约束
+}
+if ($pDrawing !== null && !$pDrawing instanceof PHPExcel_Worksheet_BaseDrawing) {
+    throw new \InvalidArgumentException('参数$pDrawing必须是PHPExcel_Worksheet_BaseDrawing实例');//[修改]兼容类型约束
+}
+
         if ($pRelationId >= 0) {
             // xdr:oneCellAnchor
             $objWriter->startElement('xdr:oneCellAnchor');
@@ -377,8 +391,12 @@ class PHPExcel_Writer_Excel2007_Drawing extends PHPExcel_Writer_Excel2007_Writer
      * @return     string                                 XML Output
      * @throws     PHPExcel_Writer_Exception
      */
-    public function writeVMLHeaderFooterImages(PHPExcel_Worksheet $pWorksheet = null)
+    public function writeVMLHeaderFooterImages($pWorksheet = null)
     {
+if ($pWorksheet !== null && !$pWorksheet instanceof PHPExcel_Worksheet) {
+    throw new \InvalidArgumentException('参数$pWorksheet必须是PHPExcel_Worksheet实例');//[修改]兼容类型约束
+}
+
         // Create XML writer
         $objWriter = null;
         if ($this->getParentWriter()->getUseDiskCaching()) {
@@ -525,8 +543,15 @@ class PHPExcel_Writer_Excel2007_Drawing extends PHPExcel_Writer_Excel2007_Writer
      * @param     PHPExcel_Worksheet_HeaderFooterDrawing    $pImage        Image
      * @throws     PHPExcel_Writer_Exception
      */
-    private function writeVMLHeaderFooterImage(PHPExcel_Shared_XMLWriter $objWriter = null, $pReference = '', PHPExcel_Worksheet_HeaderFooterDrawing $pImage = null)
+    private function writeVMLHeaderFooterImage($objWriter = null, $pReference = '', $pImage = null)
     {
+if ($objWriter !== null && !$objWriter instanceof PHPExcel_Shared_XMLWriter) {
+    throw new \InvalidArgumentException('参数$objWriter必须是PHPExcel_Shared_XMLWriter实例');//[修改]兼容类型约束
+}
+if ($pImage !== null && !$pImage instanceof PHPExcel_Worksheet_HeaderFooterDrawing) {
+    throw new \InvalidArgumentException('参数$pImage必须是PHPExcel_Worksheet_HeaderFooterDrawing实例');//[修改]兼容类型约束
+}
+
         // Calculate object id
         preg_match('{(\d+)}', md5($pReference), $m);
         $id = 1500 + (substr($m[1], 0, 2) * 1);
@@ -567,8 +592,12 @@ class PHPExcel_Writer_Excel2007_Drawing extends PHPExcel_Writer_Excel2007_Writer
      * @return     PHPExcel_Worksheet_Drawing[]        All drawings in PHPExcel
      * @throws     PHPExcel_Writer_Exception
      */
-    public function allDrawings(PHPExcel $pPHPExcel = null)
+    public function allDrawings($pPHPExcel = null)
     {
+if ($pPHPExcel !== null && !$pPHPExcel instanceof PHPExcel) {
+    throw new \InvalidArgumentException('参数$pPHPExcel必须是PHPExcel实例');//[修改]兼容类型约束
+}
+
         // Get an array of all drawings
         $aDrawings    = array();
 

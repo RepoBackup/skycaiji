@@ -47,8 +47,12 @@ class PHPExcel_Worksheet_Row
      * @param PHPExcel_Worksheet         $parent
      * @param int                        $rowIndex
      */
-    public function __construct(PHPExcel_Worksheet $parent = null, $rowIndex = 1)
+    public function __construct($parent = null, $rowIndex = 1)
     {
+if ($parent !== null && !$parent instanceof PHPExcel_Worksheet) {
+    throw new \InvalidArgumentException('参数$parent必须是PHPExcel_Worksheet实例');//[修改]兼容类型约束
+}
+
         // Set parent and row index
         $this->parent   = $parent;
         $this->rowIndex = $rowIndex;

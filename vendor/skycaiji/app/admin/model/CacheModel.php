@@ -35,14 +35,19 @@ class CacheModel{
 	 * @return \think\db\Query
 	 */
 	public function db(){
-		try {
-			$db=db($this->table_name);
-			$db->getPk();
-		}catch (\Exception $ex){
-			$this->create_table();
-			$db=db($this->table_name);
-		}
-		return $db;
+	    static $exists=array();
+	    try {
+	        $db=db($this->table_name);
+	        if(!$exists[$this->table_name]){
+	            $db->getPk();
+	            $exists[$this->table_name]=true;
+	        }
+	    }catch (\Exception $ex){
+	        $this->create_table();
+	        $db=db($this->table_name);
+	        $exists[$this->table_name]=true;
+	    }
+	    return $db;
 	}
 	/**
 	 * 获取数量
@@ -131,7 +136,7 @@ $table=<<<EOT
 CREATE TABLE `{$tname}` (
   `cname` varchar(32) NOT NULL,
   `ctype` tinyint(3) unsigned NOT NULL,
-  `dateline` int(10) unsigned NOT NULL,
+  `dateline` bigint(20) NOT NULL,
   `data` mediumblob NOT NULL,
   PRIMARY KEY (`cname`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4

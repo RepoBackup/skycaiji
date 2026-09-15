@@ -56,20 +56,11 @@ class Collected extends BaseController {
    		}
    		
    		$mcache=CacheModel::getInstance();
-   		$search['num']=input('num/d');
-   		if($search['num']<=0){
-   		    
-   		    $search['num']=$mcache->getCache('action_collected_list_num','data');
-   		    $search['num']=intval($search['num']);
-   		    if($search['num']<=0){
-   		        $search['num']=200;
-   		    }
-   		}
-   		$mcache->setCache('action_collected_list_num',$search['num']);
+   		$search['num']=\util\Tools::action_search_num('collected');
    		
    		$search['url']=input('url','','trim');
    		if(!empty($search['url'])){
-   			$cond['url']=array('like','%'.addslashes($search['url']).'%');
+   		    $cond['urlMd5']=md5($search['url']);
    		}
    		$search['release']=input('release');
    		if(!empty($search['release'])){
@@ -93,9 +84,11 @@ class Collected extends BaseController {
 	   		$limit=$search['num'];
    		    
    		    if($condJoin){
-   		        $dataList=$mcollected->alias('c')->join($mcollected->collected_info_tname().' i','c.id=i.id')->field('c.id')->where($condJoin)->order('c.id desc')->paginate($limit,false,paginate_auto_config());
+   		        $dataCount=$mcollected->cache(true,60)->alias('c')->join($mcollected->collected_info_tname().' i','c.id=i.id')->where($condJoin)->count();
+   		        $dataList=$mcollected->alias('c')->join($mcollected->collected_info_tname().' i','c.id=i.id')->field('c.id')->where($condJoin)->order('c.id desc')->paginate($limit,$dataCount,paginate_auto_config());
    		    }else{
-   		        $dataList=$mcollected->field('id')->where($cond)->order('id desc')->paginate($limit,false,paginate_auto_config());
+   		        $dataCount=$mcollected->cache(true,60)->where($cond)->count();
+   		        $dataList=$mcollected->field('id')->where($cond)->order('id desc')->paginate($limit,$dataCount,paginate_auto_config());
    		    }
    			$pagenav=$dataList->render();
    			$this->assign('pagenav',$pagenav);
@@ -125,20 +118,33 @@ class Collected extends BaseController {
    					
    					$dataList[$itemK]['target']='<a href="'.$item['target'].'" target="_blank">'.$item['target'].'</a>';
    				}
+   				$skycaiji2url=\util\Tools::skycaiji2url($item['url']);
+   				if($skycaiji2url!=$item['url']){
+   				    $dataList[$itemK]['skycaiji2url']=$skycaiji2url;
+   				    $parseUrl=\util\Tools::parse_skycaiji_url($item['url']);
+   				    if($parseUrl['module']){
+   				        
+   				        $dataList[$itemK]['skycaiji2url_m']=lang('c'.$parseUrl['module']);
+   				    }
+   				}
    			}
    			if(!empty($taskIds)){
    				$taskList=model('Task')->where(array('id'=>array('in',$taskIds)))->column('name','id');
    			}
-	   		
    		}
+   		
+   		$chkClearData=CacheModel::getInstance('')->getCache($this->cname_clear_data,'data');
+   		
    		$this->set_html_tags(
    		    lang('collected_list'),
    		    lang('collected_list').' <small><a href="'.url('collected/chart').'">统计图表</a></small>',
-   		    breadcrumb(array(array('url'=>url('collected/list'),'title'=>'已采集数据'),array('url'=>url('collected/list'),'title'=>$navTips?$navTips:'数据列表')))
+   		    breadcrumb(array(array('url'=>url('collected/list'),'title'=>lang('collected')),array('url'=>url('collected/list'),'title'=>$navTips?$navTips:'数据列表')))
    		);
    		$this->assign('search',$search);
 		$this->assign('dataList',$dataList);
 	   	$this->assign('taskList',$taskList);
+	   	$this->assign('chkClearData',$chkClearData);
+	   	
    		return $this->fetch();
 	}
 	/*清理失败的数据*/
@@ -161,6 +167,23 @@ class Collected extends BaseController {
 	        return $this->fetch('clear_error');
 	    }
 	}
+	
+	private $cname_clear_data='ac_collected_clear_data';
+	public function clearDataAction(){
+	    if(request()->isPost()){
+	        $status=input('status/d',0);
+	        $mcache=CacheModel::getInstance('');
+	        $mcache->setCache($this->cname_clear_data,$status);
+	        if($status){
+	            $this->success('已设置，当删除发布方式为'.lang('cdatahub').'或'.lang('cdataset').'的记录时清空相应的数据');
+	        }else{
+	            $this->success('已取消');
+	        }
+	    }else{
+	        $this->error('操作失败');
+	    }
+	}
+	
 	/**
 	 * 操作
 	 */
@@ -181,25 +204,36 @@ class Collected extends BaseController {
 				$this->error(lang('empty_data'));
 			}
 		}
+		
+		$clearData=CacheModel::getInstance('')->getCache($this->cname_clear_data,'data');
+		
 		if($op=='delete'){
 			
-		    $mcollected->deleteByCond(array('id'=>$id));
-			$this->success(lang('delete_success'));
+		    $result=$mcollected->deleteById($id,$clearData);
+		    $msg=lang('delete_success');
+		    if($result['success']&&$result['msg']){
+		        $msg.='，'.$result['msg'];
+		    }
+		    $this->success($msg);
 		}elseif($op=='deleteall'){
 			
 			$ids=input('ids/a',array(),'intval');
+			$msg=lang('op_success');
 			if(is_array($ids)&&count($ids)>0){
-			    $mcollected->deleteByCond(array('id'=>array('in',$ids)));
+			    $result=$mcollected->deleteById($ids,$clearData);
+			    if($result['success']&&$result['msg']){
+			        $msg.='，'.$result['msg'];
+			    }
 			}
-    		$this->success(lang('op_success'),'list');
+			$this->success($msg,'collected/list');
 		}
 	}
 	/*图表显示*/
 	public function chartAction(){
 	    $this->set_html_tags(
-	        '已采集数据：统计图表',
-	        '已采集数据：统计图表 <small><a href="'.url('collected/list').'">数据列表</a></small>',
-	        breadcrumb(array(array('url'=>url('collected/list'),'title'=>'已采集数据'),array('url'=>url('collected/chart'),'title'=>'统计图表')))
+	        lang('collected').'：统计图表',
+	        lang('collected').'：统计图表 <small><a href="'.url('collected/list').'">数据列表</a></small>',
+	        breadcrumb(array(array('url'=>url('collected/list'),'title'=>lang('collected')),array('url'=>url('collected/chart'),'title'=>'统计图表')))
 	    );
 		return $this->fetch();
 	}

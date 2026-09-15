@@ -13,17 +13,18 @@ namespace skycaiji\admin\validate;
 use think\Validate;
 class Task extends Validate{
 	protected $rule = [
-		'name'=>'require|unique:task',
+		'name'=>'require|unique:task|max:50',
 	];
 	
 	protected $message = [
 		'name.require'=>'{%task_error_null_name}',
 		'name.unique'=>'{%task_error_has_name}',
+	    'name.max'=>'名称长度不能超过50个字符',
 	];
 	
 	protected $scene = [
 		'add'=>['name'],
-        'edit'=>['name'=>'require'],
+        'edit'=>['name'=>'require|max:50'],
 	];
 }
 

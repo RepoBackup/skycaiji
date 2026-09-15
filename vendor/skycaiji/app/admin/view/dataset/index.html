@@ -1,0 +1,121 @@
+{extend name="common:main" /}
+{block name="cssjs"}
+<link href="__PUBLIC__/static/css/jquery.datetimepicker.css?{$Think.config.html_v}" rel="stylesheet">
+<script type="text/javascript" src="__PUBLIC__/static/js/jquery.datetimepicker.js?{$Think.config.html_v}"></script>
+<link rel="stylesheet" href="__PUBLIC__/static/css/dataset.css?{$Think.config.html_v}">
+<script type="text/javascript" src="__PUBLIC__/static/js/admin/dataset.js?{$Think.config.html_v}"></script>
+{/block}
+{block name="content"}
+<div class="box">
+	<div class="box-body">
+		<form id="form_list" method="post" ajax-submit="true" action="{:url('dataset/op_index')}">
+		{:html_usertoken()}
+		<div class="table-responsive" style="border:0;">
+		<table id="list_table" class="table table-hover datatable">
+			<thead>
+	            <tr>
+					<th class="chk">数据ID</th>
+					<th style="width:60px;">源网址</th>
+					<th style="width:80px;">数据集</th>
+					<th style="width:60px;">序号</th>
+					<th>字段内容</th>
+					<th style="width:100px;">添加时间</th>
+					<th style="width:100px;">修改时间</th>
+					<th style="width:60px;">已发布</th>
+	                <th style="width:100px;">{$Think.lang.op}</th>
+	            </tr>
+			</thead>
+			<tbody>
+			{if $diList}
+			{foreach name="diList" item="item"}
+				<tr data-di-id="{$item['id']}">
+	            	<td class="chk"><label class="checkbox-inline"><input type="checkbox" name="ids[]" value="{$item['id']}" /><small>{$item['id']}</small></label></td>
+					<td class="durl">{if $item['url']}<a href="{$item['url']}" target="_blank">{$item['url']}</a>{else/}无{/if}</td>
+	                <td class="dataset"><a href="{:url('dataset/index&ds_id='.$item['ds_id'])}">{$dsNames[$item['ds_id']]?$dsNames[$item['ds_id']]:$item['ds_id']}</a></td>
+	                <td>{$item['dt_id']}</td>
+	                <td class="dfields">
+	                {if $dsDatas[$item['ds_id']]&&$dsDatas[$item['ds_id']][$item['dt_id']]}
+						<input type="text" class="form-control ipt-dfields" value="{$dsDatas[$item['ds_id']][$item['dt_id']]|htmlspecialchars}" />
+					{else/}
+					无
+	                {/if}
+	                </td>
+	                <td class="addtime">{$item['addtime']?date('Y-m-d H:i:s',$item['addtime']):'无'}</td>
+	                <td class="uptime">{$item['uptime']?date('Y-m-d H:i:s',$item['uptime']):'无'}</td>
+	                <td>{if $collUrlNums[$item['c_url_md5']]}<a href="{:url('collected/list?url='.rawurlencode($collUrls[$item['c_url_md5']]))}" target="_blank">{$collUrlNums[$item['c_url_md5']]}次</a>{else /}否{/if}</td>
+	                <td>
+	                	<ul class="in-line">
+	                		<li><a href="javascript:;" class="edit">编辑</a></li>
+	                		<li class="sep">|</li>
+	                		<li><a href="javascript:;" class="delete">删除</a></li>
+	                	</ul>
+	                </td>
+	            </tr>
+			{/foreach}
+			{else/}
+				<tr>
+					<td colspan="9" style="text-align:center;">
+						<p class="help-block">没有数据，可在“任务»发布设置”中使用“数据集”功能导入数据</p>
+					</td>
+				</tr>
+			{/if}
+			</tbody>
+			<tfoot>
+				<tr>
+					<td class="chk"><label class="chk-all"><input type="checkbox" id="chkall" onclick="checkall(this,'ids[]')" /><span>全部</span></label></td>
+					<td colspan="8">
+						<button type="button" class="btn btn-danger" id="deleteall">删除</button>
+					</td>
+				</tr>
+    			{if condition="!empty($pagenav)"}
+				<tr>
+					<td colspan="9">{$pagenav}</td>
+				</tr>
+				{/if}
+			</tfoot>
+		</table>
+		</div>
+		</form>
+	</div>
+</div>
+<div class="list-footer">
+	<form id="form_search" method="post" action="{:url('dataset/index')}" class="form-inline">
+		{:html_usertoken()}
+		<div class="form-group form-group-sm">
+			<label>每页显示</label>
+		    <select name="num" class="form-control">
+			    <option value="50">50条</option>
+			    <option value="100">100条</option>
+			    <option value="200">200条</option>
+			    <option value="500">500条</option>
+			    <option value="1000">1000条</option>
+		    </select>
+	    </div>
+	    <div class="form-group form-group-sm">
+			<label>数据ID</label>
+		    <input type="number" style="width:135px;" name="id" class="form-control" value="" placeholder="精确搜索" autocomplete="off" />
+	    </div>
+		<div class="form-group form-group-sm">
+			<label>数据集名称</label>
+        	<input type="text" style="width:135px;" name="name" class="form-control" placeholder="模糊搜索，默认全部" />
+	    </div>
+		<div class="form-group form-group-sm">
+			<label>排序</label>
+		    <select name="sort" class="form-control">
+			    <option value="">默认</option>
+			    <option value="id">ID</option>
+			    <option value="addtime">添加时间</option>
+			    <option value="uptime">修改时间</option>
+		    </select>
+	    </div>
+		<div class="form-group form-group-sm">
+			<label>源网址</label>
+        	<input type="text" style="width:135px;" name="url" class="form-control" placeholder="精确搜索">
+	    </div>
+        <button type="submit" class="btn btn-default btn-sm">{$Think.lang.search}</button>
+	</form>
+</div>
+<script type="text/javascript">
+datasetClass.init_index({$search|json_encode});
+</script>
+{/block}

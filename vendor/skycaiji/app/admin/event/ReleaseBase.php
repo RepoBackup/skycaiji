@@ -10,7 +10,6 @@
  */
 
 namespace skycaiji\admin\event;
-use skycaiji\admin\model\CacheModel;
 class ReleaseBase extends CollectBase{
 	/*已采集记录*/
 	public function record_collected($url,$returnData,$release,$insertData=null,$echo=true){
@@ -53,7 +52,7 @@ class ReleaseBase extends CollectBase{
     			}
     			if(!empty($returnData['target'])){
     			    $target=$returnData['target'];
-    			    $echoData=array('成功将<a href="%s" target="_blank">内容</a>发布至'.lang('collected_rele_'.$release['module']).'：',$url);
+    			    $echoData=array('成功将<a href="%s" target="_blank">内容</a>发布至'.lang('collected_rele_'.$release['module']).'：',\util\Tools::skycaiji2url($url));
     				if(preg_match('/^http(s){0,1}\:\/\//i',$target)){
     				    $echoData[0].='<a href="%s" target="_blank">%s</a>';
     				    $echoData[]=$target;
@@ -70,13 +69,13 @@ class ReleaseBase extends CollectBase{
     				}
     				$this->echo_msg($echoData,'green',$echo);
     			}else{
-    			    $this->echo_msg(array('成功发布：<a href="%s" target="_blank">%s</a>',$url,$url),'green',$echo);
+    			    $this->echo_msg(array('成功发布：<a href="%s" target="_blank">%s</a>',\util\Tools::skycaiji2url($url),$url),'green',$echo);
     			}
     		}else{
     			
     			if(!empty($returnData['error'])){
     				
-    			    if($mcollected->collGetNumByUrl($url,0)<=0){
+    			    if($mcollected->collGetNumByUrl($url,0,$release['task_id'],g_sc_c('caiji','same_url'))<=0){
     					
     			        $collectedId=$mcollected->insert(array(
     						'urlMd5' => md5 ( $url ),
@@ -102,11 +101,7 @@ class ReleaseBase extends CollectBase{
     		}
 	    }
 		
-		static $mcacheCont=null;
-		if(!isset($mcacheCont)){
-			$mcacheCont=CacheModel::getInstance('cont_url');
-		}
-		$mcacheCont->deleteCache(md5($url));
+	    \skycaiji\admin\model\Collector::cont_url_remove($url);
 	}
 	
 	/*获取字段值*/
@@ -125,7 +120,15 @@ class ReleaseBase extends CollectBase{
 				}
 				$total=count($collFieldVal['img']);
 				if($total>0){
-				    $this->echo_msg(array('正在下载：%s » %s张图片',$collFieldVal['name'],$total),'black');
+				    $cacheNum=0;
+				    foreach ($collFieldVal['img'] as $imgUrl){
+				        if($this->get_cache_img_url($imgUrl)){
+				            $cacheNum++;
+				        }
+				    }
+				    if($total-$cacheNum>0){
+				        $this->echo_msg(array('正在下载：%s » %s张图片',$collFieldVal['name'],$total),'black');
+				    }
 				    
 				    usort($collFieldVal['img'], function ($str1, $str2) {
 				        
@@ -143,7 +146,7 @@ class ReleaseBase extends CollectBase{
 					$curI++;
 					if($curI<$total){
 						
-					    $this->collect_sleep(g_sc_c('download_img','interval_img'),true);
+					    $this->collect_sleep(g_sc('collect_task_id'),g_sc_c('download_img','interval_img'),true);
 					}
 				}
 			}
@@ -158,7 +161,15 @@ class ReleaseBase extends CollectBase{
 		        }
 		        $total=count($collFieldVal['file']);
 		        if($total>0){
-		            $this->echo_msg(array('正在下载：%s » %s个文件',$collFieldVal['name'],$total),'black');
+		            $cacheNum=0;
+		            foreach ($collFieldVal['file'] as $fileUrl){
+		                if($this->get_cache_file_url($fileUrl)){
+		                    $cacheNum++;
+		                }
+		            }
+		            if($total-$cacheNum>0){
+		                $this->echo_msg(array('正在下载：%s » %s个文件',$collFieldVal['name'],$total),'black');
+		            }
 		            
 		            usort($collFieldVal['file'], function ($str1, $str2) {
 		                
@@ -176,7 +187,7 @@ class ReleaseBase extends CollectBase{
 		            $curI++;
 		            if($curI<$total){
 		                
-		                $this->collect_sleep(g_sc_c('download_file','file_interval'),true);
+		                $this->collect_sleep(g_sc('collect_task_id'),g_sc_c('download_file','file_interval'),true);
 		            }
 		        }
 		    }
@@ -184,9 +195,38 @@ class ReleaseBase extends CollectBase{
 		return $val;
 	}
 	
+	
+	public function txt_replace_fields($data,$collFields){
+	    if(is_array($data)){
+	        foreach ($data as $k=>$v){
+	            $data[$k]=$this->txt_replace_fields($v,$collFields);
+	        }
+	    }else{
+	        $data=preg_replace_callback('/\[\x{91c7}\x{96c6}\x{5b57}\x{6bb5}\:(.+?)\]/u',function($match)use($collFields){
+	            $match=$match[1];
+	            return $this->get_field_val($collFields[$match]);
+	        },$data);
+	    }
+	    return $data;
+	}
+	
 	/*下载图片*/
 	private $cache_img_list=array();
+	public function get_cache_img_url($url){
+	    if($url){
+	        $url=md5($url);
+	        $url=$this->cache_img_list[$url];
+	    }
+	    $url=$url?:'';
+	    return $url;
+	}
 	public function download_img($url){
+	    
+	    $cacheImgUrl=$this->get_cache_img_url($url);
+	    if($cacheImgUrl){
+	        return $cacheImgUrl;
+	    }
+	    
 	    static $retryCur=0;
 		static $imgPaths=array();
 		static $imgUrls=array();
@@ -538,7 +578,21 @@ class ReleaseBase extends CollectBase{
 	}
 	/*下载文件*/
 	private $cache_file_list=array();
+	public function get_cache_file_url($url){
+	    if($url){
+	        $url=md5($url);
+	        $url=$this->cache_file_list[$url];
+	    }
+	    $url=$url?:'';
+	    return $url;
+	}
 	public function download_file($url){
+	    
+	    $cacheFileUrl=$this->get_cache_file_url($url);
+	    if($cacheFileUrl){
+	        return $cacheFileUrl;
+	    }
+	    
 	    static $retryCur=0;
 	    static $filePaths=array();
 	    static $fileUrls=array();
@@ -821,7 +875,7 @@ class ReleaseBase extends CollectBase{
 	        }
 	    }
 	    
-	    $this->collect_sleep(g_sc_c(($isImg?'download_img':'download_file'),'wait'));
+	    $this->collect_sleep(g_sc('collect_task_id'),g_sc_c(($isImg?'download_img':'download_file'),'wait'));
 	    
 	    if($this->retry_do_func($retryCur,$retryMax,$type.'无效')){
 	        if($isImg){
@@ -838,10 +892,8 @@ class ReleaseBase extends CollectBase{
 		$key=$taskId.'__'.$taskModule;
 		if(!isset($fieldsList[$key])){
 			$mcoll=model('Collector');
-			$collData=$mcoll->where(array('task_id'=>$taskId,'module'=>$taskModule))->find();
+			$collData=$mcoll->getByTaskId($taskId,$taskModule);
 			if(!empty($collData)){
-				$collData=$collData->toArray();
-				$collData['config']=safe_unserialize($collData['config']);
 				$collFields=array();
 				if(is_array($collData['config']['field_list'])){
 					foreach ($collData['config']['field_list'] as $collField){
@@ -861,6 +913,43 @@ class ReleaseBase extends CollectBase{
 		        unset($collFields['fields'][$hideField]);
 		    }
 		}
+	}
+	
+	public function sort_coll_fields($sortFields,$collFields,$hasKey=false){
+	    init_array($collFields);
+	    init_array($sortFields);
+	    $sort=array();
+	    $noSort=array();
+	    if($hasKey){
+	        
+	        foreach ($sortFields as $k){
+	            if(!empty($collFields[$k])){
+	                $sort[$k]=$collFields[$k];
+	            }
+	        }
+	        foreach ($collFields as $k=>$v){
+	            if(empty($sort[$k])){
+	                $noSort[]=$v;
+	            }
+	        }
+	        $sort=array_values($sort);
+	    }else{
+	        
+	        foreach ($sortFields as $v){
+	            if(in_array($v, $collFields)){
+	                $sort[]=$v;
+	            }
+	        }
+	        foreach ($collFields as $v){
+	            if(!in_array($v, $sort)){
+	                $noSort[]=$v;
+	            }
+	        }
+	    }
+	    
+	    $sort=array_merge($sort,$noSort);
+	    $sort=array_values($sort);
+	    return $sort;
 	}
 	
 	/*utf8转换成其他编码*/

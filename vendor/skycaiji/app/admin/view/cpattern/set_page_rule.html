@@ -27,7 +27,7 @@
 			<div class="form-group">
 				<label class="control-label">获取网址区域</label>
 				<div class="input-group">
-					<textarea name="{$_tpl_name}[area]" class="form-control" rows="3" data-placeholder-json="请输入json规则，默认获取所有字符并保存为{:cp_sign('match')}标签以供拼接调用" data-placeholder-xpath="请输入xpath规则，默认获取整个页面并保存为{:cp_sign('match')}标签以供拼接调用" placeholder="默认获取整个页面并保存为{:cp_sign('match')}标签以供拼接调用，{$Think.lang.tips_match_area}"></textarea>
+					<textarea name="{$_tpl_name}[area]" class="form-control" rows="3" data-placeholder-json="请输入json规则，默认获取所有字符并保存为{:coll_sign('match')}标签以供拼接调用" data-placeholder-xpath="请输入xpath规则，默认获取整个页面并保存为{:coll_sign('match')}标签以供拼接调用" placeholder="默认获取整个页面并保存为{:coll_sign('match')}标签以供拼接调用，{$Think.lang.tips_match_area}"></textarea>
 					<div class="input-group-addon iga-rt iga-rt1">
 						<select name="{$_tpl_name}[area_module]" data-module-input="{$_tpl_name}[area]" class="slt">
 				     		<option value="">正则</option>
@@ -37,7 +37,7 @@
 				    	<ul class="op">
 							<li data-module="" style="display:block;">
 								<div style="display:inline;"><a href="javascript:;" title="{$Think.lang.tips_sign_wildcard}" onclick="ruleInsertSign.wildcard('[name=\'{$_tpl_name}[area]\']')">{$Think.lang.sign_wildcard}</a></div>
-					    		<div style="display:inline;"><a href="javascript:;" title="{$Think.lang.tips_sign_match_global}" onclick="ruleInsertSign.match('[name=\'{$_tpl_name}[area]\']',{zimu:{$_tpl_match_global?1:0}})">{:cp_sign('match')}</a></div>
+					    		<div style="display:inline;"><a href="javascript:;" title="{$Think.lang.tips_sign_match_global}" onclick="ruleInsertSign.match('[name=\'{$_tpl_name}[area]\']',{zimu:{$_tpl_match_global?1:0}})">{:coll_sign('match')}</a></div>
 								<div>
 									<div style="display:inline;"><a href="javascript:;" title="{$Think.lang.tips_sign_group_global}" onclick="ruleInsertSign.match('[name=\'{$_tpl_name}[area]\']',{group:1,zimu:{$_tpl_match_global?1:0}})">捕获组</a></div>
 									<div style="display:inline;"><a href="javascript:;" title="提示信息" class="glyphicon glyphicon-info-sign icon-info-tips" onclick="ruleInsertSign.tips({$_tpl_match_global?1:0},{$_tpl_is_pagination?1:0})"></a></div>
@@ -49,26 +49,26 @@
 					</div>
 				</div>
 		      	<p class="help-block">
-		      		<span data-module="">规则中无{:cp_sign('match')}标签时，自动将完全匹配的值保存为{:cp_sign('match')}标签以供拼接调用</span>
-					<span data-module="xpath" style="display:none;">XPATH匹配到的值自动保存为{:cp_sign('match')}标签以供拼接调用</span>
-					<span data-module="json" style="display:none;">JSON匹配到的值自动保存为{:cp_sign('match')}标签以供拼接调用</span>
+		      		<span data-module="">规则中无{:coll_sign('match')}标签时，自动将完全匹配的值保存为{:coll_sign('match')}标签以供拼接调用</span>
+					<span data-module="xpath" style="display:none;">XPATH匹配到的值自动保存为{:coll_sign('match')}标签以供拼接调用</span>
+					<span data-module="json" style="display:none;">JSON匹配到的值自动保存为{:coll_sign('match')}标签以供拼接调用</span>
 				</p>
 			</div>
 			<div class="form-group">
 		    	<label class="control-label">拼接成最终区域</label>
 		    	<div class="input-group c-p-url-page-signs" data-page-type="{$_tpl_page_type}" data-input-name="{$_tpl_name}[area_merge]"{$_tpl_is_pagination?' data-is-pagination="1"':''}>
-		    		<textarea name="{$_tpl_name}[area_merge]" data-merge-type="area" placeholder="默认拼接区域规则中所有{:cp_sign('match')}标签，{$Think.lang.tips_matchn_area}" class="form-control" rows="2"></textarea>
+		    		<textarea name="{$_tpl_name}[area_merge]" data-merge-type="area" placeholder="默认拼接区域规则中所有{:coll_sign('match')}标签，{$Think.lang.tips_matchn_area}" class="form-control" rows="2"></textarea>
 		    		{if $_tpl_match_global}
 		    		<div class="input-group-addon">
 		    			<a href="javascript:;" title="调用全局内容标签" role="button" class="dropdown-toggle btn-page-signs" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-			            	{:cp_sign('match','N')}
+			            	{:coll_sign('match','N')}
 			            	<span class="caret"></span>
 			            </a>
 						<div class="dropdown-menu dropdown-menu-right"></div>
 		    		</div>
 		    		{else/}
 		    		<div class="input-group-addon iga-rt">
-		    			<a href="javascript:;" title="调用当前规则中的内容标签" onclick="ruleInsertSign.matchN('[name=\'{$_tpl_name}[area]\']','[name=\'{$_tpl_name}[area_merge]\']',{def:1})">{:cp_sign('match','N')}</a>
+		    			<a href="javascript:;" title="调用当前规则中的内容标签" onclick="ruleInsertSign.matchN('[name=\'{$_tpl_name}[area]\']','[name=\'{$_tpl_name}[area_merge]\']',{def:1})">{:coll_sign('match','N')}</a>
 		    		</div>
 		    		{/if}
 		      	</div>
@@ -92,7 +92,7 @@
 					<label class="radio-inline"><input type="radio" name="{$_tpl_name}[number][open]" value="1"> 是</label>
 					<label class="radio-inline"><input type="radio" name="{$_tpl_name}[number][open]" value="0"> 否</label>
 				</div>
-				<p class="help-block">可以指定分页序号范围并在{:cp_sign('match','N')}中调用，开启后可不填写“获取网址区域”和“提取网址规则”直接在“拼接成最终网址”中生成分页</p>
+				<p class="help-block">可以指定分页序号范围并在{:coll_sign('match','N')}中调用，开启后可不填写“获取网址区域”和“提取网址规则”直接在“拼接成最终网址”中生成分页</p>
 			</div>
         	<div class="form-group">
         		<div class="input-group">
@@ -102,7 +102,7 @@
         					<input type="text" name="{$_tpl_name}[number][start]" data-merge-type="area" class="form-control" placeholder="默认：0" />
 	        				<div class="input-group-addon">
 				    			<a href="javascript:;" title="调用全局内容标签" role="button" class="dropdown-toggle btn-page-signs" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-					            	{:cp_sign('match','N')}
+					            	{:coll_sign('match','N')}
 					            	<span class="caret"></span>
 					            </a>
 								<div class="dropdown-menu dropdown-menu-right"></div>
@@ -115,7 +115,7 @@
         					<input type="text" name="{$_tpl_name}[number][end]" data-merge-type="area"  class="form-control" placeholder="默认：0" />
         					<div class="input-group-addon">
 				    			<a href="javascript:;" title="调用全局内容标签" role="button" class="dropdown-toggle btn-page-signs" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-					            	{:cp_sign('match','N')}
+					            	{:coll_sign('match','N')}
 					            	<span class="caret"></span>
 					            </a>
 								<div class="dropdown-menu dropdown-menu-right"></div>
@@ -165,7 +165,7 @@
 			<div class="form-group">
 		    	<label class="control-label">提取网址规则</label>
 		    	<div class="input-group">
-		    		<textarea class="form-control" name="{$_tpl_name}[url_rule]" rows="3" {if $_tpl_url_required}data-placeholder-xpath="请输入xpath规则" data-placeholder-json="请输入json规则" placeholder="请输入规则，{$Think.lang.tips_match_url}"{else/}data-placeholder-xpath="请输入xpath规则，默认获取所有链接并保存为{:cp_sign('match')}标签以供拼接调用" data-placeholder-json="请输入json规则" placeholder="默认获取所有链接并保存为{:cp_sign('match')}标签以供拼接调用，{$Think.lang.tips_match_url}"{/if}></textarea>
+		    		<textarea class="form-control" name="{$_tpl_name}[url_rule]" rows="3" {if $_tpl_url_required}data-placeholder-xpath="请输入xpath规则" data-placeholder-json="请输入json规则" placeholder="请输入规则，{$Think.lang.tips_match_url}"{else/}data-placeholder-xpath="请输入xpath规则，默认获取所有链接并保存为{:coll_sign('match')}标签以供拼接调用" data-placeholder-json="请输入json规则" placeholder="默认获取所有链接并保存为{:coll_sign('match')}标签以供拼接调用，{$Think.lang.tips_match_url}"{/if}></textarea>
 		    		<div class="input-group-addon iga-rt iga-rt1">
 						<select name="{$_tpl_name}[url_rule_module]" data-module-input="{$_tpl_name}[url_rule]" class="slt">
 			     			<option value="">正则</option>
@@ -175,7 +175,7 @@
 			     		<ul class="op">
 			     			<li data-module="" style="display:block;">
 			    				<div style="display:inline;"><a href="javascript:;" title="{$Think.lang.tips_sign_wildcard}" onclick="ruleInsertSign.wildcard('[name=\'{$_tpl_name}[url_rule]\']')">{$Think.lang.sign_wildcard}</a></div>
-			    				<div style="display:inline;"><a href="javascript:;" title="{$Think.lang.tips_sign_match_global}" onclick="ruleInsertSign.match('[name=\'{$_tpl_name}[url_rule]\']',{zimu:{$_tpl_match_global?1:0}})">{:cp_sign('match')}</a></div>
+			    				<div style="display:inline;"><a href="javascript:;" title="{$Think.lang.tips_sign_match_global}" onclick="ruleInsertSign.match('[name=\'{$_tpl_name}[url_rule]\']',{zimu:{$_tpl_match_global?1:0}})">{:coll_sign('match')}</a></div>
 			    				<div>
 			    					<div style="display:inline;"><a href="javascript:;" title="{$Think.lang.tips_sign_group_global}" onclick="ruleInsertSign.match('[name=\'{$_tpl_name}[url_rule]\']',{group:1,zimu:{$_tpl_match_global?1:0}})">捕获组</a></div>
 			    					<div style="display:inline;"><a href="javascript:;" title="提示信息" class="glyphicon glyphicon-info-sign icon-info-tips" onclick="ruleInsertSign.tips({$_tpl_match_global?1:0},{$_tpl_is_pagination?1:0})"></a></div>
@@ -187,26 +187,26 @@
 		    		</div>
 		    	</div>
 		      	<p class="help-block">
-		      		<span data-module="">规则中无{:cp_sign('match')}标签时，自动将完全匹配的值保存为{:cp_sign('match')}标签以供拼接调用</span>
-					<span data-module="xpath" style="display:none;">XPATH匹配到的值自动保存为{:cp_sign('match')}标签以供拼接调用</span>
-					<span data-module="json" style="display:none;">JSON匹配到的值自动保存为{:cp_sign('match')}标签以供拼接调用</span>
+		      		<span data-module="">规则中无{:coll_sign('match')}标签时，自动将完全匹配的值保存为{:coll_sign('match')}标签以供拼接调用</span>
+					<span data-module="xpath" style="display:none;">XPATH匹配到的值自动保存为{:coll_sign('match')}标签以供拼接调用</span>
+					<span data-module="json" style="display:none;">JSON匹配到的值自动保存为{:coll_sign('match')}标签以供拼接调用</span>
 				</p>
 			</div>
 			<div class="form-group">
 		    	<label class="control-label">拼接成最终网址</label>
 		    	<div class="input-group c-p-url-page-signs" data-page-type="{$_tpl_page_type}" data-input-name="{$_tpl_name}[url_merge]"{$_tpl_is_pagination?' data-is-pagination="1"':''}>
-		      		<input type="text" class="form-control" name="{$_tpl_name}[url_merge]" data-merge-type="url" placeholder="默认拼接网址规则中所有{:cp_sign('match')}标签，{$Think.lang.tips_matchn_url}" autocomplete="off" />
+		      		<input type="text" class="form-control" name="{$_tpl_name}[url_merge]" data-merge-type="url" placeholder="默认拼接网址规则中所有{:coll_sign('match')}标签，{$Think.lang.tips_matchn_url}" autocomplete="off" />
 		    		{if $_tpl_match_global}
 		    		<div class="input-group-addon">
 		    			<a href="javascript:;" title="调用全局内容标签" role="button" class="dropdown-toggle btn-page-signs" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-			            	{:cp_sign('match','N')}
+			            	{:coll_sign('match','N')}
 			            	<span class="caret"></span>
 			            </a>
 						<div class="dropdown-menu dropdown-menu-right"></div>
 		    		</div>
 		    		{else/}
 		    		<div class="input-group-addon iga-rt">
-		    			<a href="javascript:;" title="调用当前规则中的内容标签" onclick="ruleInsertSign.matchN('[name=\'{$_tpl_name}[url_rule]\']','[name=\'{$_tpl_name}[url_merge]\']',{def:1})">{:cp_sign('match','N')}</a>
+		    			<a href="javascript:;" title="调用当前规则中的内容标签" onclick="ruleInsertSign.matchN('[name=\'{$_tpl_name}[url_rule]\']','[name=\'{$_tpl_name}[url_merge]\']',{def:1})">{:coll_sign('match','N')}</a>
 		    		</div>
 		    		{/if}
 		      	</div>

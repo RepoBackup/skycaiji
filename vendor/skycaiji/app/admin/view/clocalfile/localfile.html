@@ -1,0 +1,45 @@
+<form id="win_form_localfiles" method="post" action="{:url('clocalfile/localfile')}">
+	{:html_usertoken()}
+	<div class="input-group input-group-sm">
+		<a href="javascript:;" class="input-group-addon" id="btn_back" title="后退"><span class="glyphicon glyphicon-arrow-left"></span></a>
+		<input class="form-control" id="ipt_file" value="{$filePath}" readonly="readonly" />
+		<a href="javascript:;" class="input-group-addon" id="btn_refresh" title="刷新"><span class="glyphicon glyphicon-refresh"></span></a>
+	</div>
+	<div class="table-responsive table-responsive-menu" style="border:0;">
+		<table class="table table-hover datatable" id="fileList">
+		<thead>
+			<tr>
+				<th class="chk"><label class="checkbox-inline"><input type="checkbox" id="chkall">&nbsp;</label></th>
+				<th>文件名</th>
+				<th style="width:150px;">修改时间</th>
+			</tr>
+		</thead>
+		<tbody>
+			{if $files}
+			{foreach $files as $k=>$v}
+			<tr data-file="{$v['file']|htmlspecialchars}" data-is-dir="{$v['dir']}">
+				<td class="chk"><label class="checkbox-inline"><input type="checkbox" name="files[]" value="{$v['file']|htmlspecialchars}">&nbsp;</label></td>
+				{if $v['dir']}
+				<td><span class="glyphicon glyphicon-folder-close"></span> <span class="open">{$k|htmlspecialchars}</span></td>
+				{else/}
+				<td><span class="glyphicon glyphicon-file"></span> <span>{$k|htmlspecialchars}</span></td>
+				{/if}
+				<td>{$v['date']}</td>
+			</tr>
+			{/foreach}
+			<tr>
+				<td class="chk"><label class="checkbox-inline"><input type="checkbox" id="chkall1">&nbsp;</label></td>
+				<td colspan="2">
+					<button type="submit" class="btn btn-sm btn-primary">添加</button>
+				</td>
+			</tr>
+			{else/}
+			<tr><td colspan="4">没有文件</td></tr>
+			{/if}
+		</tbody>
+		</table>
+	</div>
+</form>
+<script type="text/javascript">
+c_localfile.file_load();
+</script>

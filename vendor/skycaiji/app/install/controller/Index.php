@@ -149,7 +149,7 @@ class Index extends BaseController{
 		 
 		$installSql=preg_replace('/\s+`skycaiji_/i', ' `'.$dbConfig['db_prefix'], $installSql);
 		 
-		if(preg_match_all('/[\s\S]+?\;[\r\n]/',$installSql,$sqlList)){
+		if(preg_match_all('/[\s\S]+?\;\s*[\r\n]/',$installSql,$sqlList)){
 			$sqlList=$sqlList[0];
 		}else{
 			$this->error('没有sql安装语句');

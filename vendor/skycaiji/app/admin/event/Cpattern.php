@@ -11,7 +11,7 @@
 
 namespace skycaiji\admin\event;
 use skycaiji\admin\model\CacheModel;
-class Cpattern extends CpatternEvent{
+class Cpattern extends CpatternColl{
     /*处理post配置*/
     public function setConfig($config){
         $config['url_complete']=intval($config['url_complete']);
@@ -86,22 +86,8 @@ class Cpattern extends CpatternEvent{
         
         $config['source_config']=$this->page_set_config('source_url',$config['source_config']);
         
+        $config=$this->set_config_common($config);
         
-        if(!empty($config['field_list'])){
-            
-            foreach ($config['field_list'] as $k=>$v){
-                $config['field_list'][$k]=json_decode(url_b64decode($v),true);
-            }
-        }
-        if(!empty($config['field_process'])){
-            
-            foreach ($config['field_process'] as $k=>$v){
-                $config['field_process'][$k]=json_decode(url_b64decode($v),true);
-                $config['field_process'][$k]=$this->set_process($config['field_process'][$k]);
-            }
-        }
-        $config['common_process']=\util\UnmaxPost::val('process/a',array(),null);
-        $config['common_process']=$this->set_process($config['common_process']);
         
         if(is_array($config['level_urls'])){
             
@@ -126,27 +112,10 @@ class Cpattern extends CpatternEvent{
         return $config;
     }
     /*初始化配置*/
-    public function init($collData){
-        $collData['config']=safe_unserialize($collData['config']);
-        $this->collector=$collData;
-        $releData=model('Release')->where(array('task_id'=>$collData['task_id']))->find();
-        if(!empty($releData)){
-            $releData=$releData->toArray();
-        }
-        $this->release=$releData;
+    public function init($collData,$noVarFuncs=false){
+        $collData=parent::init($collData);
         
         $keyConfig='collector_config_'.$collData['id'];
-        $cacheConfig=cache($keyConfig);
-        if(empty($cacheConfig)||$cacheConfig['update_time']!=$collData['uptime']){
-            
-            $config=$this->initConfig($collData['config']);
-            cache($keyConfig,array('update_time'=>$collData['uptime'],'config'=>$config));
-        }else{
-            $config=$cacheConfig['config'];
-        }
-        $this->config=is_array($config)?$config:array();
-        
-        
         $cacheConfigParams=cache($keyConfig.'_params');
         if(empty($cacheConfigParams)||$cacheConfigParams['update_time']!=$collData['uptime']){
             
@@ -182,17 +151,20 @@ class Cpattern extends CpatternEvent{
                     $varVal=$varIpt;
                 }
                 
-                if(!empty($var['funcs'])&&is_array($var['funcs'])){
+                if(!$noVarFuncs){
                     
-                    foreach ($var['funcs'] as $varFunc){
-                        if(is_array($varFunc)&&!empty($varFunc['func'])){
-                            
-                            $result=$this->execute_plugin_func('variable',$varFunc['func'],$varVal,$varFunc['func_param'],$varFullList,null,true);
-                            if(empty($result['success'])){
-                                $this->echo_msg_exit('');
-                            }
-                            if(isset($result['data'])){
-                                $varVal=$result['data'];
+                    if(!empty($var['funcs'])&&is_array($var['funcs'])){
+                        
+                        foreach ($var['funcs'] as $varFunc){
+                            if(is_array($varFunc)&&!empty($varFunc['func'])){
+                                
+                                $result=$this->execute_plugin_func('variable',$varFunc['func'],$varVal,$varFunc['func_param'],$varFullList,'【变量：'.$var['name'].'】',true);
+                                if(empty($result['success'])){
+                                    $this->echo_msg_exit('');
+                                }
+                                if(isset($result['data'])){
+                                    $varVal=$result['data'];
+                                }
                             }
                         }
                     }
@@ -244,6 +216,7 @@ class Cpattern extends CpatternEvent{
         
         
         $config['regexp_flags']=is_array($config['regexp_flags'])?$config['regexp_flags']:array();
+        $config['regexp_flags']=array('unicode');
         $regexpFlags='';
         if(!in_array('case',$config['regexp_flags'])){
             
@@ -330,103 +303,7 @@ class Cpattern extends CpatternEvent{
             }
         }
         
-        if(!empty($config['field_list'])){
-            foreach ($config['field_list'] as $fk=>$fv){
-                if('rule'==$fv['module']){
-                    
-                    $fv=$this->convert_rule_module_config($fv);
-                }elseif('extract'==$fv['module']){
-                    
-                    if(!empty($fv['extract_rule'])){
-                        
-                        $fv=$this->convert_rule_module_config($fv,'extract_');
-                    }
-                }
-                $config['field_list'][$fk]=$fv;
-            }
-        }
-        
-        if(!empty($config['field_process'])){
-            foreach ($config['field_process'] as $k=>$v){
-                $config['field_process'][$k]=$this->initProcess($v);
-            }
-        }
-        
-        if(!empty($config['common_process'])){
-            $config['common_process']=$this->initProcess($config['common_process']);
-        }
-        
-        
-        $module_normal_fields=array();
-        $module_extract_fields=array();
-        $module_merge_fields=array();
-        if(!empty($config['field_list'])){
-            foreach ($config['field_list'] as $fk=>$fv){
-                $fieldModule=strtolower($fv['module']);
-                $fieldConfig=array('field'=>$fv,'process'=>$config['field_process'][$fk]);
-                if('extract'==$fieldModule){
-                    
-                    $module_extract_fields[$fv['name']]=$fieldConfig;
-                }elseif('merge'==$fieldModule){
-                    
-                    $module_merge_fields[$fv['name']]=$fieldConfig;
-                }else{
-                    
-                    $module_normal_fields[$fv['name']]=$fieldConfig;
-                }
-            }
-        }
-        
-        $config['new_field_list']=\util\Funcs::array_key_merge($module_normal_fields, $module_extract_fields);
-        $config['new_field_list']=\util\Funcs::array_key_merge($config['new_field_list'], $module_merge_fields);
-        
-        
-        if(!empty($config['pagination'])&&is_array($config['pagination']['fields'])){
-            
-            $new_pn_fields=array(
-                'normal'=>array(),
-                'extract'=>array(),
-                'merge'=>array(),
-            );
-            $pnFields=array();
-            foreach ($config['pagination']['fields'] as $pnField){
-                
-                $pnFields[$pnField['field']]=$pnField;
-            }
-            if(!empty($pnFields['::all'])){
-                
-                $fieldAllParams=$pnFields['::all'];
-                unset($pnFields['::all']);
-                foreach ($config['new_field_list'] as $k=>$v){
-                    
-                    if(empty($pnFields[$k])){
-                        
-                        $fieldAllParams['field']=$k;
-                        $pnFields[$k]=$fieldAllParams;
-                    }
-                }
-            }
-            $config['pagination']['fields']=$pnFields;
-            unset($pnFields);
-            
-            foreach ($config['pagination']['fields'] as $pfk=>$pnField){
-                $pnField['delimiter']=str_replace(array('\r','\n'), array("\r","\n"), $pnField['delimiter']);
-                $config['pagination']['fields'][$pfk]=$pnField;
-                if(!empty($module_normal_fields[$pnField['field']])){
-                    
-                    $new_pn_fields['normal'][$pnField['field']]=$pnField;
-                }elseif(!empty($module_extract_fields[$pnField['field']])){
-                    
-                    $new_pn_fields['extract'][$pnField['field']]=$pnField;
-                }elseif(!empty($module_merge_fields[$pnField['field']])){
-                    
-                    $new_pn_fields['merge'][$pnField['field']]=$pnField;
-                }
-            }
-            
-            $config['pagination']['new_fields']=\util\Funcs::array_key_merge($new_pn_fields['normal'],$new_pn_fields['extract']);
-            $config['pagination']['new_fields']=\util\Funcs::array_key_merge($config['pagination']['new_fields'],$new_pn_fields['merge']);
-        }
+        $config=parent::initConfig($config);
         
         return $config;
     }
@@ -461,7 +338,7 @@ class Cpattern extends CpatternEvent{
     
     public function initConfigParams(){
         $config=$this->config;
-        
+        init_array($config['request_headers']);
         $signs=array();
         
         $headers=array('page'=>array(),'page_headers'=>array(),'img'=>array(),'file'=>array());
@@ -582,41 +459,13 @@ class Cpattern extends CpatternEvent{
         $this->config_params['signs']=$signs;
     }
     
-	/*采集,return false表示终止采集*/
-	public function collect($num=10){
-	    \util\Param::set_collector_collecting();
-	    set_g_sc('collect_task_id',$this->collector['task_id']);
-		if(!$this->show_opened_tools){
-		    $opened_tools=array();
-		    if(g_sc_c('caiji','robots')){
-		        $opened_tools[]='遵守robots协议';
-		    }
-		    if($this->page_render_is_open()){
-		        $opened_tools[]='页面渲染';
-		    }
-		    if(g_sc_c('download_img','download_img')){
-		        $opened_tools[]='图片本地化';
-		    }
-		    if(g_sc_c('download_file','download_file')){
-		        $opened_tools[]='文件本地化';
-		    }
-		    if(g_sc_c('proxy','open')){
-		        $opened_tools[]='代理';
-		    }
-		    if(g_sc_c('translate','open')){
-		        $opened_tools[]='翻译';
-		    }
-		    if(!empty($opened_tools)){
-		        $this->echo_msg(array('已开启功能：%s',implode('、', $opened_tools)),'black');
-		    }
-		    if($num>0){
-		        $this->echo_msg(array('预计采集%s条数据',$num),'black');
-		    }
-		    $this->show_opened_tools=true;
-		}
 	
-		$this->collect_num=$num;
-		$this->collected_field_list=array();
+	public function collect($num=10){
+	    $this->collect_opened_tools=array();
+	    if($this->page_render_is_open()){
+	        $this->collect_opened_tools[]='页面渲染';
+	    }
+	    parent::collect($num);
 		
 		$this->collFrontUrls();
 		
@@ -696,7 +545,7 @@ class Cpattern extends CpatternEvent{
 		        }
 		        if($count_db_used>0){
 		            $sourceWaitTime=$source_interval-max($time_interval_list);
-		            $this->echo_msg(array('已采集起始页网址%s条，再次采集需等待%s <a href="%s" target="_blank">[设置采集运行间隔]</a>',$count_db_used,\skycaiji\admin\model\Config::wait_time_tips($sourceWaitTime),url('admin/task/set?show_config=1&id='.$this->collector['task_id'])),'black');
+		            $this->echo_msg(array('已采集起始页网址%s条，再次采集需等待%s <a href="%s" target="_blank">[设置采集运行间隔]</a>',$count_db_used,\skycaiji\admin\model\Config::wait_time_tips($sourceWaitTime),url('admin/task/set?show_config=1&id='.$this->task_id)),'black');
 		            if(count($source_urls)<=count($this->used_source_urls)){
 		                $this->echo_msg('所有起始页采集完毕','green');
 		                return 'completed';
@@ -748,7 +597,7 @@ class Cpattern extends CpatternEvent{
 		                    $pnWaitTime=$source_interval-abs(time()-intval($pnDataline));
 		                    if($pnWaitTime>0){
 		                        
-		                        $this->echo_msg(array('已采集起始页分页，再次采集需等待%s <a href="%s" target="_blank">[设置采集运行间隔]</a>',\skycaiji\admin\model\Config::wait_time_tips($pnWaitTime),url('admin/task/set?show_config=1&id='.$this->collector['task_id'])),'black');
+		                        $this->echo_msg(array('已采集起始页分页，再次采集需等待%s <a href="%s" target="_blank">[设置采集运行间隔]</a>',\skycaiji\admin\model\Config::wait_time_tips($pnWaitTime),url('admin/task/set?show_config=1&id='.$this->task_id)),'black');
 		                        $forContinue=true;
 		                        break;
 		                    }
@@ -1172,9 +1021,7 @@ class Cpattern extends CpatternEvent{
 	/*设置字段值*/
 	public function setField($field_config,$cur_url,$htmlInfo,$cont_url){
 	    $html=$htmlInfo['html'];
-		$cur_url_md5=md5($cur_url);
 
-		$field_process=$field_config['process'];
 		$field_params=$field_config['field'];
 		$module=strtolower($field_params['module']);
 		
@@ -1236,286 +1083,11 @@ class Cpattern extends CpatternEvent{
 		        $html=$htmlInfo['html'];
 			}
 		}
-		static $fieldArr=array('words','num','no','time','list');
 		
 		$url_info=$this->match_url_info($cur_url, $html, 'set_field');
-	
-		$val='';
-		$field_func='field_module_'.$module;
-		$is_list_data=false;
-		$list_multi_str='';
-		if(method_exists($this, $field_func)){
-			
-			if('extract'==$module){
-				
-				
-				if(is_array($this->field_val_list[$field_params['extract']]['values'][$cur_url_md5])){
-					
-					$val=array();
-					foreach ($this->field_val_list[$field_params['extract']]['values'][$cur_url_md5] as $k=>$v){
-						$extract_field_val=array(
-							'value'=>$v,
-						    'img'=>$this->field_val_list[$field_params['extract']]['imgs'][$cur_url_md5][$k],
-						    'file'=>$this->field_val_list[$field_params['extract']]['files'][$cur_url_md5][$k],
-						);
-						$val[$k]=$this->field_module_extract($field_params, $extract_field_val, $url_info);
-					}
-				}else{
-					
-					$extract_field_val=array(
-						'value'=>$this->field_val_list[$field_params['extract']]['values'][$cur_url_md5],
-					    'img'=>$this->field_val_list[$field_params['extract']]['imgs'][$cur_url_md5],
-					    'file'=>$this->field_val_list[$field_params['extract']]['files'][$cur_url_md5],
-					);
-					$val=$this->field_module_extract($field_params, $extract_field_val, $url_info);
-				}
-				
-				if($field_params['extract_module']=='rule'){
-				    if($field_params['extract_rule_multi']&&$field_params['extract_rule_multi_type']=='list'){
-				        $is_list_data=true;
-				        $list_multi_str=$field_params['extract_rule_multi_str'];
-				    }
-				}elseif($field_params['extract_module']=='xpath'){
-				    if($field_params['extract_xpath_multi']&&$field_params['extract_xpath_multi_type']=='list'){
-				        $is_list_data=true;
-				        $list_multi_str=$field_params['extract_xpath_multi_str'];
-				    }
-				}
-			}elseif('merge'==$module){
-				
-				if(empty($this->first_loop_field)){
-					
-					$cur_field_val_list=array();
-					foreach ($this->field_val_list as $k=>$v){
-						$cur_field_val_list[$k]=array(
-							'value'=>$v['values'][$cur_url_md5],
-						    'img'=>$v['imgs'][$cur_url_md5],
-						    'file'=>$v['files'][$cur_url_md5]
-						);
-					}
-					$val=$this->field_module_merge($field_params,$cur_field_val_list);
-				}else{
-					
-					$val=array();
-					
-					if(is_array($this->field_val_list[$this->first_loop_field]['values'][$cur_url_md5])){
-    					foreach ($this->field_val_list[$this->first_loop_field]['values'][$cur_url_md5] as $v_k=>$v_v){
-    						$cur_field_val_list=array();
-    						foreach ($this->field_val_list as $k=>$v){
-    							$cur_field_val_list[$k]=array(
-    								'value'=>(is_array($v['values'][$cur_url_md5])?$v['values'][$cur_url_md5][$v_k]:$v['values'][$cur_url_md5]),
-    							    'img'=>((is_array($v['imgs'][$cur_url_md5])&&is_array($v['imgs'][$cur_url_md5][$v_k]))?$v['imgs'][$cur_url_md5][$v_k]:$v['imgs'][$cur_url_md5]),
-    							    'file'=>((is_array($v['files'][$cur_url_md5])&&is_array($v['files'][$cur_url_md5][$v_k]))?$v['files'][$cur_url_md5][$v_k]:$v['files'][$cur_url_md5])
-    							);
-    						}
-    						$val[$v_k]=$this->field_module_merge($field_params,$cur_field_val_list);
-    					}
-					}
-				}
-			}elseif(in_array($module,$fieldArr)){
-				
-				if(empty($this->first_loop_field)){
-					
-					$val=$this->$field_func($field_params);
-				}else{
-					
-					$val=array();
-					
-					if(is_array($this->field_val_list[$this->first_loop_field]['values'][$cur_url_md5])){
-					    foreach ($this->field_val_list[$this->first_loop_field]['values'][$cur_url_md5] as $v_k=>$v_v){
-					        $val[$v_k]=$this->$field_func($field_params);
-					    }
-					}
-				}
-			}elseif($module=='json'){
-			    $val=$this->$field_func($field_params,$html,$cur_url);
-			}elseif($module=='auto'){
-			    $val=$this->$field_func($field_params,$htmlInfo,$cur_url);
-			}elseif($module=='sign'){
-			    
-			    $val=$this->$field_func($field_params,empty($cont_url)?$cur_url:$cont_url);
-			}else{
-				$val=$this->$field_func($field_params,$html);
-				
-				if($module=='rule'){
-				    if($field_params['rule_multi']&&$field_params['rule_multi_type']=='list'){
-				        $is_list_data=true;
-				        $list_multi_str=$field_params['rule_multi_str'];
-				    }
-				}elseif($module=='xpath'){
-				    if($field_params['xpath_multi']&&$field_params['xpath_multi_type']=='list'){
-				        $is_list_data=true;
-				        $list_multi_str=$field_params['xpath_multi_str'];
-				    }
-				}
-			}
-		}
 		
-		if(!empty($list_multi_str)){
-		    $list_multi_str=str_replace(array('\r','\n'), array("\r","\n"), $list_multi_str);
-		}
-	
-		$vals=null;
-		if(is_array($val)){
-			
-			$is_loop=true;
-			$vals=$val;
-			unset($val);
-		}else{
-			
-			$is_loop=false;
-			$vals=array($val);
-		}
-
-		$cont_url_md5=empty($cont_url)?$cur_url_md5:md5($cont_url);
+		$this->set_field_val($field_config, $cur_url, $htmlInfo, $cont_url, $url_info);
 		
-		foreach ($vals as $v_k=>$val){
-		    $val=isset($val)?$val:'';
-			$loopIndex=$is_loop?$v_k:-1;
-			$this->field_url_complete=true;
-			$this->field_down_img=true;
-			$this->field_stop_process=false;
-			
-			if($is_loop){
-			    
-			    if(!isset($this->field_val_list[$field_name]['values'][$cur_url_md5])){
-			        $this->field_val_list[$field_name]['values'][$cur_url_md5]=array();
-			        $this->field_val_list[$field_name]['imgs'][$cur_url_md5]=array();
-			        $this->field_val_list[$field_name]['files'][$cur_url_md5]=array();
-			    }
-			}
-			
-			if($is_list_data){
-			    
-			    $val=$val?json_decode($val,true):array();
-			    init_array($val);
-			    foreach ($val as $v_vk=>$v_vv){
-			        if(!empty($field_process)){
-			            
-			            $v_vv=$this->process_field($field_name,$v_vv,$field_process,$cur_url_md5,$loopIndex,$cont_url_md5,$url_info);
-			        }
-			        if(!empty($this->config['common_process'])){
-			            
-			            $v_vv=$this->process_field($field_name,$v_vv,$this->config['common_process'],$cur_url_md5,$loopIndex,$cont_url_md5,$url_info);
-			        }
-			        $val[$v_vk]=$v_vv;
-			    }
-			    $val=implode($list_multi_str, $val);
-			}else{
-			    if(!empty($field_process)){
-			        
-			        $val=$this->process_field($field_name,$val,$field_process,$cur_url_md5,$loopIndex,$cont_url_md5,$url_info);
-			    }
-			    if(!empty($this->config['common_process'])){
-			        
-			        $val=$this->process_field($field_name,$val,$this->config['common_process'],$cur_url_md5,$loopIndex,$cont_url_md5,$url_info);
-			    }
-			}
-			
-			if(isset($this->exclude_cont_urls[$cont_url_md5][$cur_url_md5])){
-				
-				if(empty($this->first_loop_field)){
-					
-					foreach ($this->field_val_list as $f_k=>$f_v){
-						
-						unset($this->field_val_list[$f_k]['values'][$cur_url_md5]);
-						unset($this->field_val_list[$f_k]['imgs'][$cur_url_md5]);
-						unset($this->field_val_list[$f_k]['files'][$cur_url_md5]);
-					}
-					return;
-				}else{
-					
-					if(isset($this->exclude_cont_urls[$cont_url_md5][$cur_url_md5][$loopIndex])){
-						
-						if(!$is_loop){
-							
-							foreach ($this->field_val_list as $f_k=>$f_v){
-								
-								unset($this->field_val_list[$f_k]['values'][$cur_url_md5]);
-								unset($this->field_val_list[$f_k]['imgs'][$cur_url_md5]);
-								unset($this->field_val_list[$f_k]['files'][$cur_url_md5]);
-							}
-							return;
-						}else{
-							
-							foreach ($this->field_val_list as $f_k=>$f_v){
-								
-								if(is_array($this->field_val_list[$f_k]['values'][$cur_url_md5])){
-									
-									unset($this->field_val_list[$f_k]['values'][$cur_url_md5][$v_k]);
-								}
-								if(is_array($this->field_val_list[$f_k]['imgs'][$cur_url_md5])){
-									
-									unset($this->field_val_list[$f_k]['imgs'][$cur_url_md5][$v_k]);
-								}
-								if(is_array($this->field_val_list[$f_k]['files'][$cur_url_md5])){
-								    
-								    unset($this->field_val_list[$f_k]['files'][$cur_url_md5][$v_k]);
-								}
-							}
-							continue;
-						}
-					}
-				}
-			}
-	
-			if($this->field_url_complete){
-    			
-    			$val=preg_replace_callback('/(\bhref\s*=\s*[\'\"])([^\'\"]*)([\'\"])/i',function($matche) use ($url_info){
-    				
-    			    $matche[2]=\util\Tools::create_complete_url($matche[2], $url_info);
-    			    return $matche[1].$matche[2].$matche[3];
-    			},$val);
-    			$val=preg_replace_callback('/(\bsrc\s*=\s*[\'\"])([^\'\"]*)([\'\"])/i',function($matche) use ($url_info){
-    			    $matche[2]=\util\Tools::create_complete_url($matche[2], $url_info);
-    				return $matche[1].$matche[2].$matche[3];
-    			},$val);
-			}
-					
-			if($is_loop){
-				
-				if(!isset($this->field_val_list[$field_name]['values'][$cur_url_md5])){
-					$this->field_val_list[$field_name]['values'][$cur_url_md5]=array();
-					$this->field_val_list[$field_name]['imgs'][$cur_url_md5]=array();
-					$this->field_val_list[$field_name]['files'][$cur_url_md5]=array();
-				}
-				$this->field_val_list[$field_name]['values'][$cur_url_md5][$v_k]=$val;
-			}else{
-				
-				$this->field_val_list[$field_name]['values'][$cur_url_md5]=$val;
-			}
-			if(!is_empty(g_sc_c('download_img','download_img'))&&!empty($val)&&$this->field_down_img){
-				
-				$valImgs=array();
-				if(preg_match_all('/<img\b[^<>]*\bsrc\s*=\s*[\'\"](\w+\:[^\'\"]+?)[\'\"]/i',$val,$imgUrls)){
-					
-					$valImgs=is_array($imgUrls[1])?$imgUrls[1]:array();
-				}
-				if('extract'==$module&&'cover'==$field_params['extract_module']){
-					
-					$valImgs=array_merge($valImgs,array($val));
-				}
-				if(!empty($valImgs)){
-				    $fieldImgs=array();
-					if($is_loop){
-						
-					    $fieldImgs=$this->field_val_list[$field_name]['imgs'][$cur_url_md5][$v_k];
-					}else{
-					    
-					    $fieldImgs=$this->field_val_list[$field_name]['imgs'][$cur_url_md5];
-					}
-					init_array($fieldImgs);
-					$fieldImgs=array_merge($fieldImgs,$valImgs);
-					$fieldImgs=array_unique($fieldImgs);
-					$fieldImgs=array_values($fieldImgs);
-					if($is_loop){
-					    $this->field_val_list[$field_name]['imgs'][$cur_url_md5][$v_k]=$fieldImgs;
-					}else{
-					    $this->field_val_list[$field_name]['imgs'][$cur_url_md5]=$fieldImgs;
-					}
-				}
-			}
-		}
 	}
 	/*设置分页的字段列表值*/
 	public function setPaginationFields($cont_url,$page_url){
@@ -1533,7 +1105,7 @@ class Cpattern extends CpatternEvent{
 		
 		if(empty($pnConfig['max'])||(count((array)$this->used_pagination_urls['url'])<$pnConfig['max'])){
 			
-		    $this->collect_sleep(g_sc_c('caiji','interval_html'),true,true);
+		    $this->collect_sleep($this->task_id,g_sc_c('caiji','interval_html'),true,true);
 		    $pageOpened=$this->page_opened_tips('url','',true);
 		    $this->echo_url_msg(array('——采集分页'),$page_url,$pageOpened);
 			$htmlInfo=$this->get_page_html($page_url,'url','',true,true);
@@ -1553,7 +1125,7 @@ class Cpattern extends CpatternEvent{
 			}
 			
 			
-			$this->collect_stopped($this->collector['task_id']);
+			$this->collect_stopped($this->task_id);
 			
 			$nextPnUrl=$this->getPaginationNext('url','',true,$page_url,$htmlInfo['html']);
 			if(!empty($nextPnUrl)){
@@ -1708,7 +1280,7 @@ class Cpattern extends CpatternEvent{
 		$this->first_loop_field=null;
 		$this->relation_url_list=array();
 		$this->cur_cont_url=$cont_url;
-	
+		
 		if(empty($cont_url)){
 		    return $this->echo_error('请输入内容页网址');
 		}
@@ -1730,9 +1302,9 @@ class Cpattern extends CpatternEvent{
 		    $errorMsg=($errorMsg?'：':'').$errorMsg;
 		    $errorMsg='未抓取到源码'.$errorMsg;
 		    
-		    controller('ReleaseBase','event')->record_collected(
+		    \util\Tools::controller('ReleaseBase','event')->record_collected(
 		        $cont_url,
-		        array('id'=>0,'error'=>$errorMsg),array('task_id'=>$this->collector['task_id'],'module'=>$this->release['module']),null,false
+		        array('id'=>0,'error'=>$errorMsg),array('task_id'=>$this->task_id,'module'=>$this->release['module']),null,false
 		    );
 		    return $this->echo_error($errorMsg);
 		}
@@ -1748,140 +1320,7 @@ class Cpattern extends CpatternEvent{
 		    $this->setPaginationFields($cont_url,$nextPnUrl);
 		}
 		
-		$val_list=array();
-		if(!empty($this->field_val_list)){
-			if(empty($this->first_loop_field)){
-				
-				foreach ($this->field_val_list as $fieldName=>$fieldVal){
-				    $val_values='';
-				    if(!empty($fieldVal['values'])){
-				        $val_values=\util\Funcs::array_filter_keep0($fieldVal['values']);
-				        $valDelimiter='';
-				        $pnField=$this->get_config('pagination','new_fields',$fieldName);
-				        if(is_array($pnField)){
-				            $valDelimiter=$pnField['delimiter'];
-				        }
-				        $val_values=implode($valDelimiter, $val_values);
-				    }
-					
-					$val_imgs=array();
-					if(!empty($fieldVal['imgs'])){
-						foreach ($fieldVal['imgs'] as $v){
-							if(!empty($v)){
-								if(is_array($v)){
-									$val_imgs=array_merge($val_imgs,$v);
-								}else{
-									$val_imgs[]=$v;
-								}
-							}
-						}
-						if(!empty($val_imgs)){
-							$val_imgs=array_unique($val_imgs);
-							$val_imgs=array_filter($val_imgs);
-							$val_imgs=array_values($val_imgs);
-						}
-					}
-					
-					$val_files=array();
-					if(!empty($fieldVal['files'])){
-					    foreach ($fieldVal['files'] as $v){
-					        if(!empty($v)){
-					            if(is_array($v)){
-					                $val_files=array_merge($val_files,$v);
-					            }else{
-					                $val_files[]=$v;
-					            }
-					        }
-					    }
-					    if(!empty($val_files)){
-					        $val_files=array_unique($val_files);
-					        $val_files=array_filter($val_files);
-					        $val_files=array_values($val_files);
-					    }
-					}
-					
-					$val_list[$fieldName]=array('name'=>$fieldName,'value'=>$val_values,'img'=>$val_imgs,'file'=>$val_files);
-				}
-			}else{
-				
-				
-				foreach ($this->field_val_list[$this->first_loop_field]['values'] as $page_key=>$page_vals){
-					
-					if(empty($page_vals)){
-						
-						continue;
-					}
-					foreach ($page_vals as $loop_index=>$loop_val){
-						
-						$vals=array();
-						foreach ($this->field_val_list as $fieldName=>$fieldVals){
-							if(is_array($fieldVals['values'][$page_key])){
-								
-								$val_values=$fieldVals['values'][$page_key][$loop_index];
-								$val_imgs=$fieldVals['imgs'][$page_key][$loop_index];
-								$val_files=$fieldVals['files'][$page_key][$loop_index];
-							}else{
-								
-								$val_values=$fieldVals['values'][$page_key];
-								$val_imgs=$fieldVals['imgs'][$page_key];
-								$val_files=$fieldVals['files'][$page_key];
-							}
-							if(!empty($val_imgs)){
-								$val_imgs=array_unique($val_imgs);
-								$val_imgs=array_filter($val_imgs);
-								$val_imgs=array_values($val_imgs);
-							}
-							if(!empty($val_files)){
-							    $val_files=array_unique($val_files);
-							    $val_files=array_filter($val_files);
-							    $val_files=array_values($val_files);
-							}
-							$vals[$fieldName]=array('name'=>$fieldName,'value'=>$val_values,'img'=>$val_imgs,'file'=>$val_files);
-						}
-						$val_list[]=$vals;
-					}
-				}
-			}
-		}
-		return $val_list?$val_list:array();
-	}
-	/*初始化数据处理，初始化config时使用*/
-	public function initProcess($processList){
-		if(!empty($processList)){
-		    $processList=$this->set_process($processList);
-			foreach ($processList as $k=>$v){
-				if('replace'==$v['module']){
-				    $v['replace_from']=$this->correct_reg_pattern($v['replace_from']);
-				}elseif('download'==$v['module']){
-				    $v['download_url_img_match']=$this->correct_reg_pattern($v['download_url_img_match']);
-				    $index=0;
-				    
-				    $v['download_url_img_match']=preg_replace_callback('/\[\x{56fe}\x{7247}\x{94fe}\x{63a5}\]/u',function($match)use(&$index){
-				        $index++;
-				        return '(?P<url_img_'.$index.'>\bhttp[s]{0,1}.+?)';
-				    }, $v['download_url_img_match']);
-				    
-				    $v['download_url_img_must']=$this->correct_reg_pattern($v['download_url_img_must']);
-				    $v['download_url_img_ban']=$this->correct_reg_pattern($v['download_url_img_ban']);
-				    
-				    $v['download_url_file_match']=$this->correct_reg_pattern($v['download_url_file_match']);
-				    $index=0;
-				    
-				    $v['download_url_file_match']=preg_replace_callback('/\[\x{6587}\x{4ef6}\x{94fe}\x{63a5}\]/u',function($match)use(&$index){
-				        $index++;
-				        return '(?P<url_file_'.$index.'>\bhttp[s]{0,1}.+?)';
-				    }, $v['download_url_file_match']);
-				    
-				    $v['download_url_file_must']=$this->correct_reg_pattern($v['download_url_file_must']);
-				    $v['download_url_file_ban']=$this->correct_reg_pattern($v['download_url_file_ban']);
-				    
-				    $v['download_file_must']=$this->correct_reg_pattern($v['download_file_must']);
-				    $v['download_file_ban']=$this->correct_reg_pattern($v['download_file_ban']);
-				}
-				$processList[$k]=$v;
-			}
-		}
-		return $processList;
+		return $this->get_field_vals();
 	}
 	
 	
@@ -1988,7 +1427,7 @@ class Cpattern extends CpatternEvent{
 			$db_cont_urls=array();
 		}else{
 			
-		    $db_cont_urls=$mcollected->collGetUrlByUrl($cont_urls);
+		    $db_cont_urls=$mcollected->collGetUrlByUrl($cont_urls,$this->task_id,g_sc_c('caiji','same_url'));
 		}
 		$unused_cont_urls=array();
 		$count_used=0;
@@ -2073,7 +1512,7 @@ class Cpattern extends CpatternEvent{
 				}
 				if($count_db_used>0){
 				    $levelWaitTime=$level_interval-max($time_interval_list);
-				    $this->echo_msg(array('已采集第%s网址%s条，再次采集需等待%s <a href="%s" target="_blank">[设置采集运行间隔]</a>',$level_str.$level_name,$count_db_used,\skycaiji\admin\model\Config::wait_time_tips($levelWaitTime),url('admin/task/set?show_config=1&id='.$this->collector['task_id'])),'black');
+				    $this->echo_msg(array('已采集第%s网址%s条，再次采集需等待%s <a href="%s" target="_blank">[设置采集运行间隔]</a>',$level_str.$level_name,$count_db_used,\skycaiji\admin\model\Config::wait_time_tips($levelWaitTime),url('admin/task/set?show_config=1&id='.$this->task_id)),'black');
 					if(count($level_urls)<=$count_db_used){
 				        $this->echo_msg('','green',true,$end_echo);
 				        return $level<=1?'completed':null;
@@ -2120,7 +1559,7 @@ class Cpattern extends CpatternEvent{
 				            $pnWaitTime=$level_interval-abs(time()-intval($pnDataline));
 				            if($pnWaitTime>0){
 				                
-				                $this->echo_msg(array('已采集第%s分页，再次采集需等待%s <a href="%s" target="_blank">[设置采集运行间隔]</a>',$level_str.$level_name,\skycaiji\admin\model\Config::wait_time_tips($pnWaitTime),url('admin/task/set?show_config=1&id='.$this->collector['task_id'])),'black');
+				                $this->echo_msg(array('已采集第%s分页，再次采集需等待%s <a href="%s" target="_blank">[设置采集运行间隔]</a>',$level_str.$level_name,\skycaiji\admin\model\Config::wait_time_tips($pnWaitTime),url('admin/task/set?show_config=1&id='.$this->task_id)),'black');
 				                $forContinue=true;
 				                break;
 				            }
@@ -2178,7 +1617,6 @@ class Cpattern extends CpatternEvent{
 		$mcollected=model('Collected');
 		$mcacheSource=CacheModel::getInstance('source_url');
 		$mcacheLevel=CacheModel::getInstance('level_url');
-		$mcacheCont=CacheModel::getInstance('cont_url');
 		$pageOpened=$this->page_opened_tips('url');
 		
 		$url_repeat=$this->config['url_repeat']?true:false;
@@ -2217,36 +1655,37 @@ class Cpattern extends CpatternEvent{
 					
 					continue;
 				}
-				if($url_repeat||$mcollected->collGetNumByUrl($cont_url)<=0){
+				if($url_repeat||$mcollected->collGetNumByUrl($cont_url,null,$this->task_id,g_sc_c('caiji','same_url'))<=0){
 				    
 				    if(!empty($this->collected_field_list)){
 						
 					    $millisecond=g_sc_c('caiji','interval_html');
 					    if($millisecond>0){
-					        $this->collect_sleep($millisecond,true,true);
+					        $this->collect_sleep($this->task_id,$millisecond,true,true);
 							
-					        if(!$url_repeat&&$mcollected->collGetNumByUrl($cont_url)>0){
+					        if(!$url_repeat&&$mcollected->collGetNumByUrl($cont_url,null,$this->task_id,g_sc_c('caiji','same_url'))>0){
 							    $this->echo_msg(array('已采集过网址：<a href="%s" target="_blank">%s</a>',$cont_url,$cont_url),'black');
 								$this->used_cont_urls[$md5_cont_url]=1;
 								continue;
 							}
 						}
-					}
-					if($mcacheCont->getCount($md5_cont_url)>0){
+				    }
+				    if(\skycaiji\admin\model\Collector::cont_url_exists($md5_cont_url)){
 						
 					    $this->used_cont_urls[$md5_cont_url]=1;
 					    $this->echo_msg(array('其他任务正在采集网址：<a href="%s" target="_blank">%s</a>',$cont_url,$cont_url),'black');
 						continue;
 					}
-					$mcacheCont->setCache($md5_cont_url, 1);
+					
+					\skycaiji\admin\model\Collector::cont_url_collect($md5_cont_url);
 					
 					$this->echo_url_msg(array('%s采集内容页',$echo_str),$cont_url,$pageOpened);
 					$field_vals_list=$this->getFields($cont_url);
 					
 					
-					$this->collect_stopped($this->collector['task_id']);
+					$this->collect_stopped($this->task_id);
 					
-					$this->_collect_fields_vals($echo_str, $cont_url, $md5_cont_url, $field_vals_list, $url_repeat);
+					$this->collect_fields_vals($echo_str, $cont_url, $md5_cont_url, $field_vals_list, $url_repeat);
 				}else{
 					
 				    $this->echo_msg(array('已采集过网址：<a href="%s" target="_blank">%s</a>',$cont_url,$cont_url),'black');
@@ -2292,127 +1731,182 @@ class Cpattern extends CpatternEvent{
 			}
 		}
 	}
-	public function _collect_fields_vals($echo_str,$cont_url,$md5_cont_url,&$field_vals_list,$url_repeat){
-	    $is_loop=empty($this->first_loop_field)?false:true;
-	    $loopExcludeNum=0;
-	    if($is_loop){
-	        
-	        if(isset($this->exclude_cont_urls[$md5_cont_url])){
-	            
-	            $loopExcludeNum=0;
-	            foreach($this->exclude_cont_urls[$md5_cont_url] as $k=>$v){
-	                
-	                $loopExcludeNum+=count((array)$v);
-	            }
-	            $this->echo_msg(array('%s通过数据处理筛除了%s条数据',$echo_str,$loopExcludeNum),'black');
-	        }
-	    }
-	    $mcollected=model('Collected');
-	    if(!empty($field_vals_list)){
-	        if(!$is_loop){
-	            
-	            $field_vals_list=array($field_vals_list);
-	        }else{
-	            
-	            
-	            $loop_cont_urls=array();
-	            foreach ($field_vals_list as $k=>$field_vals){
-	                $loop_cont_urls[$k]=$cont_url.'#'.md5(serialize($field_vals));
-	            }
-	            if(!empty($loop_cont_urls)){
-	                $loop_exists_urls=$mcollected->collGetUrlByUrl($loop_cont_urls);
-	                if(!empty($loop_exists_urls)){
-	                    
-	                    $loop_exists_urls=array_flip($loop_exists_urls);
-	                    foreach ($loop_cont_urls as $k=>$loop_cont_url){
-	                        if(isset($loop_exists_urls[$loop_cont_url])){
-	                            
-	                            unset($field_vals_list[$k]);
-	                        }
-	                    }
-	                    $this->echo_msg(array('%s已过滤%s条重复数据',$echo_str,count((array)$loop_exists_urls)),'black');
-	                }
-	            }
-	            $field_vals_list=array_values($field_vals_list);
-	        }
-	        
-	        foreach ($field_vals_list as $field_vals){
-	            $collected_error='';
-	            $collected_data=array('url'=>$cont_url,'fields'=>$field_vals);
-	            if($is_loop){
-	                
-	                $collected_data['url'].='#'.md5(serialize($field_vals));
-	            }else{
-	                
-	                if(isset($this->exclude_cont_urls[$md5_cont_url])){
-	                    
-	                    $collected_error=reset($this->exclude_cont_urls[$md5_cont_url]);
-	                    $collected_error=$this->exclude_url_msg($collected_error);
-	                }
-	            }
-	            if(empty($collected_error)){
-	                if(!empty($this->config['field_title'])){
-	                    
-	                    $collected_data['title']=$field_vals[$this->config['field_title']]['value'];
-	                    if(!empty($collected_data['title'])){
-	                        
-	                        if($mcollected->collGetNumByTitle($collected_data['title'])>0){
-	                            
-	                            $collected_error='标题重复：'.mb_substr($collected_data['title'],0,300,'utf-8');
-	                        }
-	                    }
-	                }
-	            }
-	            if(empty($collected_error)){
-	                if(!empty($this->config['field_content'])){
-	                    
-	                    $collected_data['content']=array();
-	                    foreach($this->config['field_content'] as $fcField){
-	                        $collected_data['content'][$fcField]=$field_vals[$fcField]['value'];
-	                    }
-	                    if(!empty($collected_data['content'])){
-	                        
-	                        ksort($collected_data['content']);
-	                        $collected_data['content']=implode("\r\n", $collected_data['content']);
-	                        if($mcollected->collGetNumByContent($collected_data['content'])>0){
-	                            
-	                            $collected_error='内容重复';
-	                        }
-	                    }else{
-	                        $collected_data['content']='';
-	                    }
-	                }
-	            }
-	            if(empty($collected_error)){
-	                
-	                if(!is_empty(g_sc_c('caiji','real_time'))){
-	                    
-	                    
-	                    $rtRele=g_sc('real_time_release');
-	                    if($rtRele){
-	                        $rtRele->doExport(array($collected_data));
-	                        unset($collected_data['fields']);
-	                        unset($collected_data['title']);
-	                    }
-	                }
-	                
-	                $this->collected_field_list[]=$collected_data;
-	            }else{
-	                
-                    controller('ReleaseBase','event')->record_collected(
-                        $collected_data['url'],
-                        array('id'=>0,'error'=>$collected_error),array('task_id'=>$this->collector['task_id'],'module'=>$this->release['module'])
-                    );
-	            }
-	        }
+	
+	
+	/*[内容]标签*/
+	public function field_module_sign($field_params,$cont_url){
+	    $val='';
+	    $urlMd5=md5($cont_url);
+	    
+	    list($pageType,$pageName)=$this->page_source_split($field_params['source']);
+	    if(empty($pageType)){
+	        $pageType='url';
 	    }
 	    
-	    if($is_loop){
+	    if(!empty($field_params['sign'])){
+	        $urlMatches=null;
+	        $areaMatches=null;
+	        $contentMatches=$this->get_page_content_match($pageType,$pageName);
+	        if(!$this->page_rule_is_null($pageType)){
+	            if(!empty($this->page_url_matches[$pageType])){
+	                if($pageType=='url'){
+	                    
+	                    $urlMatches=$this->get_page_url_match($pageType,$pageName,$urlMd5);
+	                }elseif($pageType=='level_url'){
+	                    
+	                    if(!empty($this->cur_level_urls[$pageName])){
+	                        $urlMatches=$this->get_page_url_match($pageType,$pageName,md5($this->cur_level_urls[$pageName]));
+	                    }else{
+	                        $urlMatches=null;
+	                    }
+	                }else{
+	                    
+	                    $urlMatches=$this->get_page_url_match($pageType,$pageName);
+	                }
+	            }
+	            $areaMatches=$this->get_page_area_match($pageType,$pageName);
+	        }
+	        if(!is_array($urlMatches)){
+	            $urlMatches=array();
+	        }
+	        if(!is_array($areaMatches)){
+	            $areaMatches=array();
+	        }
+	        if(!is_array($contentMatches)){
+	            $contentMatches=array();
+	        }
 	        
+	        if(empty($urlMatches)){
+	            
+	            $pageSource=$this->page_source_merge($pageType,$pageName);
+	            $urlSigns=$this->config_params['signs'][$pageSource]['url']['cur']['url'];
+	            
+	            $urlMatches=array();
+	            if($urlSigns&&is_array($urlSigns)){
+	                foreach ($urlSigns as $k=>$v){
+	                    $urlMatches['match'.$v['id']]='';
+	                }
+	            }
+	        }
+	        $urlMatches=array_merge($areaMatches,$urlMatches);
+	        $contentMatches=array_merge($urlMatches,$contentMatches);
+	        $val=$this->merge_match_signs($contentMatches, $field_params['sign']);
+	    }
+	    return $val;
+	}
+	/*自动获取*/
+	public function field_module_auto($field_params,$htmlInfo,$cur_url){
+	    $html=$htmlInfo['html'];
+	    switch (strtolower($field_params['auto'])){
+	        case 'title':$val=\util\HtmlParse::getTitle($html);break;
+	        case 'content':$val=\util\HtmlParse::getContent($html);break;
+	        case 'keywords':$val=\util\HtmlParse::getKeywords($html);break;
+	        case 'description':$val=\util\HtmlParse::getDescription($html);break;
+	        case 'url':$val=$cur_url;break;
+	        case 'header':$val=trim($htmlInfo['header']);break;
+	        case 'cookie':$val=$htmlInfo['cookie'];break;
+	        case 'html':$val=$html;break;
+	    }
+	    return $val;
+	}
+	public function field_module_variable($field_params){
+	    
+	    $field_params['variable']=$this->merge_convert_variables($field_params['variable']);
+	    return $field_params['variable'];
+	}
+	
+	/**
+	 * 转换起始网址
+	 * @param string $url
+	 * @return multitype:mixed |unknown
+	 */
+	public function source_url_convert($url){
+	    $urls=array();
+	    $url=$this->merge_convert_variables($url);
+	    $parentMatches=$this->parent_page_signs2matches($this->parent_page_signs('source_url','','url'));
+	    $url=$this->merge_match_signs($parentMatches, $url);
+	    if(preg_match('/\{param\:(?P<type>[a-z]+)\,(?P<val>.*?)\}/i', $url,$match)){
 	        
-	        controller('ReleaseBase','event')->record_collected(
-	            $cont_url,array('id'=>1,'target'=>'','desc'=>'循环入库'.($loopExcludeNum>0?('，数据处理筛除了'.$loopExcludeNum.'条数据'):'')),array('task_id'=>$this->collector['task_id'],'module'=>$this->release['module']),null,false
-	        );
+	        $fmtUrl=preg_replace('/\{param\:.*?\}/i', '__set:param__', $url);
+	        $type=strtolower($match['type']);
+	        $val=explode("\t", $match['val']);
+	        if($type=='num'){
+	            
+	            $urls=\util\Funcs::increase_nums($val[0],$val[1],$val[2],$val[3],$val[4]);
+	            foreach ($urls as $k=>$v){
+	                $urls[$k]=str_replace('__set:param__',$v,$fmtUrl);
+	            }
+	        }elseif($type=='letter'){
+	            
+	            $letter_start=ord($val[0]);
+	            $letter_end=ord($val[1]);
+	            $letter_end=max($letter_start,$letter_end);
+	            $letter_desc=$val[2]?1:0;
+	            
+	            if($letter_desc){
+	                
+	                for($i=$letter_end;$i>=$letter_start;$i--) {
+	                    $urls[]=str_replace('__set:param__', chr($i), $fmtUrl);
+	                }
+	            }else{
+	                for($i=$letter_start;$i<=$letter_end;$i++) {
+	                    $urls[]=str_replace('__set:param__', chr($i), $fmtUrl);
+	                }
+	            }
+	        }elseif($type=='custom'){
+	            
+	            foreach ($val as $v){
+	                $urls[]=str_replace('__set:param__', $v, $fmtUrl);
+	            }
+	        }
+	        $urls=$this->page_url_encode('source_url', '', $urls);
+	        return $urls;
+	    }elseif(preg_match('/\{json\:([^\}]*)\}/i',$url,$match)){
+	        
+	        $url=preg_replace('/\{json\:([^\}]*)\}/i','',$url);
+	        $jsonRule=trim($match[1]);
+	        if(is_null($jsonRule)||$jsonRule==''){
+	            $jsonRule='*';
+	        }
+	        $jsonData=$this->get_html($url);
+	        if(!empty($jsonData)){
+	            
+	            $urls=$this->rule_module_json_data(array('json'=>$jsonRule,'json_merge_data'=>true,'json_url_merge_data'=>true,'json_arr'=>'_original_'),$jsonData);
+	            if(empty($urls)){
+	                $urls=array();
+	            }
+	            if(!is_array($urls)){
+	                $urls=array($urls);
+	            }
+	            
+	            foreach ($urls as $k=>$v){
+	                if(!is_string($v)||!preg_match('/^\w+\:\/\//i', $v)){
+	                    
+	                    unset($urls[$k]);
+	                }
+	            }
+	            if(!empty($urls)&&is_array($urls)){
+	                $urls=array_unique($urls);
+	                $urls=array_values($urls);
+	            }
+	        }
+	        $urls=$this->page_url_encode('source_url', '', $urls);
+	        return $urls;
+	    }elseif(preg_match('/[\r\n]/', $url)){
+	        
+	        if(preg_match_all('/^\w+\:\/\/[^\r\n]+/im',$url,$urls)){
+	            
+	            $urls=array_unique($urls[0]);
+	            $urls=array_values($urls);
+	        }else{
+	            $urls=array();
+	        }
+	        $urls=$this->page_url_encode('source_url', '', $urls);
+	        return $urls;
+	    }else{
+	        
+	        $url=$this->page_url_encode('source_url', '', $url);
+	        return $url;
 	    }
 	}
 }

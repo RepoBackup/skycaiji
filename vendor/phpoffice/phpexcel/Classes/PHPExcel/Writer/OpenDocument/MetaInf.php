@@ -34,8 +34,12 @@ class PHPExcel_Writer_OpenDocument_MetaInf extends PHPExcel_Writer_OpenDocument_
      * @return     string         XML Output
      * @throws     PHPExcel_Writer_Exception
      */
-    public function writeManifest(PHPExcel $pPHPExcel = null)
+    public function writeManifest($pPHPExcel = null)
     {
+if ($pPHPExcel !== null && !$pPHPExcel instanceof PHPExcel) {
+    throw new \InvalidArgumentException('参数$pPHPExcel必须是PHPExcel实例');//[修改]兼容类型约束
+}
+
         if (!$pPHPExcel) {
             $pPHPExcel = $this->getParentWriter()->getPHPExcel();
         }

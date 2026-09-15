@@ -21,7 +21,7 @@ class Api extends CollectController{
         $mrele=model('Release');
         $keyIsOk=false;
         $keyIsUrl=false;
-        $releData=$mrele->where(array('task_id'=>$taskId))->find();
+        $releData=$mrele->getByTaskId($taskId);
         if(!empty($releData)){
             $releData['config']=$mrele->compatible_config($releData['config']);
             $apiConfig=$releData['config']['api'];
@@ -65,15 +65,13 @@ class Api extends CollectController{
     }
 	/*任务单页采集*/
 	public function singleAction(){
-	    \util\Param::set_task_close_echo();
-	    \util\Param::set_collector_single();
 	    $taskId=input('id/d',0);
 	    $key=input('key');
-	    
+
 	    $mtask=model('Task');
 	    $mcoll=model('Collector');
 	    $mrele=model('Release');
-	    $taskData=$mtask->getById($taskId);
+	    $taskData=$mtask->cacheById($taskId);
 	    if(empty($taskData)){
 	        $this->jsonSend(lang('task_error_empty_task'));
 	    }
@@ -97,21 +95,26 @@ class Api extends CollectController{
 	        
 	        $this->jsonSend($taskTips.lang('coll_error_invalid_module'));
 	    }
-	    $collData=$mcoll->where(array('task_id'=>$taskData['id'],'module'=>$taskData['module']))->find();
+	    $collData=$mcoll->cacheByTaskData($taskData);
 	    if(empty($collData)){
 	        
 	        $this->jsonSend($taskTips.lang('coll_error_empty_coll'));
 	    }
-	    $collData=$collData->toArray();
 	    $mtask->loadConfig($taskData);
-	    $acoll='\\skycaiji\\admin\\event\\C'.strtolower($collData['module']).'Single';
+	    $collData['module']=strtolower($collData['module']);
+	    if($collData['module']=='pattern'){
+	        $acoll='\\skycaiji\\admin\\event\\C'.$collData['module'].'Single';
+	    }else{
+	        $acoll='\\skycaiji\\admin\\event\\C'.$collData['module'];
+	    }
 	    $acoll=new $acoll();
+	    $acoll->set_single_collecting();
 	    $acoll->init($collData);
-	    $releData=$mrele->where(array('task_id'=>$taskData['id']))->find();
+
+	    $releData=$mrele->cacheByTaskId($taskData['id']);
 	    $arele=null;
 	    if($releData){
 	        
-	        $releData=$releData->toArray();
 	        if($releData['module']&&$releData['module']!='api'){
 	            
 	            $arele='\\skycaiji\\admin\\event\\R'.strtolower($releData['module']);
@@ -120,7 +123,9 @@ class Api extends CollectController{
 	            $GLOBALS['_sc']['real_time_release']=&$arele;
 	        }
 	    }
+	    
 	    $fieldData=$acoll->collectSingle($singleConfig);
+	    
 	    init_array($fieldData);
 	    if($fieldData['collected']&&$arele&&is_empty(g_sc_c('caiji','real_time'))){
 	        

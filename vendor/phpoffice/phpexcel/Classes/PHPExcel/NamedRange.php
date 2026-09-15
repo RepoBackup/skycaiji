@@ -142,8 +142,12 @@ class PHPExcel_NamedRange
      * @param PHPExcel_Worksheet $value
      * @return PHPExcel_NamedRange
      */
-    public function setWorksheet(PHPExcel_Worksheet $value = null)
+    public function setWorksheet($value = null)
     {
+if ($value !== null && !$value instanceof PHPExcel_Worksheet) {
+    throw new \InvalidArgumentException('参数$value必须是PHPExcel_Worksheet实例');//[修改]兼容类型约束
+}
+
         if ($value !== null) {
             $this->worksheet = $value;
         }
@@ -213,8 +217,12 @@ class PHPExcel_NamedRange
      * @param PHPExcel_Worksheet|null $value
      * @return PHPExcel_NamedRange
      */
-    public function setScope(PHPExcel_Worksheet $value = null)
+    public function setScope($value = null)
     {
+if ($value !== null && !$value instanceof PHPExcel_Worksheet) {
+    throw new \InvalidArgumentException('参数$value必须是PHPExcel_Worksheet实例');//[修改]兼容类型约束
+}
+
         $this->scope = $value;
         $this->localOnly = ($value == null) ? false : true;
         return $this;

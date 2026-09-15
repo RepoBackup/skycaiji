@@ -14,13 +14,14 @@
 	            <tr>
 					<th>{$Think.lang.sort}</th>
 					<th style="width:40px;">ID</th>
-					<th>名称</th>
+					<th>数据接口</th>
 					<th>数据集</th>
 					<th style="width:30px;">状态</th>
 	                <th style="width:90px;">{$Think.lang.op}</th>
 	            </tr>
 			</thead>
 			<tbody>
+			{if $daList}
 			{foreach name="daList" item="item"}
 				<tr data-ds-id="{$item['id']}" data-da-id="{$item['id']}">
 					<td class="sort"><input type="text" name="newsort[{$item['id']}]" class="form-control" value="{$item['sort']}" autocomplete="off" /></td>
@@ -37,6 +38,13 @@
 	                </td>
 	            </tr>
 			{/foreach}
+			{else/}
+				<tr>
+					<td colspan="6" style="text-align:center;">
+						<p class="help-block">没有数据</p>
+					</td>
+				</tr>
+			{/if}
 			</tbody>
 			<tfoot>
 				<tr>

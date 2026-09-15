@@ -1,0 +1,24 @@
+@CHARSET "UTF-8";
+
+.dh-info-f-add{font-size:13px;}
+.dh-info-f-op .icon-drag-move,.dh-info-f-del{font-size:12px!important;}
+.dh-info-f-op .input-group-addon:last-child{border-left:1px solid #d2d6de;}
+
+.datatable .durl{max-width:150px;overflow:hidden;text-overflow:ellipsis;}
+.datatable .task{max-width:200px;overflow:hidden;text-overflow:ellipsis;}
+.datatable .ipt-dfields{
+	min-width:200px!important;border:0;padding:0px 5px;height:20px;line-height:14px;font-size:12px;color:#555;background:#fff;
+}
+
+#form_datahub_info .dh-info-f-name{position:relative;}
+#form_datahub_info .dh-info-f-name-not-exist{position:absolute;top:19px;right:15px;font-size:12px;color:orange;cursor:pointer;display:none;}
+
+#form_datahub_info .dh-info-f-view{display:none;margin-top:6px;}
+#form_datahub_info .dh-info-f-view .input-group-addon{border-right:1px solid #d2d6de;}
+
+#form_datahub_info .dh-info-f-visualize:hover {
+    color: #3c8dbc;
+}
+#form_datahub_info .dh-info-f-visualize {
+    color: #bbb;
+}

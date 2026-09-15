@@ -34,11 +34,10 @@ class Rapi extends Release{
 		
 		$contUrls=array();
 		foreach ($collFieldsList as $v){
-			$contUrls[]=md5($v['url']);
+			$contUrls[]=$v['url'];
 		}
 		if(!empty($contUrls)){
-			$mcacheCont=CacheModel::getInstance('cont_url');
-			$mcacheCont->deleteCache($contUrls);
+		    \skycaiji\admin\model\Collector::cont_url_remove($contUrls);
 		}
 		
 		

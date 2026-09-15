@@ -411,6 +411,9 @@ class PHPExcel_Reader_Excel5 extends PHPExcel_Reader_Abstract implements PHPExce
      */
     private $md5Ctxt = null;
 
+    
+    public $textObjRef;
+    
     /**
      * Create a new PHPExcel_Reader_Excel5 instance
      */
@@ -650,7 +653,7 @@ class PHPExcel_Reader_Excel5 extends PHPExcel_Reader_Abstract implements PHPExce
         $this->definedname         = array();
         $this->sst                 = array();
         $this->drawingGroupData    = '';
-        $this->xfIndex             = '';
+        $this->xfIndex             = 0;
         $this->mapCellXfIndex      = array();
         $this->mapCellStyleXfIndex = array();
 

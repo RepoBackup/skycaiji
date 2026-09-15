@@ -2067,9 +2067,14 @@ class PHPExcel_Calculation
         )
     );
 
+    public $_debugLog;
 
-    public function __construct(PHPExcel $workbook = null)
+    public function __construct($workbook = null)
     {
+if ($workbook !== null && !$workbook instanceof PHPExcel) {
+    throw new \InvalidArgumentException('参数$workbook必须是PHPExcel实例');//[修改]兼容类型约束
+}
+
         $this->delta = 1 * pow(10, 0 - ini_get('precision'));
 
         $this->workbook = $workbook;
@@ -2097,8 +2102,12 @@ class PHPExcel_Calculation
      *                                    or NULL to create a standalone claculation engine
      * @return PHPExcel_Calculation
      */
-    public static function getInstance(PHPExcel $workbook = null)
+    public static function getInstance($workbook = null)
     {
+if ($workbook !== null && !$workbook instanceof PHPExcel) {
+    throw new \InvalidArgumentException('参数$workbook必须是PHPExcel实例');//[修改]兼容类型约束
+}
+
         if ($workbook !== null) {
             $instance = $workbook->getCalculationEngine();
             if (isset($instance)) {
@@ -2570,8 +2579,12 @@ class PHPExcel_Calculation
      * @return    mixed
      * @throws    PHPExcel_Calculation_Exception
      */
-    public function calculate(PHPExcel_Cell $pCell = null)
+    public function calculate($pCell = null)
     {
+if ($pCell !== null && !$pCell instanceof PHPExcel_Cell) {
+    throw new \InvalidArgumentException('参数$pCell必须是PHPExcel_Cell实例');//[修改]兼容类型约束
+}
+
         try {
             return $this->calculateCellValue($pCell);
         } catch (PHPExcel_Exception $e) {
@@ -2589,8 +2602,12 @@ class PHPExcel_Calculation
      * @return    mixed
      * @throws    PHPExcel_Calculation_Exception
      */
-    public function calculateCellValue(PHPExcel_Cell $pCell = null, $resetLog = true)
+    public function calculateCellValue($pCell = null, $resetLog = true)
     {
+if ($pCell !== null && !$pCell instanceof PHPExcel_Cell) {
+    throw new \InvalidArgumentException('参数$pCell必须是PHPExcel_Cell实例');//[修改]兼容类型约束
+}
+
         if ($pCell === null) {
             return null;
         }
@@ -2691,8 +2708,12 @@ class PHPExcel_Calculation
      * @return    mixed
      * @throws    PHPExcel_Calculation_Exception
      */
-    public function calculateFormula($formula, $cellID = null, PHPExcel_Cell $pCell = null)
+    public function calculateFormula($formula, $cellID = null, $pCell = null)
     {
+if ($pCell !== null && !$pCell instanceof PHPExcel_Cell) {
+    throw new \InvalidArgumentException('参数$pCell必须是PHPExcel_Cell实例');//[修改]兼容类型约束
+}
+
         //    Initialise the logging settings
         $this->formulaError = null;
         $this->_debugLog->clearLog();
@@ -2754,8 +2775,12 @@ class PHPExcel_Calculation
      * @return    mixed
      * @throws    PHPExcel_Calculation_Exception
      */
-    public function _calculateFormulaValue($formula, $cellID = null, PHPExcel_Cell $pCell = null)
+    public function _calculateFormulaValue($formula, $cellID = null, $pCell = null)
     {
+if ($pCell !== null && !$pCell instanceof PHPExcel_Cell) {
+    throw new \InvalidArgumentException('参数$pCell必须是PHPExcel_Cell实例');//[修改]兼容类型约束
+}
+
         $cellValue = null;
 
         //    Basic validation that this is indeed a formula
@@ -3112,7 +3137,7 @@ class PHPExcel_Calculation
         '>' => 0, '<' => 0, '=' => 0, '>=' => 0, '<=' => 0, '<>' => 0        //    Comparison
     );
 
-    //    Comparison (Boolean) Operators
+    //    Comparison (bool) Operators
     //    These operators work on two values, but always return a boolean result
     private static $comparisonOperators    = array('>' => true, '<' => true, '=' => true, '>=' => true, '<=' => true, '<>' => true);
 
@@ -3132,8 +3157,12 @@ class PHPExcel_Calculation
     );
 
     // Convert infix to postfix notation
-    private function _parseFormula($formula, PHPExcel_Cell $pCell = null)
+    private function _parseFormula($formula, $pCell = null)
     {
+if ($pCell !== null && !$pCell instanceof PHPExcel_Cell) {
+    throw new \InvalidArgumentException('参数$pCell必须是PHPExcel_Cell实例');//[修改]兼容类型约束
+}
+
         if (($formula = $this->convertMatrixReferences(trim($formula))) === false) {
             return false;
         }
@@ -3410,7 +3439,7 @@ class PHPExcel_Calculation
                             $val = (float) $val;
                         } else {
 //                            echo 'Casting '.$val.' to integer<br />';
-                            $val = (integer) $val;
+                            $val = (int) $val;
                         }
                     } elseif (isset(self::$excelConstants[trim(strtoupper($val))])) {
                         $excelConstant = trim(strtoupper($val));
@@ -3505,8 +3534,12 @@ class PHPExcel_Calculation
     }
 
     // evaluate postfix notation
-    private function processTokenStack($tokens, $cellID = null, PHPExcel_Cell $pCell = null)
+    private function processTokenStack($tokens, $cellID = null, $pCell = null)
     {
+if ($pCell !== null && !$pCell instanceof PHPExcel_Cell) {
+    throw new \InvalidArgumentException('参数$pCell必须是PHPExcel_Cell实例');//[修改]兼容类型约束
+}
+
         if ($tokens == false) {
             return false;
         }
@@ -3546,7 +3579,7 @@ class PHPExcel_Calculation
 
                 //    Process the operation in the appropriate manner
                 switch ($token) {
-                    //    Comparison (Boolean) Operators
+                    //    Comparison (bool) Operators
                     case '>':            //    Greater than
                     case '<':            //    Less than
                     case '>=':            //    Greater than or Equal to
@@ -4186,8 +4219,12 @@ class PHPExcel_Calculation
      * @return  mixed                Array of values in range if range contains more than one element. Otherwise, a single value is returned.
      * @throws    PHPExcel_Calculation_Exception
      */
-    public function extractCellRange(&$pRange = 'A1', PHPExcel_Worksheet $pSheet = null, $resetLog = true)
+    public function extractCellRange(&$pRange = 'A1', $pSheet = null, $resetLog = true)
     {
+if ($pSheet !== null && !$pSheet instanceof PHPExcel_Worksheet) {
+    throw new \InvalidArgumentException('参数$pSheet必须是PHPExcel_Worksheet实例');//[修改]兼容类型约束
+}
+
         // Return value
         $returnValue = array ();
 
@@ -4244,8 +4281,12 @@ class PHPExcel_Calculation
      * @param    boolean                $resetLog    Flag indicating whether calculation log should be reset or not
      * @throws    PHPExcel_Calculation_Exception
      */
-    public function extractNamedRange(&$pRange = 'A1', PHPExcel_Worksheet $pSheet = null, $resetLog = true)
+    public function extractNamedRange(&$pRange = 'A1', $pSheet = null, $resetLog = true)
     {
+if ($pSheet !== null && !$pSheet instanceof PHPExcel_Worksheet) {
+    throw new \InvalidArgumentException('参数$pSheet必须是PHPExcel_Worksheet实例');//[修改]兼容类型约束
+}
+
         // Return value
         $returnValue = array ();
 

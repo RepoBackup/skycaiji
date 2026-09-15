@@ -1,0 +1,14 @@
+{extend name="common:main" /}
+{block name="cssjs"}
+<link href="__PUBLIC__/static/css/jquery.datetimepicker.css?{$Think.config.html_v}" rel="stylesheet">
+<script type="text/javascript" src="__PUBLIC__/static/js/jquery.datetimepicker.js?{$Think.config.html_v}"></script>
+<link href="__PUBLIC__/static/css/dataset.css?{$Think.config.html_v}" rel="stylesheet">
+<script type="text/javascript" src="__PUBLIC__/static/js/admin/dataset.js?{$Think.config.html_v}"></script>
+{/block}
+{block name="content"}
+<div class="box">
+	<div class="box-body">
+		{include file="dataset:info_ajax" /}
+	</div>
+</div>
+{/block}

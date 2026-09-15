@@ -176,13 +176,16 @@ class CollectController extends \skycaiji\admin\controller\BaseController{
                 set_time_limit(0);
             }
         }
+        
+        \util\Param::set_collector_collecting();
+        
         if(empty($nowTime)){
             $nowTime=time();
         }
         $mtask=model('Task');
         $mcoll=model('Collector');
         $mrele=model('Release');
-        $taskData=$mtask->getById($taskId);
+        $taskData=$mtask->cacheById($taskId);
         if(empty($taskData)){
             
             return $this->_collect_echo_end($isBatch, lang('task_error_empty_task'));
@@ -196,8 +199,8 @@ class CollectController extends \skycaiji\admin\controller\BaseController{
             
             return $this->_collect_echo_end($isBatch, $taskTips.lang('coll_error_invalid_module'));
         }
-        $collData=$mcoll->where(array('task_id'=>$taskData['id'],'module'=>$taskData['module']))->find();
-        $releData=$mrele->where(array('task_id'=>$taskData['id']))->find();
+        $collData=$mcoll->cacheByTaskData($taskData);
+        $releData=$mrele->cacheByTaskId($taskData['id']);
         if(empty($collData)){
             
             return $this->_collect_echo_end($isBatch, $taskTips.lang('coll_error_empty_coll'));
@@ -206,17 +209,33 @@ class CollectController extends \skycaiji\admin\controller\BaseController{
             
             return $this->_collect_echo_end($isBatch, $taskTips.lang('rele_error_empty_rele'));
         }
-        $collData=$collData->toArray();
-        $releData=$releData->toArray();
-        $mtask->loadConfig($taskData);
-        $taskData['caijitime']=intval($taskData['caijitime']);
-        $acoll='\\skycaiji\\admin\\event\\C'.strtolower($collData['module']);
-        $acoll=new $acoll();
-        $acoll->init($collData);
-        $arele='\\skycaiji\\admin\\event\\R'.strtolower($releData['module']);
-        $arele=new $arele();
-        $arele->init($releData);
-        $GLOBALS['_sc']['real_time_release']=&$arele;
+        try{
+            $mtask->loadConfig($taskData);
+            $taskData['caijitime']=intval($taskData['caijitime']);
+            $acoll='\\skycaiji\\admin\\event\\C'.strtolower($collData['module']);
+            $acoll=new $acoll();
+            $acoll->init($collData);
+            $arele='\\skycaiji\\admin\\event\\R'.strtolower($releData['module']);
+            $arele=new $arele();
+            $arele->init($releData);
+            $GLOBALS['_sc']['real_time_release']=&$arele;
+        }catch(\Exception $ex){
+            
+            $msg=$ex->getMessage();
+            if(empty($msg)){
+                $msg=$ex->getTrace();
+                if(is_array($msg)&&$msg[0]&&$msg[0]['args']){
+                    
+                    $msg=$msg[0]['args'];
+                    $msg=$msg[0];
+                    $msg=strip_tags($msg);
+                }else{
+                    $msg='加载失败，请检查<a href="'.url('task/set?id='.$taskData['id']).'" target="_blank">任务设置</a>';
+                }
+            }
+            $msg=$taskTips.$msg;
+            return $this->_collect_echo_end($isBatch,$msg);
+        }
         
         $releIsApi=false;
         if($releData['module']=='api'){

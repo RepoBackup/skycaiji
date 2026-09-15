@@ -10,7 +10,7 @@
  */
 
 
-define('SKYCAIJI_VERSION', '3.0.9');
+define('SKYCAIJI_VERSION', '3.1');
 \think\Loader::addNamespace('plugin',SKYCAIJI_PATH.'plugin');
 \think\Loader::addNamespace('util',APP_PATH.'extend/util');
 
@@ -87,7 +87,8 @@ function is_empty($val,$notContainZero=false){
         
         if($notContainZero){
             
-            if($val===0||$val==='0'){
+            if($val===0||$val==='0'||$val===0.0){
+                
                 return false;
             }
         }
@@ -97,13 +98,13 @@ function is_empty($val,$notContainZero=false){
     }
 }
 /*写入文件*/
-function write_dir_file($filename,$data,$flags=0,$content=null){
+function write_dir_file($filename,$data,$flags=0,$context=null){
     static $existsOpcache=null;
 	$dir = dirname($filename);
 	if(!is_dir($dir)){
 		mkdir($dir,0777,true);
 	}
-	$status=file_put_contents($filename,$data,$flags,$content);
+	$status=file_put_contents($filename,$data,$flags,$context);
 	if(!isset($existsOpcache)){
 	    $existsOpcache=function_exists('opcache_reset');
 	}

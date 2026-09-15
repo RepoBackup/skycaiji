@@ -190,6 +190,9 @@ class PHPExcel_Writer_Excel5_Worksheet extends PHPExcel_Writer_Excel5_BIFFwriter
      * @var array
      */
     public $fontHashIndex;
+    
+    public $_preCalculateFormulas;
+    public $_print_headers;
 
     /**
      * Constructor
@@ -2671,8 +2674,12 @@ class PHPExcel_Writer_Excel5_Worksheet extends PHPExcel_Writer_Excel5_BIFFwriter
      *
      * @param PHPExcel_Shared_Escher $pValue
      */
-    public function setEscher(PHPExcel_Shared_Escher $pValue = null)
+    public function setEscher($pValue = null)
     {
+if ($pValue !== null && !$pValue instanceof PHPExcel_Shared_Escher) {
+    throw new \InvalidArgumentException('参数$pValue必须是PHPExcel_Shared_Escher实例');//[修改]兼容类型约束
+}
+
         $this->escher = $pValue;
     }
 

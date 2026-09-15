@@ -64,6 +64,8 @@ class PHPExcel_Style_Border extends PHPExcel_Style_Supervisor implements PHPExce
      */
     protected $parentPropertyName;
 
+    
+    public $colorIndex;
     /**
      * Create a new PHPExcel_Style_Border
      *
@@ -249,8 +251,12 @@ class PHPExcel_Style_Border extends PHPExcel_Style_Supervisor implements PHPExce
      * @throws    PHPExcel_Exception
      * @return PHPExcel_Style_Border
      */
-    public function setColor(PHPExcel_Style_Color $pValue = null)
+    public function setColor($pValue = null)
     {
+if ($pValue !== null && !$pValue instanceof PHPExcel_Style_Color) {
+    throw new \InvalidArgumentException('参数$pValue必须是PHPExcel_Style_Color实例');//[修改]兼容类型约束
+}
+
         // make sure parameter is a real color and not a supervisor
         $color = $pValue->getIsSupervisor() ? $pValue->getSharedComponent() : $pValue;
 

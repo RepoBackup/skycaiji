@@ -44,8 +44,11 @@ class PHPExcel_Chart_PlotArea
     /**
      * Create a new PHPExcel_Chart_PlotArea
      */
-    public function __construct(PHPExcel_Chart_Layout $layout = null, $plotSeries = array())
+    public function __construct($layout = null, $plotSeries = array())
     {
+        if ($layout !== null && !$layout instanceof PHPExcel_Chart_Layout) {
+            throw new \InvalidArgumentException('参数$layout必须是PHPExcel_Chart_Layout实例');//[修改]兼容类型约束
+        }
         $this->layout = $layout;
         $this->plotSeries = $plotSeries;
     }

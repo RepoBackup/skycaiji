@@ -41,7 +41,10 @@ class ThrowableError extends \ErrorException
     protected function setTrace($trace)
     {
         $traceReflector = new \ReflectionProperty('Exception', 'trace');
-        $traceReflector->setAccessible(true);
+        //仅在PHP <8.1时才调用 setAccessible
+        if (version_compare(PHP_VERSION, '8.1.0', '<')) {
+            $traceReflector->setAccessible(true);
+        }
         $traceReflector->setValue($this, $trace);
     }
 }

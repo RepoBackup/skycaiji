@@ -10,7 +10,7 @@
  */
 
 /*采集规则标签*/
-function cp_sign($sign,$id=''){
+function coll_sign($sign,$id=''){
 	$sign=strtolower($sign);
 	if($sign=='match'){
 	    if($id==':id'){

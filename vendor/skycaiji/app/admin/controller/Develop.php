@@ -137,6 +137,7 @@ class Develop extends BaseController {
 								'key'=>$k,
 								'require'=>intval($v['require']),
 								'name'=>$v['name'],
+							    'desc'=>$v['desc']
 							);
 							if($v['tag']=='select'){
 								if(is_array($v['option'])){
@@ -243,7 +244,8 @@ class Develop extends BaseController {
 		foreach ($params as $k=>$v){
 			$pkey=$v['key'];
 			$_params[$pkey]=array(
-				'name' => $v['name'],
+			    'name' => $v['name'],
+			    'desc' => $v['desc'],
 				'require'=>intval($v['require'])
 			);
 			

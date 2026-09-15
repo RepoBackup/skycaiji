@@ -1,0 +1,12 @@
+{extend name="common:main" /}
+{block name="cssjs"}
+<link href="__PUBLIC__/static/css/datahub.css?{$Think.config.html_v}" rel="stylesheet">
+<script type="text/javascript" src="__PUBLIC__/static/js/admin/datahub.js?{$Think.config.html_v}"></script>
+{/block}
+{block name="content"}
+<div class="box">
+	<div class="box-body">
+		{include file="datahub:info_ajax" /}
+	</div>
+</div>
+{/block}

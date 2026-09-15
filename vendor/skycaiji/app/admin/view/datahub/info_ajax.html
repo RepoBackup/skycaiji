@@ -1,0 +1,56 @@
+<form id="form_datahub_info" method="post" action="{:url('datahub/info')}">
+{:html_usertoken()}
+	<input type="hidden" name="id" value="" />
+	<input type="hidden" name="is_submit" value="1" />
+	<div class="form-group">
+		<label>源网址</label>
+		<input class="form-control" name="url" placeholder="选填" />
+	</div>
+	<div class="form-group">
+		<label>任务名</label>
+		<div class="input-group">
+			<select class="form-control" name="task_id">
+			<option value="0">无</option>
+			{foreach $tasks as $k=>$v}
+			<option value="{$k}">{$v|htmlspecialchars}</option>
+			{/foreach}
+			</select>
+			<div class="input-group-btn">
+ 				<button type="button" class="btn btn-default" id="btn_datahub_fields">添加字段</button>
+ 			</div>
+		</div>
+	</div>
+	<table id="datahub_info" class="table table-bordered table-hover">
+	<thead>
+		<tr>
+			<th style="width:150px;">字段名</th>
+			<th>字段值</th>
+			<th style="width:80px;">操作 <a href="javascript:;" class="glyphicon glyphicon-plus dh-info-f-add" title="添加"></a></th>
+		</tr>
+	</thead>
+	<tbody>
+		
+	</tbody>
+	</table>
+	<div class="form-group form-group-sm" style="margin-bottom:0;">
+ 		<button type="submit" class="btn btn-primary btn-block">保存</button>
+ 	</div>
+</form>
+<table style="display:none;">
+	<tr id="tpl_datahub_info">
+		<td class="dh-info-f-name"><input class="form-control" name="field_names[]" /> <span class="glyphicon glyphicon-info-sign dh-info-f-name-not-exist"></span></td>
+		<td><textarea class="form-control" name="field_values[]" rows="3"></textarea></td>
+		<td class="dh-info-f-op">
+			<div class="input-group">
+				<div class="input-group-addon"><a href="javascript:;" class="glyphicon icon-drag-move" title="移动"></a></div>
+				<div class="input-group-addon"><a href="javascript:;" class="glyphicon glyphicon-remove dh-info-f-del" title="删除"></a></div>
+			</div>
+			<div class="input-group dh-info-f-view">
+				<div class="input-group-addon"><a href="javascript:;" class="glyphicon glyphicon-eye-open dh-info-f-visualize" title="预览"></a></div>
+			</div>
+		</td>
+	</tr>
+</table>
+<script type="text/javascript">
+datahubClass.init_info({$item?json_encode($item):null});
+</script>

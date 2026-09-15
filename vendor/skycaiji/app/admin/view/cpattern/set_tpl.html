@@ -7,7 +7,7 @@
 					<input type="text" data-name="config[request_headers][custom_vals][]" data-merge-type="" class="form-control" autocomplete="off" />
 					<div class="input-group-addon brl_0">
 		    			<a href="javascript:;" title="调用全局内容标签" role="button" class="dropdown-toggle btn-page-signs" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-			            	<span style="font-size:12px;">{:cp_sign('match','N')}</span>
+			            	<span style="font-size:12px;">{:coll_sign('match','N')}</span>
 			            	<span class="caret"></span>
 			            </a>
 						<div class="dropdown-menu dropdown-menu-right"></div>
@@ -23,7 +23,7 @@
 					<input type="text" data-name="config[request_headers][img_vals][]" data-merge-type="" class="form-control" autocomplete="off" />
 					<div class="input-group-addon brl_0">
 		    			<a href="javascript:;" title="调用全局内容标签" role="button" class="dropdown-toggle btn-page-signs" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-			            	<span style="font-size:12px;">{:cp_sign('match','N')}</span>
+			            	<span style="font-size:12px;">{:coll_sign('match','N')}</span>
 			            	<span class="caret"></span>
 			            </a>
 						<div class="dropdown-menu dropdown-menu-right"></div>
@@ -39,7 +39,7 @@
 					<input type="text" data-name="config[request_headers][file_vals][]" data-merge-type="" class="form-control" autocomplete="off" />
 					<div class="input-group-addon brl_0">
 		    			<a href="javascript:;" title="调用全局内容标签" role="button" class="dropdown-toggle btn-page-signs" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-			            	<span style="font-size:12px;">{:cp_sign('match','N')}</span>
+			            	<span style="font-size:12px;">{:coll_sign('match','N')}</span>
 			            	<span class="caret"></span>
 			            </a>
 						<div class="dropdown-menu dropdown-menu-right"></div>
@@ -55,7 +55,7 @@
 					<input type="text" data-name="[url_web][form_vals][]" data-merge-type="url" class="form-control" autocomplete="off" />
 					<div class="input-group-addon brl_0">
 		    			<a href="javascript:;" title="调用全局内容标签" role="button" class="dropdown-toggle btn-page-signs" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-			            	<span style="font-size:12px;">{:cp_sign('match','N')}</span>
+			            	<span style="font-size:12px;">{:coll_sign('match','N')}</span>
 			            	<span class="caret"></span>
 			            </a>
 						<div class="dropdown-menu dropdown-menu-right"></div>
@@ -71,7 +71,7 @@
 					<input type="text" data-name="[url_web][header_vals][]" data-merge-type="url" class="form-control" autocomplete="off" />
 					<div class="input-group-addon">
 		    			<a href="javascript:;" title="调用全局内容标签" role="button" class="dropdown-toggle btn-page-signs" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-			            	<span style="font-size:12px;">{:cp_sign('match','N')}</span>
+			            	<span style="font-size:12px;">{:coll_sign('match','N')}</span>
 			            	<span class="caret"></span>
 			            </a>
 						<div class="dropdown-menu dropdown-menu-right"></div>
@@ -105,7 +105,7 @@
 					<input type="text" data-merge-type="url" class="form-control" data-name="[renderer][contents][]" autocomplete="off" placeholder="" />
 					<div class="input-group-addon">
 		    			<a href="javascript:;" title="调用全局内容标签" role="button" class="dropdown-toggle btn-page-signs" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-			            	<span style="font-size:12px;">{:cp_sign('match','N')}</span>
+			            	<span style="font-size:12px;">{:coll_sign('match','N')}</span>
 			            	<span class="caret"></span>
 			            </a>
 						<div class="dropdown-menu dropdown-menu-right"></div>
@@ -151,21 +151,6 @@
 				<a href="javascript:;" class="glyphicon glyphicon-remove delete" title="删除"></a>
 			</td>
 		</tr>
-		<tr id="coll_tpl_field">
-			<td class="field-name" data-val=""></td>
-			<td class="field-source" data-val=""></td>
-			<td class="field-module" data-val=""></td>
-			<td>
-				<input type="hidden" data-name="config[field_list][]" />
-				<input type="hidden" data-name="config[field_process][]" />
-				<a href="javascript:;" class="field-process">数据处理</a>
-				<a href="javascript:;" class="glyphicon icon-drag-move" title="移动"></a>
-				<a href="javascript:;" class="glyphicon glyphicon-copy field-clone" title="复制"></a>
-				<a href="javascript:;" class="glyphicon glyphicon-remove field-del" title="删除"></a>
-			</td>
-			<td><label class="radio-inline"><input type="radio" data-name="config[field_title]">绑定</label></td>
-			<td><label class="checkbox-inline"><input type="checkbox" data-name="config[field_content][]">绑定</label></td>
-		</tr>
 	</table>
 	<div id="coll_tpl_source_url">
 		<div class="form-group" data-id="source_url_">
@@ -174,7 +159,7 @@
 				<textarea class="form-control" data-name="config[source_url][]" data-merge-type="url" rows="5">[_source_url_]</textarea>
 				<div class="input-group-addon brl_0">
 	    			<a href="javascript:;" title="调用全局内容标签" role="button" class="dropdown-toggle btn-page-signs" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-		            	<span style="font-size:12px;">{:cp_sign('match','N')}</span>
+		            	<span style="font-size:12px;">{:coll_sign('match','N')}</span>
 		            	<span class="caret"></span>
 		            </a>
 					<div class="dropdown-menu dropdown-menu-right"></div>
@@ -185,38 +170,15 @@
 			</div>
 		</div>
 	</div>
-	<div id="coll_tpl_process" class="panel panel-default">
-		<div class="panel-heading">
-			<div class="panel-title" style="font-size:14px;overflow:hidden;">
-				<a href="javascript:;" data-toggle="collapse" style="float:left;"></a>
-				<div class="panel-title-title">
-					<a href="javascript:;" data-toggle="collapse" style="color:inherit;"></a>
-					<input type="text" data-name="[title]" />
-				</div>
-				<div class="panel-title-ops">
-					<input type="hidden" data-name="[close]" />
-					<a href="javascript:;" class="glyphicon glyphicon-tag c-p-process-title" title="标题"></a> 
-					<a href="javascript:;" class="glyphicon icon-drag-move" title="移动"></a>
-					<a href="javascript:;" class="glyphicon glyphicon-copy c-p-process-clone" title="复制"></a>
-					<a href="javascript:;" class="glyphicon glyphicon-ban-circle c-p-process-close" title="禁用"></a>
-					<a href="javascript:;" class="glyphicon glyphicon-remove c-p-process-del" title="删除"></a>
-				</div>
-			</div>
-		</div>
-		<div class="panel-collapse collapse">
-			<div class="panel-body">
-			</div>
-		</div>
-	</div>
 	<div id="coll_tpl_page_signs" class="c-p-url-ps-table">
 		<div class=""></div>
 		<table class="table table-hover">
 			<thead>
 				<tr>
 					<th class="sorting">页面</th>
-					<th title="“获取网址区域”中的{:cp_sign('match')}标签">区域</th>
-					<th title="“提取网址规则”中的{:cp_sign('match')}标签">网址</th>
-					<th title="“提取内容标签”中的{:cp_sign('match')}标签">提取</th>
+					<th title="“获取网址区域”中的{:coll_sign('match')}标签">区域</th>
+					<th title="“提取网址规则”中的{:coll_sign('match')}标签">网址</th>
+					<th title="“提取内容标签”中的{:coll_sign('match')}标签">提取</th>
 				</tr>
 			</thead>
 			<tbody>
@@ -226,3 +188,4 @@
 		</table>
 	</div>
 </div>
+{include file="collector:c_set_tpl" _module="pattern" /}

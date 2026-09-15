@@ -1,0 +1,109 @@
+@CHARSET "UTF-8";
+
+.coll-tab > li:nth-child(2).active > a,.coll-tab > li:nth-child(3).active > a{background:#f5f5f5;}
+
+
+.c-p-source-urls>.form-group:first-child{margin-top:10px;}
+
+#c_p_variable_funcs .c-p-variable-func-var{display:inline;width:80px;border:0;cursor:pointer;margin:0;padding:0;height:auto;color:#555;}
+
+#c_p_level_urls tbody{
+ 	counter-reset:levelcounter;
+}
+#c_p_level_urls .level:before{
+ 	content:counter(levelcounter);
+	counter-increment:levelcounter;
+	font-weight:bold;
+}
+#c_p_front_urls td.sign,#c_p_level_urls td.sign,#c_p_relation_urls td.sign{
+	width:50%;overflow:hidden;padding-bottom:0;
+}
+#c_p_front_urls .sign-th,#c_p_level_urls .sign-th,#c_p_relation_urls .sign-th{
+	padding-left:5px;
+}
+#c_p_front_urls .signs,#c_p_level_urls .signs,#c_p_relation_urls .signs{
+	border:0;padding:0px 5px;height:20px;line-height:14px;font-size:12px;color:#555;background:#fff;
+}
+
+/*请求头信息*/
+.c-p-request-headers table,.c-p-request-headers-img table,.c-p-request-headers-file table{margin-bottom:0}
+.c-p-request-headers .delete-request-header,.c-p-request-headers-img .delete-request-header-img,.c-p-request-headers-file .delete-request-header-file{margin-top:8px;}
+.c-p-request-headers td:first-child,.c-p-request-headers-img td:first-child,.c-p-request-headers-file td:first-child{width:200px;}
+.c-p-request-headers td:last-child,.c-p-request-headers-img td:last-child,.c-p-request-headers-file td:last-child{width:50px;text-align:center;}
+/*内容标签*/
+.c-p-url-content-signs{
+	width:auto;
+	overflow:hidden;
+}
+/*页面源码表单和请求头*/
+.c-p-url-web-form table,.c-p-url-web-header table{margin-bottom:0;}
+.c-p-url-web-form .delete-url-web-form,.c-p-url-web-header .delete-url-web-header{margin-top:8px;}
+.c-p-url-web-form td:first-child,.c-p-url-web-header td:first-child{width:200px;}
+.c-p-url-web-form td:last-child,.c-p-url-web-header td:last-child{width:50px;text-align:center;}
+.c-p-url-web-form .input-group-btn:last-child{display:none;}
+
+/*页面渲染动作*/
+.c-p-url-renderer-list table{margin-bottom:0;}
+.c-p-url-renderer-list .td-renderer-element,.c-p-url-renderer-list .td-renderer-content{display:none;}
+.c-p-url-renderer-list .td-renderer-op{width:65px;text-align:center;vertical-align:middle;}
+.c-p-url-renderer-list .td-renderer-op .icon-drag-move{font-size:14px!important;}
+.c-p-url-renderer-list .td-renderer-op .input-group-addon:last-child{border-left:1px solid #d2d6de;}
+/*显示标签列表，input-group-btn必须position:static，否则dropdown-menu定位太窄*/
+.c-p-url-page-signs>.input-group-btn{position:static;}
+.c-p-url-page-signs .dropdown-menu{padding:0;box-shadow:none;border:0;}
+.c-p-url-page-signs .c-p-url-ps-table{padding:10px;box-shadow:0 0 2px 2px #eee;border:1px solid #ddd;border-radius:4px;}
+.c-p-url-page-signs .c-p-url-ps-table .table{margin-bottom:0;}
+.c-p-url-page-signs .c-p-url-ps-table .table td>a,.c-p-url-page-signs .dropdown-menu .table td>span{margin-right:5px;}
+.c-p-url-page-signs .c-p-url-ps-table .table td>*:last-child{margin-right:0;}
+.c-p-url-page-signs .c-p-url-ps-table .table td{white-space:normal!important;width:auto!important;}
+.c-p-url-page-signs .c-p-url-ps-table .table td:first-child{white-space:nowrap!important;}
+.c-p-url-page-signs .c-p-url-ps-table .table td:last-child{text-align:left!important;}
+
+.c-p-url-page-signs .c-p-url-ps-table .table tfoot td:first-child{white-space:normal!important;}
+
+.c-p-url-page-vars thead,.c-p-url-page-vars tbody{display:none;}
+.c-p-url-page-vars tfoot td:first-child{border-top:0;}
+/*传入变量*/
+.c-p-variables{
+	width:auto;
+	overflow:hidden;	
+}
+/*分页字段*/
+.c-p-url-pagination-fields{
+	width:auto;
+	overflow:hidden;
+}
+
+@media (min-width: 1200px) {
+	/*table-responsive设置overflow:inherit;可正常显示dropdown-menu*/
+	.c-p-url-renderer-list{overflow:inherit;} 
+}
+
+@media (max-width: 1199px) {
+	/*dropdown-menu用fixed避免被table-responsive的overflow:hidden;影响*/
+	.c-p-url-renderer-list .c-p-url-page-signs .dropdown-menu{padding:0;border:4px solid #ddd;border-radius:4px;background:transparent;position:fixed;left:10px;right:10px;bottom:10px;top:auto;max-height:80%;overflow-y:scroll;}
+	.c-p-url-renderer-list .c-p-url-page-signs .dropdown-menu .c-p-url-ps-table{background:#fff;}	
+}
+
+@media (min-width: 768px) {
+	.c-p-request-headers,.c-p-request-headers-img,.c-p-request-headers-file,.c-p-url-web-form,.c-p-url-web-header{overflow:inherit;} /*table-responsive设置overflow:inherit;可正常显示dropdown-menu*/
+}
+
+@media (max-width: 767px){
+	.c-p-url-page-signs .dropdown-menu .table td>a,.c-p-url-page-signs .dropdown-menu .table td>span{display:block;margin-right:0;}	
+	.c-p-url-page-signs .dropdown-menu .table tfoot td>a,.c-p-url-page-signs .dropdown-menu .table tfoot td>span{display:inline;}
+	/*dropdown-menu用fixed避免被table-responsive的overflow:hidden;影响*/
+	.c-p-url-page-signs .dropdown-menu{padding:0;border:4px solid #ddd;border-radius:4px;background:transparent;position:fixed;left:10px;right:10px;bottom:10px;top:auto;max-height:80%;overflow-y:scroll;}
+	.c-p-url-page-signs .dropdown-menu .c-p-url-ps-table{background:#fff;}
+}
+
+
+@media (max-width: 550px){
+	/*采集器tab*/
+	.c-p-source-tab>li{margin-bottom:5px;margin-right:3px;width:auto;}
+	.c-p-source-tab>li>a{padding:5px 7px;border:solid 1px #ddd;text-align:center;}
+	.c-p-source-tab>li.active>a{border-radius:3px;border-bottom-color:#ddd!important;background-color:#efefef!important;}
+	/*自适应第一个td宽度*/
+	.c-p-request-headers td:first-child,.c-p-request-headers-img td:first-child{width:auto;}
+	.c-p-url-web-form td:first-child,.c-p-url-web-header td:first-child{width:auto;}
+}

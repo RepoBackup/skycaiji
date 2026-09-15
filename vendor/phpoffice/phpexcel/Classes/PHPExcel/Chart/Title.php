@@ -45,8 +45,12 @@ class PHPExcel_Chart_Title
     /**
      * Create a new PHPExcel_Chart_Title
      */
-    public function __construct($caption = null, PHPExcel_Chart_Layout $layout = null)
+    public function __construct($caption = null, $layout = null)
     {
+if ($layout !== null && !$layout instanceof PHPExcel_Chart_Layout) {
+    throw new \InvalidArgumentException('参数$layout必须是PHPExcel_Chart_Layout实例');//[修改]兼容类型约束
+}
+
         $this->caption = $caption;
         $this->layout = $layout;
     }

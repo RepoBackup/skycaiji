@@ -246,8 +246,8 @@ return [
     'root_url'=>rtrim(preg_replace('/\/index\.php.*/i','',Request::instance()->root()?:''),'\/\\'),//网址根目录
     'root_website'=>(Request::instance()->isSsl()?'https':'http').'://'.trim(Request::instance()->host()?:'','\/\\').rtrim(preg_replace('/\/index\.php.*/i','',Request::instance()->root()?:''),'\/\\'),//带域名网站根目录，去掉index.php，结尾不带/
 	
-	'allow_coll_modules'=>array('pattern'),//允许的采集器模块
-    'release_modules'=>array('dataset','file','db','toapi','api','cms','diy'),//发布模块
+	'allow_coll_modules'=>array('pattern','datahub','dataset'),//允许的采集器模块
+    'release_modules'=>array('datahub','dataset','file','db','toapi','api','cms','diy'),//发布模块
 	'yzm_expire'=>1200, //邮箱验证码过期时间(秒)
 	
 	'allow_origins'=>array('http://www.skycaiji.com','https://www.skycaiji.com'),//默认允许的官方平台网址

@@ -106,8 +106,17 @@ class Release extends CollectController{
 			$releBase=new \skycaiji\admin\event\ReleaseBase();
 			$collFields=$releBase->get_coll_fields($taskData['id'],$taskData['module']);
 			
+			
+			$fileSortFields=array();
+			if(is_array($releData['config']['file'])&&is_array($releData['config']['file']['sort_fields'])){
+			    $fileSortFields=$releBase->sort_coll_fields($releData['config']['file']['sort_fields'],$collFields);
+			}else{
+			    $fileSortFields=$collFields;
+			}
+			
 			$this->assign('apiRootUrl',$apiRootUrl);
 			$this->assign('collFields',$collFields);
+			$this->assign('fileSortFields',$fileSortFields);
 			return $this->fetch();
 		}
 	}
@@ -586,6 +595,23 @@ class Release extends CollectController{
 	    $this->assign('autoIds',$autoIds);
 	    $this->assign('querySigns',$querySigns);
 	    return $this->fetch('dbTableBindSings');
+	}
+	
+	
+	public function dbSortDefAction(){
+	    $taskId=input('task_id/d',0);
+	    $taskData=model('Task')->getById($taskId);
+	    $collFields=array();
+	    $hideFields=array();
+	    if($taskData){
+	        $releBase=new \skycaiji\admin\event\ReleaseBase();
+	        $collFields=$releBase->get_coll_fields($taskData['id'],$taskData['module']);
+	        $releData=model('Release')->getByTaskId($taskId);
+	        $hideFields=$releData['config']['file']['hide_fields'];
+	    }
+	    $this->assign('collFields',$collFields);
+	    $this->assign('hideFields',$hideFields);
+	    return $this->fetch('dbSortDef');
 	}
 	
     /*翻译数据库错误信息*/

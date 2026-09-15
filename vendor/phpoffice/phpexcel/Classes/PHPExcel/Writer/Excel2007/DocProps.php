@@ -34,8 +34,12 @@ class PHPExcel_Writer_Excel2007_DocProps extends PHPExcel_Writer_Excel2007_Write
      * @return     string         XML Output
      * @throws     PHPExcel_Writer_Exception
      */
-    public function writeDocPropsApp(PHPExcel $pPHPExcel = null)
+    public function writeDocPropsApp($pPHPExcel = null)
     {
+if ($pPHPExcel !== null && !$pPHPExcel instanceof PHPExcel) {
+    throw new \InvalidArgumentException('参数$pPHPExcel必须是PHPExcel实例');//[修改]兼容类型约束
+}
+
         // Create XML writer
         $objWriter = null;
         if ($this->getParentWriter()->getUseDiskCaching()) {
@@ -131,8 +135,12 @@ class PHPExcel_Writer_Excel2007_DocProps extends PHPExcel_Writer_Excel2007_Write
      * @return     string         XML Output
      * @throws     PHPExcel_Writer_Exception
      */
-    public function writeDocPropsCore(PHPExcel $pPHPExcel = null)
+    public function writeDocPropsCore($pPHPExcel = null)
     {
+if ($pPHPExcel !== null && !$pPHPExcel instanceof PHPExcel) {
+    throw new \InvalidArgumentException('参数$pPHPExcel必须是PHPExcel实例');//[修改]兼容类型约束
+}
+
         // Create XML writer
         $objWriter = null;
         if ($this->getParentWriter()->getUseDiskCaching()) {
@@ -198,8 +206,12 @@ class PHPExcel_Writer_Excel2007_DocProps extends PHPExcel_Writer_Excel2007_Write
      * @return     string         XML Output
      * @throws     PHPExcel_Writer_Exception
      */
-    public function writeDocPropsCustom(PHPExcel $pPHPExcel = null)
+    public function writeDocPropsCustom($pPHPExcel = null)
     {
+if ($pPHPExcel !== null && !$pPHPExcel instanceof PHPExcel) {
+    throw new \InvalidArgumentException('参数$pPHPExcel必须是PHPExcel实例');//[修改]兼容类型约束
+}
+
         $customPropertyList = $pPHPExcel->getProperties()->getCustomProperties();
         if (empty($customPropertyList)) {
             return;

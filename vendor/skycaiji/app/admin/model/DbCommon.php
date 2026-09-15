@@ -205,7 +205,7 @@ class DbOracleConnection extends \think\oracle\Connection{
         return 0;
     }
     
-    public function execute($sql, $bind = [], Query $query = null){
+    public function execute($sql, $bind = [], $query = null){
         $seqStr='#sequence:';
         foreach ($bind as $dataKey=>$dataVal){
             if(is_array($dataVal)){

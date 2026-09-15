@@ -62,8 +62,12 @@ class Query
      * @param Connection $connection 数据库对象实例
      * @param Model      $model      模型对象
      */
-    public function __construct(Connection $connection = null, $model = null)
+    public function __construct($connection = null, $model = null)
     {
+        if ($connection !== null && !$connection instanceof Connection) {
+            throw new \InvalidArgumentException('参数$connection必须是Connection实例');//[修改]兼容类型约束
+        }
+        
         $this->connection = $connection ?: Db::connect([], true);
         $this->prefix     = $this->connection->getConfig('prefix');
         $this->model      = $model;

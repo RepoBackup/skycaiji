@@ -268,8 +268,12 @@ class Connection
      * @throws ConnectionException
      * @throws RuntimeException
      */
-    public function query($namespace, MongoQuery $query, ReadPreference $readPreference = null, $class = false, $typeMap = null)
+    public function query($namespace, MongoQuery $query, $readPreference = null, $class = false, $typeMap = null)
     {
+if ($readPreference !== null && !$readPreference instanceof ReadPreference) {
+    throw new \InvalidArgumentException('参数$readPreference必须是ReadPreference实例');//[修改]兼容类型约束
+}
+
         $this->initConnect(false);
         Db::$queryTimes++;
 
@@ -300,8 +304,12 @@ class Connection
      * @throws ConnectionException
      * @throws RuntimeException
      */
-    public function command(Command $command, $dbName = '', ReadPreference $readPreference = null, $class = false, $typeMap = null)
+    public function command(Command $command, $dbName = '', $readPreference = null, $class = false, $typeMap = null)
     {
+if ($readPreference !== null && !$readPreference instanceof ReadPreference) {
+    throw new \InvalidArgumentException('参数$readPreference必须是ReadPreference实例');//[修改]兼容类型约束
+}
+
         $this->initConnect(false);
         Db::$queryTimes++;
 
@@ -376,8 +384,12 @@ class Connection
      * @throws RuntimeException
      * @throws BulkWriteException
      */
-    public function execute($namespace, BulkWrite $bulk, WriteConcern $writeConcern = null)
+    public function execute($namespace, BulkWrite $bulk, $writeConcern = null)
     {
+if ($writeConcern !== null && !$writeConcern instanceof WriteConcern) {
+    throw new \InvalidArgumentException('参数$writeConcern必须是WriteConcern实例');//[修改]兼容类型约束
+}
+
         $this->initConnect(true);
         Db::$executeTimes++;
         if (false === strpos($namespace, '.')) {

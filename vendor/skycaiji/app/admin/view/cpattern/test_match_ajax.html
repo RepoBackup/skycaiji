@@ -52,13 +52,13 @@
 		</div>
 	
 		<div class="form-group" id="type_rule">
-			{include file="cpattern:rule_module" _type="rule" _name="field" _name_pre="" _allow_loop="" /}
+			{include file="collector:c_rule_module" _type="rule" _name="field" _name_pre="" _allow_loop="" /}
 		</div>
 		<div class="form-group" id="type_xpath" style="display:none;">
-			{include file="cpattern:rule_module" _type="xpath" _name="field" _name_pre="" _allow_loop="" /}
+			{include file="collector:c_rule_module" _type="xpath" _name="field" _name_pre="" _allow_loop="" /}
 		</div>
 		<div class="form-group" id="type_json" style="display:none;">
-			{include file="cpattern:rule_module" _type="json" _name="field" _name_pre="" _allow_loop="" /}
+			{include file="collector:c_rule_module" _type="json" _name="field" _name_pre="" _allow_loop="" /}
 		</div>
 	
 	
@@ -74,13 +74,14 @@
 
 {include file="cpattern:set_tpl" /}
 
+<script type="text/javascript" src="__PUBLIC__/static/js/admin/collector.js?{$Think.config.html_v}"></script>
+<script type="text/javascript" src="__PUBLIC__/static/js/admin/cpattern.js?{$Think.config.html_v}"></script>
+<script type="text/javascript" src="__PUBLIC__/static/js/admin/cpattern_test.js?{$Think.config.html_v}"></script>
 <script type="text/javascript">
 'use strict';//严格模式
-$.getScript("__PUBLIC__/static/js/admin/collector.js?{$Think.config.html_v}", function() {
-	$.getScript("__PUBLIC__/static/js/admin/cpattern_test.js?{$Think.config.html_v}", function() {
-		CpTestMatch();
-		var testCp=new CollectorPattern();
-		testCp.init_test();
-	});
-});
+(function(){
+	CpTestMatch();
+	var testCp=new CollectorPattern();
+	testCp.init_test();
+})();
 </script>

@@ -406,8 +406,12 @@ abstract class Connection
      * @throws PDOException
      * @throws \Exception
      */
-    public function execute($sql, $bind = [], Query $query = null)
+    public function execute($sql, $bind = [], $query = null)
     {
+        if ($query !== null && !$query instanceof Query) {
+            throw new \InvalidArgumentException('参数$query必须是Query实例');//[修改]兼容类型约束
+        }
+        
         $this->initConnect(true);
         if (!$this->linkID) {
             return false;
@@ -738,8 +742,12 @@ abstract class Connection
      * @param array $sqlArray SQL批处理指令
      * @return boolean
      */
-    public function batchQuery($sqlArray = [], $bind = [], Query $query = null)
+    public function batchQuery($sqlArray = [], $bind = [], $query = null)
     {
+        if ($query !== null && !$query instanceof Query) {
+            throw new \InvalidArgumentException('参数$query必须是Query实例');//[修改]兼容类型约束
+        }
+        
         if (!is_array($sqlArray)) {
             return false;
         }

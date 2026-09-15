@@ -63,7 +63,12 @@ abstract class BaseCms extends \skycaiji\admin\event\ReleaseBase{
 		}catch (\Exception $ex){
 			exception('发布错误：'.$ex->getMessage());
 		}
-		$this->cmsApp=get_class($this);//类名
+		$cmsApp=get_class($this);//类名
+		$cmsApp=$cmsApp?$cmsApp:'';
+		if(preg_match('/[^\/\\\]+$/',$cmsApp,$match)){
+		    $cmsApp=$match[0];
+		}
+		$this->cmsApp=$cmsApp;
 		$this->init_extend();//自定义执行操作
 	}
 	/*扩展初始化*/
@@ -90,13 +95,23 @@ abstract class BaseCms extends \skycaiji\admin\event\ReleaseBase{
 		//转换cms参数
 		$cmsParams=array();
 		foreach ($this->releConfig['cms_app']['param'] as $cmsParam=>$paramVal){
-			if(strcasecmp('custom:',$paramVal)==0){
+		    $replaceFields=true;
+		    if(strcasecmp('custom:',$paramVal)==0){
 				//自定义
 				$paramVal=$this->releConfig['cms_app']['custom'][$cmsParam];
 			}elseif(preg_match('/^field\:(.+)$/i', $paramVal,$collField)){
 				//采集器字段
 				$paramVal=$this->get_field_val($collFields[$collField[1]]);
+				$replaceFields=false;
 			}
+			
+			if(empty($paramVal)||is_numeric($paramVal)){
+			    $replaceFields=false;
+			}
+			if($replaceFields){
+			    $paramVal=$this->txt_replace_fields($paramVal,$collFields);
+			}
+			
 			if(!empty($dbCharset)){
 				//转码
 				$paramVal=$this->utf8_to_charset($dbCharset, $paramVal);
@@ -195,7 +210,7 @@ abstract class BaseCms extends \skycaiji\admin\event\ReleaseBase{
 	}
 	/*获取cms名称*/
 	public function cms_name($cmsPath){
-		$acms=controller('admin/Rcms','event');
+	    $acms=\util\Tools::controller('admin/Rcms','event');
 		return $acms->cms_name($cmsPath);//cms名称
 	}
 	/*转换参数成html标签*/
@@ -225,8 +240,19 @@ abstract class BaseCms extends \skycaiji\admin\event\ReleaseBase{
 					$options=$paramVal['option'];
 				}
 			}
+			//插入字段html
+			$inertFieldHtml='';
+			if($tag!='radio'){
+			    $collFields=$this->_get_coll_fields();
+			    foreach ($collFields as $collField){
+			        $inertFieldHtml.='<li><a href="javascript:;" data-val="[采集字段:'.$collField.']">采集字段：'.$collField.'</a></li>';
+			    }
+			    $inertFieldHtml='<div class="input-group-addon"'.($tag=='select'?' style="display:none;"':'').'><a href="javascript:;" class="dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">字段 <span class="caret"></span></a>'
+			        .'<ul class="dropdown-menu dropdown-menu-right">'.$inertFieldHtml.'</ul></div>';
+			        
+			}
 			if('select'==$tag){
-				$html.='<div class="input-group input-select-custom"><div class="input-group-btn"><select name="_cms_app_param_" class="form-control"><option value="">不选择</option>';
+				$html.='<div class="input-group cms-field-txt input-select-custom"><div class="input-group-btn"><select name="_cms_app_param_" class="form-control"><option value="">不选择</option>';
 				if(!empty($func)){
 					//调用函数
 					if(method_exists($this, $func)){
@@ -248,14 +274,18 @@ abstract class BaseCms extends \skycaiji\admin\event\ReleaseBase{
 					}
 				}
 				$html.='<option value="custom:">自定义</option></select></div>'
-				    .'<input class="form-control" style="display:none;" name="cms_app[custom]['.$paramKey.']" /></div>';
+				    .'<input class="form-control" style="display:none;" name="cms_app[custom]['.$paramKey.']" />'.$inertFieldHtml.'</div>';
 			}elseif(in_array($tag,array('input','text','number'))){
-				$html.='<input type="'.($tag=='input'?'text':$tag).'" name="_cms_app_param_" class="form-control" value="" />';
+			    $html.='<div class="input-group cms-field-txt"><input type="text" name="_cms_app_param_" class="form-control" value="" />'.$inertFieldHtml.'</div>';
 			}elseif('radio'==$tag){
 				$html.='<label class="radio-inline"><input type="radio" name="_cms_app_param_" value="1" /> 是</label>';
 				$html.='<label class="radio-inline"><input type="radio" name="_cms_app_param_" value="0" /> 否</label>';
 			}elseif('textarea'==$tag){
-				$html.='<textarea name="_cms_app_param_" class="form-control"></textarea>';
+				$html.='<div class="input-group cms-field-txt"><textarea name="_cms_app_param_" class="form-control"></textarea>'.$inertFieldHtml.'</div>';
+			}
+			if($paramVal['desc']){
+			    $desc=htmlspecialchars($paramVal['desc']);
+			    $html.='<p class="help-block">'.$desc.'</p>';
 			}
 			
 			$this->paramHtmlList[$paramKey]=str_replace('_cms_app_param_', 'cms_app[param]['.$paramKey.']', $html);
@@ -264,21 +294,26 @@ abstract class BaseCms extends \skycaiji\admin\event\ReleaseBase{
 	}
 	/*采集器字段选项*/
 	public function param_option_fields(){
-		if(empty($this->release)){
-			return null;
-		}
-		$mtask=model('Task');
-		$taskData=$mtask->getById($this->release['task_id']);
-		if(empty($taskData)){
-			return null;
-		}
-		$acms=controller('admin/Rcms','event');
-		$collFields=$acms->get_coll_fields($taskData['id'],$taskData['module']);
+	    $collFields=$this->_get_coll_fields();
 		$sltCollField='';
 		foreach($collFields as $collField){
 			$sltCollField.="<option value=\"field:{$collField}\">采集字段：{$collField}</option>";
 		}
 		return $sltCollField;
+	}
+	private $cacheCollFields;//缓存采集字段
+	private function _get_coll_fields(){
+	    if(!isset($this->cacheCollFields)){
+	        if(!empty($this->release)){
+    	        $taskData=model('Task')->getById($this->release['task_id']);
+    	        if($taskData){
+    	            $collFields=$this->get_coll_fields($taskData['id'],$taskData['module']);
+    	            init_array($collFields);
+    	            $this->cacheCollFields=$collFields;
+    	        }
+    	    }
+	    }
+	    return $this->cacheCollFields;
 	}
 	/*引入文件必须用include，include_once在多个实例化后会失效*/
 	public function cms_db_discuz($cmsPath){

@@ -46,8 +46,12 @@ class PHPExcel_WorksheetIterator implements Iterator
      *
      * @param PHPExcel         $subject
      */
-    public function __construct(PHPExcel $subject = null)
+    public function __construct($subject = null)
     {
+if ($subject !== null && !$subject instanceof PHPExcel) {
+    throw new \InvalidArgumentException('参数$subject必须是PHPExcel实例');//[修改]兼容类型约束
+}
+
         // Set subject
         $this->subject = $subject;
     }

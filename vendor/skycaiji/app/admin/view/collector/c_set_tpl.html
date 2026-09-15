@@ -1,0 +1,77 @@
+{assign name="_tpl_coll_module" value="[_module]" /}
+
+<div style="display:none;">
+	<table>
+		<tr id="coll_tpl_field">
+			<td class="field-name" data-val=""></td>
+			{if $_tpl_coll_module=='pattern'}
+			<td class="field-source" data-val=""></td>
+			{elseif $_tpl_coll_module=='datahub'||$_tpl_coll_module=='dataset' /}
+			<td class="field-dsource" data-val=""></td>
+			{/if}
+			<td class="field-module" data-val=""></td>
+			<td>
+				<input type="hidden" data-name="config[field_list][]" />
+				<input type="hidden" data-name="config[field_process][]" />
+				<a href="javascript:;" class="field-process">数据处理</a>
+				<a href="javascript:;" class="glyphicon icon-drag-move" title="移动"></a>
+				<a href="javascript:;" class="glyphicon glyphicon-copy field-clone" title="复制"></a>
+				<a href="javascript:;" class="glyphicon glyphicon-remove field-del" title="删除"></a>
+			</td>
+			<td><label class="radio-inline"><input type="radio" data-name="config[field_title]">绑定</label></td>
+			<td><label class="checkbox-inline"><input type="checkbox" data-name="config[field_content][]">绑定</label></td>
+		</tr>
+		{if $_tpl_coll_module=='datahub'}
+		<tr id="coll_tpl_datahub">
+			<td><a href="javascript:;" class="datahub" data-val=""></a><input type="hidden" data-name="config[datahub_tids][]" /></td>
+			<td class="datahub-field" data-val="" data-field-key=""></td>
+			<td style="width:60px;text-align:center;">
+				<a href="javascript:;" class="glyphicon icon-drag-move" title="移动"></a>
+				<a href="javascript:;" class="glyphicon glyphicon-remove delete" title="删除"></a>
+			</td>
+		</tr>
+		{elseif $_tpl_coll_module=='dataset' /}
+		<tr id="coll_tpl_dataset">
+			<td><a href="javascript:;" class="dataset" data-val=""></a><input type="hidden" data-name="config[dataset_ids][]" /></td>
+			<td class="dataset-field" data-val=""></td>
+			<td style="width:60px;text-align:center;">
+				<a href="javascript:;" class="glyphicon icon-drag-move" title="移动"></a>
+				<a href="javascript:;" class="glyphicon glyphicon-remove delete" title="删除"></a>
+			</td>
+		</tr>
+		{elseif $_tpl_coll_module=='localfile' /}
+		<tr id="coll_tpl_localfile">
+			<td class="fileimg" title="文件"><span class="glyphicon glyphicon-file"></span></td>
+			<td class="localfile" data-val=""></td>
+			<td style="width:60px;text-align:center;">
+				<a href="javascript:;" class="glyphicon icon-drag-move" title="移动"></a>
+				<a href="javascript:;" class="glyphicon glyphicon-remove delete" title="删除"></a>
+				<input type="hidden" data-name="config[localfiles][]" />
+			</td>
+		</tr>
+		{/if}
+	</table>
+	<div id="coll_tpl_process" class="panel panel-default">
+		<div class="panel-heading">
+			<div class="panel-title" style="font-size:14px;overflow:hidden;">
+				<a href="javascript:;" data-toggle="collapse" style="float:left;"></a>
+				<div class="panel-title-title">
+					<a href="javascript:;" data-toggle="collapse" style="color:inherit;"></a>
+					<input type="text" data-name="[title]" />
+				</div>
+				<div class="panel-title-ops">
+					<input type="hidden" data-name="[close]" />
+					<a href="javascript:;" class="glyphicon glyphicon-tag coll-process-title" title="标题"></a> 
+					<a href="javascript:;" class="glyphicon icon-drag-move" title="移动"></a>
+					<a href="javascript:;" class="glyphicon glyphicon-copy coll-process-clone" title="复制"></a>
+					<a href="javascript:;" class="glyphicon glyphicon-ban-circle coll-process-close" title="禁用"></a>
+					<a href="javascript:;" class="glyphicon glyphicon-remove coll-process-del" title="删除"></a>
+				</div>
+			</div>
+		</div>
+		<div class="panel-collapse collapse">
+			<div class="panel-body">
+			</div>
+		</div>
+	</div>
+</div>

@@ -50,10 +50,17 @@ class Collected extends \skycaiji\common\model\BaseModel{
     }
     
     public function convertTarget($release,$target){
-        if($target&&$release=='dataset'){
-            
-            if(preg_match('/\@(\d+)\:(\d+)/',$target,$mid)){
-                $target=sprintf('<a href="%s" target="_blank">%s</a>',url('dataset/db?ds_id='.$mid[1].'&id='.$mid[2]),$target);
+        if($target){
+            if($release=='dataset'){
+                
+                if(preg_match('/\@(\d+)\:(\d+)/',$target,$mid)){
+                    $target=sprintf('<a href="%s" target="_blank">%s</a>',url('dataset/info?ds_id='.$mid[1].'&dt_id='.$mid[2]),$target);
+                }
+            }elseif($release=='datahub'){
+                
+                if(preg_match('/\@(\d+)/',$target,$mid)){
+                    $target=sprintf('<a href="%s" target="_blank">%s</a>',url('datahub/info?id='.$mid[1]),$target);
+                }
             }
         }
         return $target;
@@ -65,6 +72,65 @@ class Collected extends \skycaiji\common\model\BaseModel{
         }
     }
     
+    public function deleteById($id,$clearData=false){
+        $result=return_result('',false,array('clear_datahub'=>false,'clear_dataset'=>false));
+        if($id){
+            if(!$clearData){
+                $cond=array();
+                if(is_array($id)){
+                    $cond=array('id'=>array('in',$id));
+                }else{
+                    $cond=array('id'=>$id);
+                }
+                db()->table($this->collected_info_tname())->where($cond)->delete();
+                $this->where($cond)->delete();
+                $result['success']=true;
+            }else{
+                
+                if(!is_array($id)){
+                    $id=array($id);
+                }
+                $mdh=model('Datahub');
+                $mds=model('Dataset');
+                foreach ($id as $v){
+                    $data=$this->where('id',$v)->find();
+                    $info=db()->table($this->collected_info_tname())->where('id',$v)->find();
+                    if($data&&$info){
+                        $release=$data['release'];
+                        $target=$info['target'];
+                        if($release=='datahub'){
+                            if(preg_match('/^\@(\d+)$/',$target,$match)){
+                                $mdh->deleteById($match[1]);
+                                $result['clear_datahub']=true;
+                            }
+                        }elseif($release=='dataset'){
+                            if(preg_match('/^\@(\d+)\:(\d+)$/',$target,$match)){
+                                $mds->deleteById(0,$match[1],$match[2]);
+                                $result['clear_dataset']=true;
+                            }
+                        }
+                    }
+                    db()->table($this->collected_info_tname())->where('id',$v)->delete();
+                    $this->where('id',$v)->delete();
+                }
+                $result['success']=true;
+                $msg=array();
+                if($result['clear_datahub']){
+                    $msg[]=lang('cdatahub');
+                }
+                if($result['clear_dataset']){
+                    $msg[]=lang('cdataset');
+                }
+                if($msg){
+                    $msg=implode(',', $msg);
+                    $msg='已清空相应'.$msg.'的数据';
+                    $result['msg']=$msg;
+                }
+            }
+        }
+        return $result;
+    }
+    
     public function deleteByCond($cond){
         init_array($cond);
         if($cond){
@@ -74,7 +140,7 @@ class Collected extends \skycaiji\common\model\BaseModel{
         }
     }
 	/*采集时获取的数据*/
-	public function collGetNumByUrl($urls,$status=null){
+	public function collGetNumByUrl($urls,$status=null,$taskId=null,$sameUrl=false){
 	    $cond=array();
 	    if(is_array($urls)){
 	        $cond['urlMd5']=array('in',array_map('md5', $urls));
@@ -89,43 +155,50 @@ class Collected extends \skycaiji\common\model\BaseModel{
 	            }
 	            return $match;
 	        }, $urls);
-	        $cond['urlMd5']=array(array('eq',md5($urls)),array('eq',md5($url)),'or');
+	        $md5Urls=md5($urls);
+	        $md5Url=md5($url);
+	        if($md5Urls!=$md5Url){
+	            
+	            $cond['urlMd5']=array(array('eq',$md5Urls),array('eq',$md5Url),'or');
+	        }else{
+	            $cond['urlMd5']=$md5Urls;
+	        }
+	    }
+	    if($sameUrl){
+	        
+	        $cond=$this->_coll_cond_set_tid($cond,$taskId);
 	    }
 	    if(isset($status)){
 	        
 	        $cond['status']=$status?1:0;
 	    }
-	    if(g_sc_c('caiji','same_url')){
-	        
-	        $cond=$this->_coll_cond_set_tid($cond);
-	    }
 	    return $this->where($cond)->count();
 	}
-	public function collGetNumByTitle($title){
+	public function collGetNumByTitle($title,$taskId=null,$sameTitle=false){
 		if(empty($title)){
 			return 0;
 		}
 		$title=md5($title);
 		$cond=array('titleMd5'=>$title);
-		if(g_sc_c('caiji','same_title')){
+		if($sameTitle){
 		    
-		    $cond=$this->_coll_cond_set_tid($cond);
+		    $cond=$this->_coll_cond_set_tid($cond,$taskId);
 		}
 		return $this->where($cond)->count();
 	}
-	public function collGetNumByContent($content){
+	public function collGetNumByContent($content,$taskId=null,$sameContent=false){
 	    if(empty($content)){
 	        return 0;
 	    }
 	    $content=md5($content);
 	    $cond=array('contentMd5'=>$content);
-	    if(g_sc_c('caiji','same_content')){
+	    if($sameContent){
 	        
-	        $cond=$this->_coll_cond_set_tid($cond);
+	        $cond=$this->_coll_cond_set_tid($cond,$taskId);
 	    }
 	    return $this->where($cond)->count();
 	}
-	public function collGetUrlByUrl($urls){
+	public function collGetUrlByUrl($urls,$taskId=null,$sameUrl=false){
 	    init_array($urls);
 		$urls=array_filter($urls);
 		$dbUrls=array();
@@ -138,9 +211,9 @@ class Collected extends \skycaiji\common\model\BaseModel{
 		    $urls=$urls1;
 		    unset($urls1);
 		    $cond=array('urlMd5'=>array('in',array_keys($urls)));
-		    if(g_sc_c('caiji','same_url')){
+		    if($sameUrl){
 		        
-		        $cond=$this->_coll_cond_set_tid($cond);
+		        $cond=$this->_coll_cond_set_tid($cond,$taskId);
 		    }
 		    $dbUrls=$this->field('`id`,`urlMd5`')->where($cond)->column('urlMd5','id');
 		    if(!empty($dbUrls)){
@@ -156,9 +229,8 @@ class Collected extends \skycaiji\common\model\BaseModel{
 		}
 		return $dbUrls;
 	}
-	private function _coll_cond_set_tid($cond){
+	private function _coll_cond_set_tid($cond,$taskId){
 	    $cond=is_array($cond)?$cond:array();
-	    $taskId=g_sc('collect_task_id');
 	    if(!empty($taskId)){
 	        $cond['task_id']=$taskId;
 	    }
@@ -175,21 +247,21 @@ class Collected extends \skycaiji\common\model\BaseModel{
 			
 $table=<<<EOT
 CREATE TABLE `{$tname}` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
   `urlMd5` varchar(32) NOT NULL DEFAULT '',
   `release` varchar(10) NOT NULL DEFAULT '',
   `task_id` int(11) NOT NULL DEFAULT '0',
-  `addtime` int(11) NOT NULL DEFAULT '0',
+  `addtime` bigint(20) NOT NULL DEFAULT '0',
   `titleMd5` varchar(32) NOT NULL DEFAULT '',
   `contentMd5` varchar(32) NOT NULL DEFAULT '',
   `status` tinyint(1) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
-  KEY `ix_urlmd5` (`urlMd5`),
   KEY `ix_taskid` (`task_id`),
   KEY `ix_addtime` (`addtime`),
   KEY `ix_titlemd5` (`titleMd5`),
   KEY `ix_contentmd5` (`contentMd5`),
-  KEY `ix_status` (`status`)
+  KEY `ix_status` (`status`),
+  KEY `ix_u5_tid` (`urlMd5`,`task_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
 EOT;
 			db()->execute($table);
@@ -201,7 +273,7 @@ EOT;
 		    
 $table=<<<EOT
 CREATE TABLE `{$tname}` (
-  `id` int(11) NOT NULL DEFAULT '0',
+  `id` bigint(20) NOT NULL DEFAULT '0',
   `url` text,
   `target` text,
   `desc` text,

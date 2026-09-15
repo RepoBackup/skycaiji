@@ -37,7 +37,7 @@ class Collector extends BaseController {
     	if(!in_array($taskData['module'],config('allow_coll_modules'))){
     		$this->error(lang('coll_error_invalid_module'));
     	}
-    	$collData=$mcoll->where(array('task_id'=>$taskData['id'],'module'=>$taskData['module']))->find();
+    	$collData=$mcoll->getByTaskData($taskData);
     	if(request()->isPost()){
     	    $effective=\util\UnmaxPost::val('effective');
     	    $effectiveEdit=\util\UnmaxPost::val('effective_edit');
@@ -76,31 +76,65 @@ class Collector extends BaseController {
     		    $tabLink=$tabLink?('&tab_link='.$tabLink):'';
     		    $isEasymode=\util\UnmaxPost::val('easymode');
     		    $isEasymode=$isEasymode?'&easymode=1':'';
-    		    if($module=='pattern'){
-    		        
-    		        $this->_set_modified_names($taskId);
-    		    }
+		        
+		        $this->_set_modified_names($taskId);
     		    $this->success(lang('op_success'),'collector/set?task_id='.$taskId.$tabLink.$isEasymode);
     		}else{
     			$this->error(lang('op_failed'));
     		}
     	}else{
     		if(!empty($collData)){
-    		    $collData['config']=safe_unserialize($collData['config']);
-	    		if(!is_array($collData['config'])){
-	    		    $collData['config']=array();
-	    		}
 	    		$collData['config']=$mcoll->compatible_config($collData['config']);
-    		}else{
-    		    $collData=array();
     		}
     		
     		$htmlTagName=lang('coll_set').lang('separator').lang('task_module_'.$taskData['module']);
-	    	if(input('easymode')){
-	    	    $htmlTagName.=' <small><a href="'.url('collector/set?task_id='.$taskId).'" onclick="if(window.top){window.top.location.href=$(this).attr(\'href\');return false;}" title="切换普通模式">普通模式</a></small>';
-	    	}else{
-	    	    $htmlTagName.=' <small><a href="'.url('cpattern/easymode?task_id='.$taskId).'" title="切换引导模式">引导模式</a></small>';
-	    	}
+    		if($taskData['module']=='pattern'){
+    		    
+    	    	if(input('easymode')){
+    	    	    $htmlTagName.=' <small><a href="'.url('collector/set?task_id='.$taskId).'" onclick="if(window.top){window.top.location.href=$(this).attr(\'href\');return false;}" title="切换普通模式">普通模式</a></small>';
+    	    	}else{
+    	    	    $htmlTagName.=' <small><a href="'.url('cpattern/easymode?task_id='.$taskId).'" title="切换引导模式">引导模式</a></small>';
+    	    	}
+    		}elseif($taskData['module']=='datahub'){
+    		    
+    		    $dOptions=array();
+    		    if($collData['config']&&$collData['config']['datahub_tids']){
+    		        
+    		        $dOptions['task_names']=$mtask->where('id','in',$collData['config']['datahub_tids'])->column('name','id');
+    		        foreach ($collData['config']['datahub_tids'] as $v){
+    		            $dOptions['task_fields'][$v]=$mcoll->datahub_fields($v,true);
+    		        }
+    		    }
+    		    $this->assign('dOptions',$dOptions);
+    		}elseif($taskData['module']=='dataset'){
+    		    
+    		    $dOptions=array('dataset_names'=>array(),'dataset_fields'=>array());
+    		    $mds=model('Dataset');
+    		    $datasetList=$mds->order('sort desc')->column('*','id');
+    		    init_array($datasetList);
+    		    foreach ($datasetList as $k=>$v){
+    		        $dOptions['dataset_names'][$k]=$v['name'];
+    		        $dOptions['dataset_fields'][$k]=$mds->getFieldNames($v,false,true);
+    		    }
+    		    $this->assign('dOptions',$dOptions);
+    		}elseif($taskData['module']=='localfile'){
+    		    
+    		    $dOptions=array('localfile_infos'=>array());
+    		    if($collData['config']&&$collData['config']['localfiles']){
+    		        foreach ($collData['config']['localfiles'] as $k=>$v){
+    		            $v1=array('is_dir'=>false,'is_none'=>false);
+    		            if(file_exists($v)){
+    		                if(is_dir($v)){
+    		                    $v1['is_dir']=true;
+    		                }
+    		            }else{
+    		                $v1['is_none']=true;
+    		            }
+    		            $dOptions['localfile_infos'][$k]=$v1;
+    		        }
+    		    }
+    		    $this->assign('dOptions',$dOptions);
+    		}
 	    	$this->set_html_tags(
 	    	    '任务:'.$taskData['name'].'_'.lang('coll_set'),
 	    	    $htmlTagName,
@@ -112,16 +146,13 @@ class Collector extends BaseController {
 	    	
 	    	
 	    	$tabLink=input('tab_link','');
-	    	if(empty($tabLink)||$tabLink=='coll_pattern_coll'){
-	    	    
-	    	    $tabLink='';
-	    	}
+	    	
 	    	$curTab=array($tabLink=>' class="active"');
 	    	$curTabCont=array($tabLink=>' in active');
 	    	$this->assign('curTab',$curTab);
 	    	$this->assign('curTabCont',$curTabCont);
 	    	
-	    	return $this->fetch();
+	    	return $this->fetch('set_'.$taskData['module']);
     	}
     }
     
@@ -288,6 +319,7 @@ class Collector extends BaseController {
     	}
     	
     	$this->assign('collList',$collList);
+    	$this->assign('isPattern',model('Task')->module_is_pattern($module));
 		return $this->fetch('list'.(input('tpl')?'_'.input('tpl'):''));
     }
     /*导出规则*/
@@ -296,11 +328,11 @@ class Collector extends BaseController {
         $mtask=model('Task');
         $mcoll=model('Collector');
         $taskData=$mtask->getById($taskId);
-        $collData=$mcoll->where(array('task_id'=>$taskData['id'],'module'=>$taskData['module']))->find();
+        $collData=$mcoll->getByTaskData($taskData);
         if(empty($collData)){
             $this->error(lang('coll_error_empty_coll'));
         }
-        $config=safe_unserialize($collData['config']);
+        $config=$collData['config'];
         if(empty($config)){
             $this->error('规则不存在');
         }
@@ -559,40 +591,32 @@ class Collector extends BaseController {
                     }
                     if(!$maxHasNext){
                         
-                        if(count($list)==1&&strpos($list[0],'::http_error=')!==false){
+                        $isEnd=false;
+                        foreach ($list as $k=>$txt){
+                            if(!$isEnd&&strpos($txt,'echo-msg-is-end')!==false){
+                                
+                                $isEnd=true;
+                            }
+                            $list[$k]=$txt;
+                        }
+                        if($isEnd){
                             
                             if(file_exists($filename)){
                                 unlink($filename);
                             }
-                            $errorMsg=str_replace('::http_error=', '', $list[0]);
-                            $list[0]=' ';
-                            $list[1]=\skycaiji\admin\model\Collector::echo_msg_end_js(false,$errorMsg);
                         }else{
-                            $isEnd=false;
-                            foreach ($list as $k=>$txt){
-                                if(!$isEnd&&strpos($txt,'echo-msg-is-end')!==false){
-                                    
-                                    $isEnd=true;
-                                }
-                                $list[$k]=$txt;
-                            }
-                            if($isEnd){
+                            
+                            $pstatus=\skycaiji\admin\model\Collector::collecting_process_status($collectorKey, $processKey);
+                            if($pstatus!='lock'){
                                 
-                                if(file_exists($filename)){
-                                    unlink($filename);
-                                }
-                            }else{
-                                
-                                if(\skycaiji\admin\model\Collector::collecting_process_status($collectorKey, $processKey)!='lock'){
+                                $pstatus=$pstatus=='none'?false:true;
+                                if(!empty($list)){
+                                    $lastKey=array_keys($list);
+                                    $lastKey=end($lastKey);
+                                    $list[$lastKey]=($list[$lastKey]?$list[$lastKey]:'').\skycaiji\admin\model\Collector::echo_msg_end_js($pstatus);
+                                }elseif($line>0){
                                     
-                                    if(!empty($list)){
-                                        $lastKey=array_keys($list);
-                                        $lastKey=end($lastKey);
-                                        $list[$lastKey]=($list[$lastKey]?$list[$lastKey]:'').\skycaiji\admin\model\Collector::echo_msg_end_js(true);
-                                    }elseif($line>0){
-                                        
-                                        $list[$line]=\skycaiji\admin\model\Collector::echo_msg_end_js(true);
-                                    }
+                                    $list[$line]=\skycaiji\admin\model\Collector::echo_msg_end_js($pstatus);
                                 }
                             }
                         }

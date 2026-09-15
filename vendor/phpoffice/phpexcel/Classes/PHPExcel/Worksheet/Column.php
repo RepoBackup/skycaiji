@@ -47,8 +47,12 @@ class PHPExcel_Worksheet_Column
      * @param PHPExcel_Worksheet     $parent
      * @param string                $columnIndex
      */
-    public function __construct(PHPExcel_Worksheet $parent = null, $columnIndex = 'A')
+    public function __construct($parent = null, $columnIndex = 'A')
     {
+if ($parent !== null && !$parent instanceof PHPExcel_Worksheet) {
+    throw new \InvalidArgumentException('参数$parent必须是PHPExcel_Worksheet实例');//[修改]兼容类型约束
+}
+
         // Set parent and column index
         $this->parent         = $parent;
         $this->columnIndex = $columnIndex;

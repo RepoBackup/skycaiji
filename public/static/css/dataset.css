@@ -1,5 +1,12 @@
 @CHARSET "UTF-8";
 /*数据集*/
+
+.datatable .durl{max-width:150px;overflow:hidden;text-overflow:ellipsis;}
+.datatable .dataset{max-width:230px;overflow:hidden;text-overflow:ellipsis;}
+.datatable .ipt-dfields{
+	min-width:200px!important;border:0;padding:0px 5px;height:20px;line-height:14px;font-size:12px;color:#555;background:#fff;
+}
+
 #dataset_list .fields{
 	border:0;padding:0px 5px;height:20px;line-height:14px;font-size:12px;color:#555;background:#fff;
 }
@@ -35,6 +42,11 @@
 .dataset-search{width:100%;overflow-x:scroll;white-space:nowrap;padding-bottom:5px;padding-right:5px;}
 
 #dataset_db_list input::placeholder,#dataset_db_list textarea::placeholder{color:#bbb!important;}
+#dataset_db_list .input-group-addon{padding-left:9px;padding-right:9px;}
+#dataset_db_list .no-visualize{display:block;}
+#dataset_db_list .no-visualize .input-group-addon{display:none;}
+#dataset_db_list .btn-visualize{font-size:12px;color:#bbb;}
+#dataset_db_list .btn-visualize:hover{color:#3c8dbc;}
 
 #dataset_fields tr>th:first-child,#dataset_fields tr>td:first-child{padding-left:15px;}
 #dataset_fields thead th{padding-top:13px;padding-bottom:13px;}
@@ -49,3 +61,11 @@
     margin-left: 2px;
     border-left: 1px solid #aaa;	
 }
+
+#form_dataset_info .ds-info-f-visualize:hover {
+    color: #3c8dbc;
+}
+#form_dataset_info .ds-info-f-visualize {
+    color: #bbb;
+}
+

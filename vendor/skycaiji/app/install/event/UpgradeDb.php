@@ -95,26 +95,176 @@ class UpgradeDb extends UpgradeDbVers{
 	}
 	
 	
-	public function upgrade_db_to_2_9(){
+	
+	public function upgrade_db_to_3_1(){
+	    $db_prefix=config('database.prefix');
+	    
+	    $table=$db_prefix.'datahub';
+	    $exists=db()->query("show tables like '{$table}'");
+	    if(empty($exists)){
+	        
+$addTable=<<<EOF
+CREATE TABLE `{$table}` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `task_id` int(11) NOT NULL DEFAULT '0',
+  `c_url_md5` varchar(32) NOT NULL DEFAULT '',
+  `url` text,
+  `addtime` bigint(20) NOT NULL DEFAULT '0',
+  `uptime` bigint(20) NOT NULL DEFAULT '0',
+  PRIMARY KEY (`id`),
+  KEY `tid` (`task_id`,`id`),
+  KEY `c_url_md5` (`c_url_md5`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+EOF;
+	        db()->execute($addTable);
+	    }
+	    
+	    $table=$db_prefix.'datahub_field';
+	    $exists=db()->query("show tables like '{$table}'");
+	    if(empty($exists)){
+	        
+$addTable=<<<EOF
+CREATE TABLE `{$table}` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `name_md5` varchar(32) NOT NULL DEFAULT '',
+  `name` text,
+  PRIMARY KEY (`id`),
+  KEY `name_md5` (`name_md5`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+EOF;
+	        db()->execute($addTable);
+	    }
+	    
+	    $table=$db_prefix.'datahub_info';
+	    $exists=db()->query("show tables like '{$table}'");
+	    if(empty($exists)){
+	        
+$addTable=<<<EOF
+CREATE TABLE `{$table}` (
+  `id` bigint(20) NOT NULL DEFAULT '0',
+  `task_id` int(11) NOT NULL DEFAULT '0',
+  `field_id` int(11) NOT NULL DEFAULT '0',
+  `content` MEDIUMTEXT,
+  KEY `id` (`id`),
+  KEY `t_f_c` (`task_id`,`field_id`,`content`(5))
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+PARTITION BY HASH(id)
+PARTITIONS 128;
+EOF;
+	        db()->execute($addTable);
+	    }
+
+	    
+	    $timeFields = array(
+	        'api_app' => array('addtime','uptime'),
+	        'app' => array('addtime','uptime'),
+	        'cache' => array('dateline'),
+	        'collector' => array('addtime','uptime'),
+	        'config' => array('dateline'),
+	        'func_app' => array('addtime','uptime'),
+	        'proxy_ip' => array('addtime'),
+	        'release' => array('addtime'),
+	        'release_app' => array('addtime','uptime'),
+	        'rule' => array('addtime','uptime'),
+	        'task' => array('addtime','caijitime'),
+	        'user' => array('regtime'),
+	        'collected' => array('addtime'),
+	    );
+	    foreach ($timeFields as $k=>$v){
+	        $table=$db_prefix.$k;
+	        $exists=db()->query("show tables like '{$table}'");
+	        if($exists){
+	            $columns=db()->query("SHOW COLUMNS FROM `{$table}`");
+	            foreach ($v as $vv){
+	                $this->modify_field_type($vv, 'bigint(20)', "alter table `{$table}` modify column `{$vv}` bigint NOT NULL DEFAULT 0", $columns);
+	            }
+	        }
+	    }
 	    
 	    $dbTables=db()->getConnection()->getTables(config('database.database'));
 	    init_array($dbTables);
-	    $dbPrefix=config('database.prefix');
-	    
-	    $allowTbs=array('api_app','app','cache','collected','collected_info','collector','config','dataapi','dataset','func_app','provider','proxy_group','proxy_ip','release','release_app','rule','task','task_timer','taskgroup','user','usergroup');
-	    foreach ($allowTbs as $k=>$v){
-	        $allowTbs[$k]=strtolower($dbPrefix.$v);
-	    }
-	    foreach ($dbTables as $k=>$v){
+	    foreach ($dbTables as $v){
 	        $v=strtolower($v);
-	        if(!in_array($v,$allowTbs)&&stripos($v,$dbPrefix.'cache_')!==0){
+	        if(stripos($v,$db_prefix.'cache_')===0){
 	            
-	            unset($dbTables[$k]);
+	            $columns=db()->query("SHOW COLUMNS FROM `{$v}`");
+	            $this->modify_field_type('dateline', 'bigint(20)', "alter table `{$v}` modify column `dateline` bigint NOT NULL DEFAULT 0", $columns);
 	        }
 	    }
-	    $dbTables=array_values($dbTables);
-	    foreach ($dbTables as $dbTable){
-	        \util\Db::to_innodb($dbTable);
+	    
+	    $columns=db()->query("SHOW COLUMNS FROM `{$db_prefix}collected`");
+	    $this->modify_field_type('id', 'bigint(20)', "alter table `{$db_prefix}collected` modify column `id` bigint(20) NOT NULL AUTO_INCREMENT", $columns);
+	    
+	    $columns=db()->query("SHOW COLUMNS FROM `{$db_prefix}collected_info`");
+	    $this->modify_field_type('id', 'bigint(20)', "alter table `{$db_prefix}collected_info` modify column `id` bigint NOT NULL DEFAULT 0", $columns);
+	    
+	    $this->table_add_indexes('collected', array('ix_u5_tid'=>"`urlMd5`,`task_id`"));
+	    $indexes_collected=db()->query("SHOW INDEX FROM `{$db_prefix}collected`");
+	    if($this->check_exists_index('ix_urlmd5', $indexes_collected)){
+	        
+	        db()->execute("ALTER TABLE `{$db_prefix}collected` DROP INDEX ix_urlmd5");
+	    }
+	    
+	    
+	    $table=$db_prefix.'dataset_index';
+	    $exists=db()->query("show tables like '{$table}'");
+	    if(empty($exists)){
+	        
+$addTable=<<<EOF
+CREATE TABLE `{$table}` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `ds_id` int(11) NOT NULL DEFAULT '0',
+  `dt_id` int(11) NOT NULL DEFAULT '0',
+  `c_url_md5` varchar(32) NOT NULL DEFAULT '',
+  `url` text,
+  `addtime` bigint(20) NOT NULL DEFAULT '0',
+  `uptime` bigint(20) NOT NULL DEFAULT '0',
+  PRIMARY KEY (`id`),
+  KEY `c_url_md5` (`c_url_md5`),
+  KEY `ds_id` (`ds_id`,`id`),
+  KEY `dt_id` (`dt_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+EOF;
+	        db()->execute($addTable);
+	    }
+	    
+	    $mds=model('Dataset');
+	    $dsIds=$mds->column('id');
+	    if($dsIds){
+	        foreach ($dsIds as $dsId){
+	            $mdt=\skycaiji\common\model\DatasetTable::getInstance($dsId);
+	            $dtCount=$mdt->db()->count();
+	            if($dtCount>0){
+	                
+	                $dtLimit=100;
+	                $dtPage=ceil($dtCount/$dtLimit);
+	                for($i=0;$i<$dtPage;$i++){
+	                    $dtIds=$mdt->db()->order('id asc')->limit($dtLimit*$i,$dtLimit)->column('id');
+	                    $cUrlMd5s=array();
+	                    $diDatas=array();
+	                    foreach ($dtIds as $dtId){
+	                        $diData=array('ds_id'=>$dsId,'dt_id'=>$dtId,'url'=>'','addtime'=>0,'uptime'=>0);
+	                        $diData['c_url_md5']=\util\Tools::create_skycaiji_url('dataset',$dsId,$dtId);
+	                        $diData['c_url_md5']=md5($diData['c_url_md5']);
+	                        $cUrlMd5s[$diData['c_url_md5']]=$diData['c_url_md5'];
+	                        $diDatas[]=$diData;
+	                    }
+	                    
+	                    $existDis=$mds->indexDb()->where('c_url_md5','in',$cUrlMd5s)->column('id','c_url_md5');
+	                    if($existDis){
+	                        foreach ($diDatas as $k=>$v){
+	                            if(isset($existDis[$v['c_url_md5']])){
+	                                unset($diDatas[$k]);
+	                            }
+	                        }
+	                    }
+	                    if($diDatas){
+	                        $diDatas=array_values($diDatas);
+	                        $mds->indexDb()->strict(false)->insertAll($diDatas);
+	                    }
+	                }
+	            }
+	        }
 	    }
 	}
 }

@@ -35,8 +35,12 @@ class PHPExcel_Writer_Excel2007_Workbook extends PHPExcel_Writer_Excel2007_Write
      * @return     string         XML Output
      * @throws     PHPExcel_Writer_Exception
      */
-    public function writeWorkbook(PHPExcel $pPHPExcel = null, $recalcRequired = false)
+    public function writeWorkbook($pPHPExcel = null, $recalcRequired = false)
     {
+if ($pPHPExcel !== null && !$pPHPExcel instanceof PHPExcel) {
+    throw new \InvalidArgumentException('参数$pPHPExcel必须是PHPExcel实例');//[修改]兼容类型约束
+}
+
         // Create XML writer
         $objWriter = null;
         if ($this->getParentWriter()->getUseDiskCaching()) {
@@ -89,8 +93,12 @@ class PHPExcel_Writer_Excel2007_Workbook extends PHPExcel_Writer_Excel2007_Write
      * @param     PHPExcel_Shared_XMLWriter $objWriter         XML Writer
      * @throws     PHPExcel_Writer_Exception
      */
-    private function writeFileVersion(PHPExcel_Shared_XMLWriter $objWriter = null)
+    private function writeFileVersion($objWriter = null)
     {
+if ($objWriter !== null && !$objWriter instanceof PHPExcel_Shared_XMLWriter) {
+    throw new \InvalidArgumentException('参数$objWriter必须是PHPExcel_Shared_XMLWriter实例');//[修改]兼容类型约束
+}
+
         $objWriter->startElement('fileVersion');
         $objWriter->writeAttribute('appName', 'xl');
         $objWriter->writeAttribute('lastEdited', '4');
@@ -105,8 +113,12 @@ class PHPExcel_Writer_Excel2007_Workbook extends PHPExcel_Writer_Excel2007_Write
      * @param     PHPExcel_Shared_XMLWriter $objWriter         XML Writer
      * @throws     PHPExcel_Writer_Exception
      */
-    private function writeWorkbookPr(PHPExcel_Shared_XMLWriter $objWriter = null)
+    private function writeWorkbookPr($objWriter = null)
     {
+if ($objWriter !== null && !$objWriter instanceof PHPExcel_Shared_XMLWriter) {
+    throw new \InvalidArgumentException('参数$objWriter必须是PHPExcel_Shared_XMLWriter实例');//[修改]兼容类型约束
+}
+
         $objWriter->startElement('workbookPr');
 
         if (PHPExcel_Shared_Date::getExcelCalendar() == PHPExcel_Shared_Date::CALENDAR_MAC_1904) {
@@ -125,8 +137,15 @@ class PHPExcel_Writer_Excel2007_Workbook extends PHPExcel_Writer_Excel2007_Write
      * @param     PHPExcel                    $pPHPExcel
      * @throws     PHPExcel_Writer_Exception
      */
-    private function writeBookViews(PHPExcel_Shared_XMLWriter $objWriter = null, PHPExcel $pPHPExcel = null)
+    private function writeBookViews($objWriter = null, $pPHPExcel = null)
     {
+if ($objWriter !== null && !$objWriter instanceof PHPExcel_Shared_XMLWriter) {
+    throw new \InvalidArgumentException('参数$objWriter必须是PHPExcel_Shared_XMLWriter实例');//[修改]兼容类型约束
+}
+if ($pPHPExcel !== null && !$pPHPExcel instanceof PHPExcel) {
+    throw new \InvalidArgumentException('参数$pPHPExcel必须是PHPExcel实例');//[修改]兼容类型约束
+}
+
         // bookViews
         $objWriter->startElement('bookViews');
 
@@ -155,8 +174,15 @@ class PHPExcel_Writer_Excel2007_Workbook extends PHPExcel_Writer_Excel2007_Write
      * @param     PHPExcel                    $pPHPExcel
      * @throws     PHPExcel_Writer_Exception
      */
-    private function writeWorkbookProtection(PHPExcel_Shared_XMLWriter $objWriter = null, PHPExcel $pPHPExcel = null)
+    private function writeWorkbookProtection($objWriter = null, $pPHPExcel = null)
     {
+if ($objWriter !== null && !$objWriter instanceof PHPExcel_Shared_XMLWriter) {
+    throw new \InvalidArgumentException('参数$objWriter必须是PHPExcel_Shared_XMLWriter实例');//[修改]兼容类型约束
+}
+if ($pPHPExcel !== null && !$pPHPExcel instanceof PHPExcel) {
+    throw new \InvalidArgumentException('参数$pPHPExcel必须是PHPExcel实例');//[修改]兼容类型约束
+}
+
         if ($pPHPExcel->getSecurity()->isSecurityEnabled()) {
             $objWriter->startElement('workbookProtection');
             $objWriter->writeAttribute('lockRevision', ($pPHPExcel->getSecurity()->getLockRevision() ? 'true' : 'false'));
@@ -182,8 +208,12 @@ class PHPExcel_Writer_Excel2007_Workbook extends PHPExcel_Writer_Excel2007_Write
      * @param    boolean                        $recalcRequired    Indicate whether formulas should be recalculated before writing
      * @throws     PHPExcel_Writer_Exception
      */
-    private function writeCalcPr(PHPExcel_Shared_XMLWriter $objWriter = null, $recalcRequired = true)
+    private function writeCalcPr($objWriter = null, $recalcRequired = true)
     {
+if ($objWriter !== null && !$objWriter instanceof PHPExcel_Shared_XMLWriter) {
+    throw new \InvalidArgumentException('参数$objWriter必须是PHPExcel_Shared_XMLWriter实例');//[修改]兼容类型约束
+}
+
         $objWriter->startElement('calcPr');
 
         //    Set the calcid to a higher value than Excel itself will use, otherwise Excel will always recalc
@@ -205,8 +235,15 @@ class PHPExcel_Writer_Excel2007_Workbook extends PHPExcel_Writer_Excel2007_Write
      * @param     PHPExcel                    $pPHPExcel
      * @throws     PHPExcel_Writer_Exception
      */
-    private function writeSheets(PHPExcel_Shared_XMLWriter $objWriter = null, PHPExcel $pPHPExcel = null)
+    private function writeSheets($objWriter = null, $pPHPExcel = null)
     {
+if ($objWriter !== null && !$objWriter instanceof PHPExcel_Shared_XMLWriter) {
+    throw new \InvalidArgumentException('参数$objWriter必须是PHPExcel_Shared_XMLWriter实例');//[修改]兼容类型约束
+}
+if ($pPHPExcel !== null && !$pPHPExcel instanceof PHPExcel) {
+    throw new \InvalidArgumentException('参数$pPHPExcel必须是PHPExcel实例');//[修改]兼容类型约束
+}
+
         // Write sheets
         $objWriter->startElement('sheets');
         $sheetCount = $pPHPExcel->getSheetCount();
@@ -234,8 +271,12 @@ class PHPExcel_Writer_Excel2007_Workbook extends PHPExcel_Writer_Excel2007_Write
      * @param   string                      $sheetState         Sheet state (visible, hidden, veryHidden)
      * @throws     PHPExcel_Writer_Exception
      */
-    private function writeSheet(PHPExcel_Shared_XMLWriter $objWriter = null, $pSheetname = '', $pSheetId = 1, $pRelId = 1, $sheetState = 'visible')
+    private function writeSheet($objWriter = null, $pSheetname = '', $pSheetId = 1, $pRelId = 1, $sheetState = 'visible')
     {
+if ($objWriter !== null && !$objWriter instanceof PHPExcel_Shared_XMLWriter) {
+    throw new \InvalidArgumentException('参数$objWriter必须是PHPExcel_Shared_XMLWriter实例');//[修改]兼容类型约束
+}
+
         if ($pSheetname != '') {
             // Write sheet
             $objWriter->startElement('sheet');
@@ -258,8 +299,15 @@ class PHPExcel_Writer_Excel2007_Workbook extends PHPExcel_Writer_Excel2007_Write
      * @param     PHPExcel                    $pPHPExcel
      * @throws     PHPExcel_Writer_Exception
      */
-    private function writeDefinedNames(PHPExcel_Shared_XMLWriter $objWriter = null, PHPExcel $pPHPExcel = null)
+    private function writeDefinedNames($objWriter = null, $pPHPExcel = null)
     {
+if ($objWriter !== null && !$objWriter instanceof PHPExcel_Shared_XMLWriter) {
+    throw new \InvalidArgumentException('参数$objWriter必须是PHPExcel_Shared_XMLWriter实例');//[修改]兼容类型约束
+}
+if ($pPHPExcel !== null && !$pPHPExcel instanceof PHPExcel) {
+    throw new \InvalidArgumentException('参数$pPHPExcel必须是PHPExcel实例');//[修改]兼容类型约束
+}
+
         // Write defined names
         $objWriter->startElement('definedNames');
 
@@ -292,7 +340,7 @@ class PHPExcel_Writer_Excel2007_Workbook extends PHPExcel_Writer_Excel2007_Write
      * @param     PHPExcel                    $pPHPExcel
      * @throws     PHPExcel_Writer_Exception
      */
-    private function writeNamedRanges(PHPExcel_Shared_XMLWriter $objWriter = null, PHPExcel $pPHPExcel)
+    private function writeNamedRanges(PHPExcel_Shared_XMLWriter $objWriter, PHPExcel $pPHPExcel)
     {
         // Loop named ranges
         $namedRanges = $pPHPExcel->getNamedRanges();
@@ -308,7 +356,7 @@ class PHPExcel_Writer_Excel2007_Workbook extends PHPExcel_Writer_Excel2007_Write
      * @param     PHPExcel_NamedRange            $pNamedRange
      * @throws     PHPExcel_Writer_Exception
      */
-    private function writeDefinedNameForNamedRange(PHPExcel_Shared_XMLWriter $objWriter = null, PHPExcel_NamedRange $pNamedRange)
+    private function writeDefinedNameForNamedRange(PHPExcel_Shared_XMLWriter $objWriter, PHPExcel_NamedRange $pNamedRange)
     {
         // definedName for named range
         $objWriter->startElement('definedName');
@@ -340,8 +388,15 @@ class PHPExcel_Writer_Excel2007_Workbook extends PHPExcel_Writer_Excel2007_Write
      * @param     int                            $pSheetId
      * @throws     PHPExcel_Writer_Exception
      */
-    private function writeDefinedNameForAutofilter(PHPExcel_Shared_XMLWriter $objWriter = null, PHPExcel_Worksheet $pSheet = null, $pSheetId = 0)
+    private function writeDefinedNameForAutofilter($objWriter = null, $pSheet = null, $pSheetId = 0)
     {
+if ($objWriter !== null && !$objWriter instanceof PHPExcel_Shared_XMLWriter) {
+    throw new \InvalidArgumentException('参数$objWriter必须是PHPExcel_Shared_XMLWriter实例');//[修改]兼容类型约束
+}
+if ($pSheet !== null && !$pSheet instanceof PHPExcel_Worksheet) {
+    throw new \InvalidArgumentException('参数$pSheet必须是PHPExcel_Worksheet实例');//[修改]兼容类型约束
+}
+
         // definedName for autoFilter
         $autoFilterRange = $pSheet->getAutoFilter()->getRange();
         if (!empty($autoFilterRange)) {
@@ -376,8 +431,15 @@ class PHPExcel_Writer_Excel2007_Workbook extends PHPExcel_Writer_Excel2007_Write
      * @param     int                            $pSheetId
      * @throws     PHPExcel_Writer_Exception
      */
-    private function writeDefinedNameForPrintTitles(PHPExcel_Shared_XMLWriter $objWriter = null, PHPExcel_Worksheet $pSheet = null, $pSheetId = 0)
+    private function writeDefinedNameForPrintTitles($objWriter = null, $pSheet = null, $pSheetId = 0)
     {
+if ($objWriter !== null && !$objWriter instanceof PHPExcel_Shared_XMLWriter) {
+    throw new \InvalidArgumentException('参数$objWriter必须是PHPExcel_Shared_XMLWriter实例');//[修改]兼容类型约束
+}
+if ($pSheet !== null && !$pSheet instanceof PHPExcel_Worksheet) {
+    throw new \InvalidArgumentException('参数$pSheet必须是PHPExcel_Worksheet实例');//[修改]兼容类型约束
+}
+
         // definedName for PrintTitles
         if ($pSheet->getPageSetup()->isColumnsToRepeatAtLeftSet() || $pSheet->getPageSetup()->isRowsToRepeatAtTopSet()) {
             $objWriter->startElement('definedName');
@@ -419,8 +481,15 @@ class PHPExcel_Writer_Excel2007_Workbook extends PHPExcel_Writer_Excel2007_Write
      * @param     int                            $pSheetId
      * @throws     PHPExcel_Writer_Exception
      */
-    private function writeDefinedNameForPrintArea(PHPExcel_Shared_XMLWriter $objWriter = null, PHPExcel_Worksheet $pSheet = null, $pSheetId = 0)
+    private function writeDefinedNameForPrintArea($objWriter = null, $pSheet = null, $pSheetId = 0)
     {
+if ($objWriter !== null && !$objWriter instanceof PHPExcel_Shared_XMLWriter) {
+    throw new \InvalidArgumentException('参数$objWriter必须是PHPExcel_Shared_XMLWriter实例');//[修改]兼容类型约束
+}
+if ($pSheet !== null && !$pSheet instanceof PHPExcel_Worksheet) {
+    throw new \InvalidArgumentException('参数$pSheet必须是PHPExcel_Worksheet实例');//[修改]兼容类型约束
+}
+
         // definedName for PrintArea
         if ($pSheet->getPageSetup()->isPrintAreaSet()) {
             $objWriter->startElement('definedName');

@@ -40,8 +40,12 @@ abstract class PHPExcel_Writer_Excel2007_WriterPart
      * @param PHPExcel_Writer_IWriter    $pWriter
      * @throws PHPExcel_Writer_Exception
      */
-    public function setParentWriter(PHPExcel_Writer_IWriter $pWriter = null)
+    public function setParentWriter($pWriter = null)
     {
+if ($pWriter !== null && !$pWriter instanceof PHPExcel_Writer_IWriter) {
+    throw new \InvalidArgumentException('参数$pWriter必须是PHPExcel_Writer_IWriter实例');//[修改]兼容类型约束
+}
+
         $this->parentWriter = $pWriter;
     }
 
@@ -66,8 +70,12 @@ abstract class PHPExcel_Writer_Excel2007_WriterPart
      * @param PHPExcel_Writer_IWriter    $pWriter
      * @throws PHPExcel_Writer_Exception
      */
-    public function __construct(PHPExcel_Writer_IWriter $pWriter = null)
+    public function __construct($pWriter = null)
     {
+if ($pWriter !== null && !$pWriter instanceof PHPExcel_Writer_IWriter) {
+    throw new \InvalidArgumentException('参数$pWriter必须是PHPExcel_Writer_IWriter实例');//[修改]兼容类型约束
+}
+
         if (!is_null($pWriter)) {
             $this->parentWriter = $pWriter;
         }

@@ -10,34 +10,18 @@
  */
 
 namespace skycaiji\admin\event;
-use skycaiji\admin\model\CacheModel;
 /*单页采集模式*/
 class CpatternSingle extends Cpattern{
-    public function echo_error($msg = '', $url = null, $data = array(), $wait = 3, array $header = []){
-        if($this->is_collecting()){
-            return parent::echo_error($msg,$url,$data,$wait,$header);
-        }else{
-            $url=$url?$url:'';
-            $msg=$this->_echo_msg_str($msg,'red');
-            $txt=g_sc('collect_echo_msg_txt');
-            $txt=$txt?($txt."\r\n".$msg):$msg;
-            if(\util\Param::is_collector_single()){
-                
-                $txt=strip_tags($txt);
-                $this->jsonSend($txt);
-            }else{
-                parent::error($txt,$url,$data,$wait,$header);
-            }
-        }
-    }
+    
     public function collectSingle($singleConfig){
+        $this->set_single_collecting();
         init_array($singleConfig);
         $curUrl=input('url','','trim');
         if($curUrl&&!\util\Funcs::is_right_url($curUrl)){
             $curUrl='http://'.$curUrl;
         }
         $mcollected=model('Collected');
-        $isCollected=$mcollected->collGetNumByUrl($curUrl)>0?true:false;
+        $isCollected=$mcollected->collGetNumByUrl($curUrl,null,$this->task_id,g_sc_c('caiji','same_url'))>0?true:false;
         $urlRepeat=$this->config['url_repeat'];
         $field_vals_list=null;
         if($singleConfig['always']||$urlRepeat||!$isCollected){
@@ -58,9 +42,6 @@ class CpatternSingle extends Cpattern{
                     }
                 }
             }
-            $mcollected=model('Collected');
-            
-            set_g_sc('collect_task_id',$this->collector['task_id']);
             set_g_sc(['c','caiji','interval'],0);
             set_g_sc(['c','caiji','interval_html'],0);
             $this->collect_num=0;
@@ -72,7 +53,7 @@ class CpatternSingle extends Cpattern{
             $field_vals_list=$this->getFields($curUrl);
             if($urlRepeat||!$isCollected){
                 
-                $this->_collect_fields_vals('', $curUrl, md5($curUrl), $field_vals_list, $urlRepeat);
+                $this->collect_fields_vals('', $curUrl, md5($curUrl), $field_vals_list, $urlRepeat);
             }else{
                 if(empty($this->first_loop_field)){
                     

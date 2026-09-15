@@ -28,8 +28,12 @@ class Stack
      * 构造方法
      * @param Style|null $emptyStyle
      */
-    public function __construct(Style $emptyStyle = null)
+    public function __construct($emptyStyle = null)
     {
+        if ($emptyStyle !== null && !$emptyStyle instanceof Style) {
+            throw new \InvalidArgumentException('参数$emptyStyle必须是Style实例');//[修改]兼容类型约束
+        }
+        
         $this->emptyStyle = $emptyStyle ?: new Style();
         $this->reset();
     }
@@ -57,8 +61,12 @@ class Stack
      * @return Style
      * @throws \InvalidArgumentException
      */
-    public function pop(Style $style = null)
+    public function pop($style = null)
     {
+        if ($style !== null && !$style instanceof Style) {
+            throw new \InvalidArgumentException('参数$style必须是Style实例');//[修改]兼容类型约束
+        }
+        
         if (empty($this->styles)) {
             return $this->emptyStyle;
         }

@@ -137,8 +137,15 @@ class PHPExcel_Writer_Excel2007_StringTable extends PHPExcel_Writer_Excel2007_Wr
      * @param     string                        $prefix            Optional Namespace prefix
      * @throws     PHPExcel_Writer_Exception
      */
-    public function writeRichText(PHPExcel_Shared_XMLWriter $objWriter = null, PHPExcel_RichText $pRichText = null, $prefix = null)
+    public function writeRichText($objWriter = null, $pRichText = null, $prefix = null)
     {
+if ($objWriter !== null && !$objWriter instanceof PHPExcel_Shared_XMLWriter) {
+    throw new \InvalidArgumentException('参数$objWriter必须是PHPExcel_Shared_XMLWriter实例');//[修改]兼容类型约束
+}
+if ($pRichText !== null && !$pRichText instanceof PHPExcel_RichText) {
+    throw new \InvalidArgumentException('参数$pRichText必须是PHPExcel_RichText实例');//[修改]兼容类型约束
+}
+
         if ($prefix !== null) {
             $prefix .= ':';
         }
@@ -221,8 +228,12 @@ class PHPExcel_Writer_Excel2007_StringTable extends PHPExcel_Writer_Excel2007_Wr
      * @param     string                        $prefix            Optional Namespace prefix
      * @throws     PHPExcel_Writer_Exception
      */
-    public function writeRichTextForCharts(PHPExcel_Shared_XMLWriter $objWriter = null, $pRichText = null, $prefix = null)
+    public function writeRichTextForCharts($objWriter = null, $pRichText = null, $prefix = null)
     {
+if ($objWriter !== null && !$objWriter instanceof PHPExcel_Shared_XMLWriter) {
+    throw new \InvalidArgumentException('参数$objWriter必须是PHPExcel_Shared_XMLWriter实例');//[修改]兼容类型约束
+}
+
         if (!$pRichText instanceof PHPExcel_RichText) {
             $textRun = $pRichText;
             $pRichText = new PHPExcel_RichText();

@@ -51,9 +51,16 @@ class Init{
 			    set_g_sc('browser_is_old',true);
 			}
 		}
-		if(stripos(Request::instance()->root()?:'','/index.php')!==false&&isset($_GET['s'])){
-			
-		    \util\Tools::set_url_compatible();
+		if(isset($_GET['s'])){
+		    if(stripos(Request::instance()->root()?:'','/index.php')!==false){
+		        
+		        \util\Tools::set_url_compatible();
+		    }else{
+		        if(stripos(Request::instance()->url(), '?s=')!==false){
+		            
+		            \util\Tools::set_url_compatible();
+		        }
+		    }
 		}
 	}
 }

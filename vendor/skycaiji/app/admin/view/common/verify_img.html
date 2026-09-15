@@ -1,0 +1,12 @@
+{assign name="_tpl_show_title" value="[_show_title]" /}
+{if condition="g_sc_c('site','verifycode')"}
+<div class="form-group">
+	{if $_tpl_show_title}
+	<label>{$Think.lang.verifycode}</label>
+	{/if}
+	<div class="input-group">
+		<input type="text" name="verifycode" class="form-control" autocomplete="off" placeholder="{$Think.lang.verifycode}" />
+		<div class="input-group-btn"><img src="{:url('admin/index/verify?'.url_usertoken())}" class="verify-img" onclick="refreshVerify(this)" onerror="verifyImgError()" /></div>
+	</div>
+</div>
+{/if}

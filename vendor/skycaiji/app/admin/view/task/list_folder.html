@@ -16,16 +16,19 @@
 				<tr>
 	                <th>{$Think.lang.task_name}</th>
 					<th>{$Think.lang.sort}</th>
-	                <th>{$Think.lang.task_auto}</th>
-	                <th>{$Think.lang.task_addtime}</th>
+	                <th>ID</th>
+					<th>{$Think.lang.task_module}</th>
+	                <th>{$Think.lang.task_auto1}</th>
 	                <th>{$Think.lang.task_caijitime}</th>
-	                <th style="width:200px;">{$Think.lang.task_collected}</th>
+	                <th>{$Think.lang.task_collected}</th>
+	                <th>{$Think.lang.task_release}</th>
+	                <th>{$Think.lang.task_addtime}</th>
 	                <th style="width:125px;">{$Think.lang.op}</th>
 				</tr>
 				</thead>
 				<tbody>
 				<tr data-level="0" data-tgid="0" id="level0">
-					<td colspan="5">
+					<td colspan="10">
 						<a href="javascript:;" class="taskgroup" style="display:none;">
 							<span class="glyphicon icon-folder-pre"></span>
 							<span class="glyphicon icon-folder"></span> {$Think.lang.task_root}
@@ -35,11 +38,11 @@
 				</tbody>
 				<tfoot>
 				<tr>
-					<td colspan="4">
+					<td colspan="5">
 						<button type="submit" class="btn btn-default">{$Think.lang.save}</button>
 						<a href="{:url('task/set')}" class="btn btn-primary">{$Think.lang.task_add}</a>
 					</td>
-					<td colspan="3">
+					<td colspan="5">
 						<label class="checkbox-inline chk-inline">
 	                		<input type="checkbox" onclick="checkall(this,'batch[]')" />
 	                		全选

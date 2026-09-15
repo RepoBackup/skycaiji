@@ -2,13 +2,15 @@
 <div id="window_tasks">
 	<ul class="row" id="task_list">
 	{foreach name="taskList" item="task"}
-	<li class="col-xs-4" style="padding:0;">
+	<li class="col-xs-6" style="padding:0;">
 		<a href="javascript:;" data-id="{$task['id']}" data-title="{$task['name']|htmlentities}">{$task['name']}</a>
 	</li>
 	{/foreach}
 	</ul>
 	{$pagenav}
-	<script type="text/javascript">
+<script type="text/javascript">
+'use strict';
+(function(){
 	$('#window_tasks #task_list li a').bind('click',function(){
 		var id=$(this).attr('data-id');
 		var name=$(this).attr('data-title');
@@ -19,7 +21,8 @@
 		windowModal('导入任务',$(this).attr('href'));
 		return false;
 	});
-	</script>
+})();
+</script>
 </div>
 {else /}
 	没有任务

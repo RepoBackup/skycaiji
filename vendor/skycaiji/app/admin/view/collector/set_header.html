@@ -1,0 +1,11 @@
+<form id="form_coll" class="form-item" method="post" role="form" action="{:url('collector/set')}">
+	{:html_usertoken()}
+	<input type="hidden" name="task_id" value="{$taskData['id']}" />
+	<input type="hidden" name="module" value="{$taskData['module']}" />
+	<input type="hidden" name="tab_link" value="{:input('tab_link')}" />
+	<input type="hidden" name="effective" value="" />
+	<input type="hidden" name="effective_edit" value="" />
+	<input type="hidden" name="modified_names" value="" />
+	{if input('easymode')}
+	<input type="hidden" name="easymode" value="1" />
+	{/if}

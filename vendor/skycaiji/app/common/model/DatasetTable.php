@@ -36,20 +36,19 @@ class DatasetTable{
 	 * @return \think\db\Query
 	 */
 	public function db(){
-		try {
-			$db=db($this->table_name);
-			$db->getPk();
-		}catch (\Exception $ex){
-			$this->create_table();
-			$db=db($this->table_name);
-		}
-		return $db;
-	}
-	
-	public function convertDate($date){
-	    $date=strtotime($date);
-	    $date=$date>0?date('Y-m-d H:i:s',$date):'';
-	    return $date;
+	    static $exists=array();
+	    try {
+	        $db=db($this->table_name);
+	        if(!$exists[$this->table_name]){
+	            $db->getPk();
+	            $exists[$this->table_name]=true;
+	        }
+	    }catch (\Exception $ex){
+	        $this->create_table();
+	        $db=db($this->table_name);
+	        $exists[$this->table_name]=true;
+	    }
+	    return $db;
 	}
 	
 	public function dbColumns(){
@@ -63,6 +62,83 @@ class DatasetTable{
 	    }
 	    return $columns;
 	}
+	
+	public function setData($id,$fields,$configFields,$diUrl='',$unsetNull=true){
+	    $id=intval($id);
+	    init_array($fields);
+	    init_array($configFields);
+	    
+	    $isNull=true;
+	    if($fields&&is_array($fields)){
+	        foreach ($fields as $k=>$v){
+	            if($configFields[$k]){
+	                $ftype=$configFields[$k]['type'];
+	                if($ftype=='datetime'){
+	                    $v=$this->convert_date($v);
+	                }elseif($ftype=='bigint'){
+	                    $v=intval($v);
+	                }elseif($ftype=='double'){
+	                    $v=floatval($v);
+	                }
+	                $fields[$k]=$v;
+	                if($unsetNull){
+	                    
+	                    if(is_empty($fields[$k],true)){
+	                        
+	                        if(!in_array($ftype,array('varchar','mediumtext'))){
+	                            
+	                            unset($fields[$k]);
+	                        }
+	                    }
+	                }
+	            }
+	            if(!is_empty($fields[$k],true)){
+	                $isNull=false;
+	            }
+	        }
+	    }
+	    
+	    unset($fields['id']);
+	    
+	    if(!$isNull){
+    	    if($id>0){
+    	        
+    	        $this->db()->strict(false)->where('id',$id)->update($fields);
+    	    }else{
+    	        $id=$this->db()->strict(false)->insert($fields,false,true);
+    	    }
+	    }
+	    
+	    if($id>0){
+	        
+	        $mds=model('Dataset');
+	        
+	        $cUrlMd5=\util\Tools::create_skycaiji_url('dataset',$this->dataset_id,$id);
+	        $cUrlMd5=md5($cUrlMd5);
+	        
+	        $diData=$mds->indexDb()->where('dt_id',$id)->where('ds_id',$this->dataset_id)->find();
+	        if($diData){
+	            
+	            $upData=array('c_url_md5'=>$cUrlMd5);
+	            if($diUrl!==false&&$diData['url']!=$diUrl){
+	                
+	                $upData['url']=$diUrl;
+	            }
+	            if(empty($diData['addtime'])){
+	                $upData['addtime']=time();
+	            }
+	            $upData['uptime']=time();
+	            $mds->indexDb()->where('id',$diData['id'])->update($upData);
+	        }else{
+	            
+	            $newData=array('ds_id'=>$this->dataset_id,'dt_id'=>$id,'c_url_md5'=>$cUrlMd5,'url'=>$diUrl?:'','addtime'=>time(),'uptime'=>time());
+	            $mds->indexDb()->strict(false)->insert($newData);
+	        }
+	    }
+	    
+	    return $id;
+	}
+	
 	
 	public function alertTableFields($fields,$dsData){
 	    $oldFields=array();
@@ -178,6 +254,12 @@ class DatasetTable{
 	        },$msg);
 	    }
 	    return $msg;
+	}
+	
+	public function convert_date($date){
+	    $date=strtotime($date);
+	    $date=$date>0?date('Y-m-d H:i:s',$date):'';
+	    return $date;
 	}
 	/**
 	 * 创建表

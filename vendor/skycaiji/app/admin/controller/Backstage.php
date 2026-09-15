@@ -263,19 +263,13 @@ class Backstage extends BaseController{
 	    
 	    try{
 	        
-	        $cacheTimeout=time()-(3600*24*7);
-	        CacheModel::getInstance('source_url')->db()->where('dateline','<',$cacheTimeout)->delete();
-	        CacheModel::getInstance('level_url')->db()->where('dateline','<',$cacheTimeout)->delete();
-	        CacheModel::getInstance('collecting')->db()->where('dateline','<',$cacheTimeout)->delete();
-	        
-	        $cacheTimeout=time()-(3600*24);
-	        CacheModel::getInstance('cont_url')->db()->where('dateline','<',$cacheTimeout)->delete();
+	        \skycaiji\admin\model\Collector::clear_collect_data();
             
 	        
 	        $cacheTongji=cache('admin_check_up_tongji');
 	        $cacheTongji=is_array($cacheTongji)?$cacheTongji:array();
 	        $tongji=array();
-	        if(empty($cacheTongji)||abs(time()-$cacheTongji['time'])>60){
+	        if(empty($cacheTongji)||abs(time()-$cacheTongji['time'])>200){
 	            
 	            $mcollected=model('Collected');
 	            $todayTime=strtotime(date('Y-m-d',time()));
@@ -446,7 +440,7 @@ class Backstage extends BaseController{
     			if(empty($cache)){
     			    $error='任务已停止运行';
     			}else{
-        			
+    			    
         			$cond=array('task_id'=>$taskId);
         			
         			$taskStatus=$cache['ctype'];

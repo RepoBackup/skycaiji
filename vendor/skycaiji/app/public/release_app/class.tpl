@@ -10,7 +10,7 @@ class {$classname} extends BaseCms{
 	public function runImport($params){
 		/*
 		 * -----这里开始写代码-----
-		 * 数据库操作：$this->db()，可参考thinkphp5的数据库操作
+		 * 数据库操作：$this->db()，可参考：https://www.skycaiji.com/manual/doc/db
 		 * 参数值列表：$params，$params[变量名] 调用参数的值
 		 */
 		
@@ -22,7 +22,7 @@ class {$classname} extends BaseCms{
 		 * target（可选）记录入库的数据位置（发布的网址等）
 		 * desc（可选）记录入库的数据位置附加信息
 		 * error（可选）记录入库失败的错误信息
-		 * 入库的信息可在“已采集数据”中查看
+		 * 入库的信息可在“已发布数据”中查看
 		 */
 		return array('id'=>0,'target'=>'','desc'=>'','error'=>'');
 	}

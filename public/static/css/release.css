@@ -17,6 +17,7 @@
 
 .db-table-bind-query{display:none;}
 .db-table-bind-data-seq{display:none;}
+.db-table-bind-data .db-type{max-width:300px;white-space:normal;overflow:hidden;word-wrap:break-word;word-break:break-all;}
 
 .db-table-bind-where thead tr th,.db-table-bind-query thead tr th,.db-table-bind-data thead tr th{border:0;}
 .db-table-bind-where,.db-table-bind-query,.db-table-bind-data{border:0;border-bottom:solid 1px #eee;}
@@ -48,13 +49,32 @@
 
 .toapi-field-slt-txt input.form-control,.toapi-field-slt-txt textarea.form-control,.toapi-field-slt-txt .input-group-addon{display:table-cell!important;}
 
-/**/
 #cms_bind em{color:red;}
 #cms_bind .box{margin-bottom:0;}
 #cms_bind .table{margin-bottom:0;}
 #toapi_app_params em{color:red;}
 
 
+.cms-field-txt>.input-group-addon{padding:0;}
+.cms-field-txt>.input-group-addon a.dropdown-toggle{border-color:#fff;padding:6px 12px;color:#666;}
+.cms-field-txt>.input-group-addon a.dropdown-toggle:hover{color:#000;}
+.cms-field-txt>.input-group-addon a.dropdown-toggle .caret{margin-top:-2px;}
+
+.cms-field-txt.input-select-custom select{margin-right:-1px;}
+.cms-field-txt.input-select-custom input.form-control{margin-left:0px;}
+
+
+.file-fields .icon-drag-move{
+    font-style: normal;
+	font-size:10px;
+	margin-right:10px;
+	color:#666;
+}
+.file-fields .icon-drag-move:before {
+    content: "\e178";
+}
+.file-fields{overflow:hidden;}
+.file-field{float:left;}
 
 @media (min-width: 1200px) {
 	/*table-responsive设置overflow:inherit;可正常显示dropdown-menu*/

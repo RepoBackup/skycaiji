@@ -42,15 +42,7 @@
 			    </div>
 		        <p class="help-block">{$Think.lang.user_newpwd_tips}</p>
 		    </div>
-		    {if condition="g_sc_c('site','verifycode')"}	
-			<div class="form-group">
-				<label>{$Think.lang.verifycode}</label>
-				<div class="input-group">
-					<input type="text" name="verifycode" class="form-control" autocomplete="off" />
-					<div class="input-group-btn"><img src="{:url('admin/index/verify')}" class="verify-img" onclick="refreshVerify(this)" onerror="verifyImgError()" /></div>
-				</div>
-			</div>
-			{/if}
+			{include file="common:verify_img" _show_title="1" /}
 		   	<div class="form-group">
 				<button type="submit" class="btn btn-primary btn-block">{$Think.lang.save}</button>
 			</div>

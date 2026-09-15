@@ -213,8 +213,12 @@ class PHPExcel_Worksheet_BaseDrawing implements PHPExcel_IComparable
      * @throws     PHPExcel_Exception
      * @return PHPExcel_Worksheet_BaseDrawing
      */
-    public function setWorksheet(PHPExcel_Worksheet $pValue = null, $pOverrideOld = false)
+    public function setWorksheet($pValue = null, $pOverrideOld = false)
     {
+if ($pValue !== null && !$pValue instanceof PHPExcel_Worksheet) {
+    throw new \InvalidArgumentException('参数$pValue必须是PHPExcel_Worksheet实例');//[修改]兼容类型约束
+}
+
         if (is_null($this->worksheet)) {
             // Add drawing to PHPExcel_Worksheet
             $this->worksheet = $pValue;
@@ -462,8 +466,12 @@ class PHPExcel_Worksheet_BaseDrawing implements PHPExcel_IComparable
      * @throws     PHPExcel_Exception
      * @return PHPExcel_Worksheet_BaseDrawing
      */
-    public function setShadow(PHPExcel_Worksheet_Drawing_Shadow $pValue = null)
+    public function setShadow($pValue = null)
     {
+if ($pValue !== null && !$pValue instanceof PHPExcel_Worksheet_Drawing_Shadow) {
+    throw new \InvalidArgumentException('参数$pValue必须是PHPExcel_Worksheet_Drawing_Shadow实例');//[修改]兼容类型约束
+}
+
            $this->shadow = $pValue;
            return $this;
     }

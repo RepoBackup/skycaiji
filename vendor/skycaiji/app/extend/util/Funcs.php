@@ -107,14 +107,14 @@ class Funcs{
 	    }
 	}
 	
-	public static function array_array_map($callback, $arr1, array $_ = null){
+	public static function array_array_map($callback, $arr1){
 	    if(is_array($arr1)){
 	        $arr=array();
 	        foreach ($arr1 as $k=>$v){
 	            if(!is_array($v)){
 	                $arr[$k]=call_user_func($callback, $v);
 	            }else{
-	                $arr[$k]=self::array_array_map($callback,$v,$_);
+	                $arr[$k]=self::array_array_map($callback,$v);
 	            }
 	        }
 	    }
@@ -594,6 +594,23 @@ class Funcs{
 	        }
 	    }
 	    return $nums;
+	}
+	
+	public static function implode_arr2str($data,$maxLen=100){
+	    if(is_array($data)&&$data){
+	        unset($data['id']);
+	        $data=implode(', ', $data);
+	        $data=strip_tags($data);
+	        $data=preg_replace('/[\s\r\n]+/', ' ', $data);
+	        $data=trim($data);
+	        if(mb_strlen($data,'utf-8')>$maxLen){
+	            $data=mb_substr($data,0,$maxLen,'utf-8').'...';
+	        }
+	    }else{
+	        $data='';
+	    }
+	    $data=$data?:'';
+	    return $data;
 	}
 }
 

@@ -1,0 +1,90 @@
+<ul id="coll_tab" class="nav nav-tabs coll-tab">
+	<li{$curTab['']}{$curTab['coll_datahub_coll']}><a href="#coll_datahub_coll" data-toggle="tab" aria-expanded="{$curTab['']?'true':($curTab['coll_datahub_coll']?'true':'false')}">{$Think.lang.cdatahub}</a></li>
+	<li{$curTab['coll_datahub_field']}><a href="#coll_datahub_field" data-toggle="tab" aria-expanded="{$curTab['coll_datahub_field']?'true':'false'}">获取内容</a></li>
+</ul>
+<div id="coll_tab_content" class="tab-content" style="margin-top:-1px">
+	<div class="tab-pane{$curTabCont['']}{$curTabCont['coll_datahub_coll']}" id="coll_datahub_coll">
+		<div class="panel panel-default">
+			<div class="panel-body">
+				<div class="form-group">
+					<div class="h-title">
+						<label>绑定{$Think.lang.cdatahub}</label>
+						<a href="javascript:;" class="glyphicon glyphicon-plus add-datahub" title="添加"></a>
+					</div>
+					<table class="table table-bordered table-hover c-d-datahubs">
+						<tbody>
+						</tbody>
+					</table>
+					<p class="help-block">
+						从绑定的{$Think.lang.cdatahub}中采集数据，建议绑定字段一致的{$Think.lang.cdatahub}否则会导致空数据
+					</p>
+				</div>
+				<div class="form-group">
+					<label>采集最新的数据</label>
+					<div class="input-group">
+				        <label class="radio-inline"><input type="radio" name="config[datahub][sort_new]" value="1">是</label>
+						<label class="radio-inline"><input type="radio" name="config[datahub][sort_new]" value="0" checked="checked">否</label>
+			        </div>
+			        <p class="help-block">采集{$Think.lang.cdatahub}中最新的数据，否则采集最早的数据</p>
+				</div>
+				<div class="form-group">
+					<label>发布后删除数据</label>
+					<div class="input-group">
+				        <label class="radio-inline"><input type="radio" name="config[datahub][delete]" value="1">是</label>
+						<label class="radio-inline"><input type="radio" name="config[datahub][delete]" value="0" checked="checked">否</label>
+			        </div>
+					<p class="help-block">发布后删除{$Think.lang.cdatahub}中相应的数据以节省存储空间</p>
+				</div>
+			</div>
+		</div>	
+			
+		{if condition="!empty($collData['id'])"}
+		<div class="form-group">
+			<div class="dropdown">
+				<button class="btn btn-default btn-block dropdown-toggle" type="button" id="dropdownMenuTestUrl" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+			    	测试（需先保存设置）
+			    	<span class="caret"></span>
+			  	</button>
+			  	<ul class="dropdown-menu" style="width:100%;text-align:center;" aria-labelledby="dropdownMenuTestUrl">
+			    	<li><a href="{:url('cdatahub/test_data?coll_id='.$collData['id'])}" target="_blank" onclick="windowModal('测试抓取数据',$(this).attr('href'));return false;">测试抓取数据</a></li>
+			  	</ul>
+			</div>
+		</div>
+		{/if}
+	</div>
+	<div class="tab-pane{$curTabCont['coll_datahub_field']}" id="coll_datahub_field">
+		{include file="collector:c_set" _module="datahub" /}
+			
+		{if condition="!empty($collData['id'])"}
+		<div class="form-group">
+			<div class="dropdown">
+				<button class="btn btn-default btn-block dropdown-toggle" type="button" id="dropdownMenuTestUrl" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+			    	测试（需先保存设置）
+			    	<span class="caret"></span>
+			  	</button>
+			  	<ul class="dropdown-menu" style="width:100%;text-align:center;" aria-labelledby="dropdownMenuTestUrl">
+			    	<li><a href="{:url('cdatahub/test?coll_id='.$collData['id'])}" target="_blank">测试抓取字段</a></li>
+			  	</ul>
+			</div>
+		</div>
+		{/if}
+	</div>
+</div>
+
+{include file="collector:c_set_tpl" _module="datahub" /}
+
+<link href="__PUBLIC__/static/css/jquery.datetimepicker.css?{$Think.config.html_v}" rel="stylesheet">
+<script type="text/javascript" src="__PUBLIC__/static/js/jquery.datetimepicker.js?{$Think.config.html_v}"></script>
+
+<script type="text/javascript">
+var c_datahub=new CollectorDatahub();
+c_datahub.init();
+
+{if !empty($collData)}
+	{if empty($collData['config'])}
+		c_datahub.load(null);
+	{else/}
+		c_datahub.load({$collData['config']|json_encode},{$dOptions|json_encode});
+	{/if}
+{/if}
+</script>

@@ -407,8 +407,12 @@ class PHPExcel_Worksheet_HeaderFooter
      * @throws PHPExcel_Exception
      * @return PHPExcel_Worksheet_HeaderFooter
      */
-    public function addImage(PHPExcel_Worksheet_HeaderFooterDrawing $image = null, $location = self::IMAGE_HEADER_LEFT)
+    public function addImage($image = null, $location = self::IMAGE_HEADER_LEFT)
     {
+if ($image !== null && !$image instanceof PHPExcel_Worksheet_HeaderFooterDrawing) {
+    throw new \InvalidArgumentException('参数$image必须是PHPExcel_Worksheet_HeaderFooterDrawing实例');//[修改]兼容类型约束
+}
+
         $this->headerFooterImages[$location] = $image;
         return $this;
     }

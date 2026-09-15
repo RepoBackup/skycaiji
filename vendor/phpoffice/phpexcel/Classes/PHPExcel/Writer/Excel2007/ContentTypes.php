@@ -35,8 +35,12 @@ class PHPExcel_Writer_Excel2007_ContentTypes extends PHPExcel_Writer_Excel2007_W
      * @return     string                         XML Output
      * @throws     PHPExcel_Writer_Exception
      */
-    public function writeContentTypes(PHPExcel $pPHPExcel = null, $includeCharts = false)
+    public function writeContentTypes($pPHPExcel = null, $includeCharts = false)
     {
+if ($pPHPExcel !== null && !$pPHPExcel instanceof PHPExcel) {
+    throw new \InvalidArgumentException('参数$pPHPExcel必须是PHPExcel实例');//[修改]兼容类型约束
+}
+
         // Create XML writer
         $objWriter = null;
         if ($this->getParentWriter()->getUseDiskCaching()) {
@@ -204,8 +208,12 @@ class PHPExcel_Writer_Excel2007_ContentTypes extends PHPExcel_Writer_Excel2007_W
      * @param     string                         $pContentType     Content type
      * @throws     PHPExcel_Writer_Exception
      */
-    private function writeDefaultContentType(PHPExcel_Shared_XMLWriter $objWriter = null, $pPartname = '', $pContentType = '')
+    private function writeDefaultContentType($objWriter = null, $pPartname = '', $pContentType = '')
     {
+if ($objWriter !== null && !$objWriter instanceof PHPExcel_Shared_XMLWriter) {
+    throw new \InvalidArgumentException('参数$objWriter必须是PHPExcel_Shared_XMLWriter实例');//[修改]兼容类型约束
+}
+
         if ($pPartname != '' && $pContentType != '') {
             // Write content type
             $objWriter->startElement('Default');
@@ -225,8 +233,12 @@ class PHPExcel_Writer_Excel2007_ContentTypes extends PHPExcel_Writer_Excel2007_W
      * @param     string                         $pContentType     Content type
      * @throws     PHPExcel_Writer_Exception
      */
-    private function writeOverrideContentType(PHPExcel_Shared_XMLWriter $objWriter = null, $pPartname = '', $pContentType = '')
+    private function writeOverrideContentType($objWriter = null, $pPartname = '', $pContentType = '')
     {
+if ($objWriter !== null && !$objWriter instanceof PHPExcel_Shared_XMLWriter) {
+    throw new \InvalidArgumentException('参数$objWriter必须是PHPExcel_Shared_XMLWriter实例');//[修改]兼容类型约束
+}
+
         if ($pPartname != '' && $pContentType != '') {
             // Write content type
             $objWriter->startElement('Override');

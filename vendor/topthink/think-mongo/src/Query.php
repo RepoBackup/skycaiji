@@ -62,8 +62,12 @@ class Query
      * @param Connection    $connection 数据库对象实例
      * @param string        $model 模型名
      */
-    public function __construct(Connection $connection = null, $model = '')
+    public function __construct($connection = null, $model = '')
     {
+if ($connection !== null && !$connection instanceof Connection) {
+    throw new \InvalidArgumentException('参数$connection必须是Connection实例');//[修改]兼容类型约束
+}
+
         $this->connection = $connection ?: Db::connect([], true);
         $this->prefix     = $this->connection->getConfig('prefix');
         $this->model      = $model;
@@ -249,8 +253,12 @@ class Query
      * @throws ConnectionException
      * @throws RuntimeException
      */
-    public function query($namespace, MongoQuery $query, ReadPreference $readPreference = null, $class = false, $typeMap = null)
+    public function query($namespace, MongoQuery $query, $readPreference = null, $class = false, $typeMap = null)
     {
+if ($readPreference !== null && !$readPreference instanceof ReadPreference) {
+    throw new \InvalidArgumentException('参数$readPreference必须是ReadPreference实例');//[修改]兼容类型约束
+}
+
         return $this->connection->query($namespace, $query, $readPreference, $class, $typeMap);
     }
 
@@ -268,8 +276,12 @@ class Query
      * @throws ConnectionException
      * @throws RuntimeException
      */
-    public function command(Command $command, $dbName = '', ReadPreference $readPreference = null, $class = false, $typeMap = null)
+    public function command(Command $command, $dbName = '', $readPreference = null, $class = false, $typeMap = null)
     {
+if ($readPreference !== null && !$readPreference instanceof ReadPreference) {
+    throw new \InvalidArgumentException('参数$readPreference必须是ReadPreference实例');//[修改]兼容类型约束
+}
+
         return $this->connection->command($command, $dbName, $readPreference, $class, $typeMap);
     }
 
@@ -286,8 +298,12 @@ class Query
      * @throws RuntimeException
      * @throws BulkWriteException
      */
-    public function execute($namespace, BulkWrite $bulk, WriteConcern $writeConcern = null)
+    public function execute($namespace, BulkWrite $bulk, $writeConcern = null)
     {
+if ($writeConcern !== null && !$writeConcern instanceof WriteConcern) {
+    throw new \InvalidArgumentException('参数$writeConcern必须是WriteConcern实例');//[修改]兼容类型约束
+}
+
         return $this->connection->execute($namespace, $bulk, $writeConcern);
     }
 

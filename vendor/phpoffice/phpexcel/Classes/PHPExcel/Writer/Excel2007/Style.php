@@ -34,8 +34,12 @@ class PHPExcel_Writer_Excel2007_Style extends PHPExcel_Writer_Excel2007_WriterPa
      * @return     string         XML Output
      * @throws     PHPExcel_Writer_Exception
      */
-    public function writeStyles(PHPExcel $pPHPExcel = null)
+    public function writeStyles($pPHPExcel = null)
     {
+if ($pPHPExcel !== null && !$pPHPExcel instanceof PHPExcel) {
+    throw new \InvalidArgumentException('参数$pPHPExcel必须是PHPExcel实例');//[修改]兼容类型约束
+}
+
         // Create XML writer
         $objWriter = null;
         if ($this->getParentWriter()->getUseDiskCaching()) {
@@ -164,8 +168,15 @@ class PHPExcel_Writer_Excel2007_Style extends PHPExcel_Writer_Excel2007_WriterPa
      * @param     PHPExcel_Style_Fill            $pFill            Fill style
      * @throws     PHPExcel_Writer_Exception
      */
-    private function writeFill(PHPExcel_Shared_XMLWriter $objWriter = null, PHPExcel_Style_Fill $pFill = null)
+    private function writeFill($objWriter = null, $pFill = null)
     {
+if ($objWriter !== null && !$objWriter instanceof PHPExcel_Shared_XMLWriter) {
+    throw new \InvalidArgumentException('参数$objWriter必须是PHPExcel_Shared_XMLWriter实例');//[修改]兼容类型约束
+}
+if ($pFill !== null && !$pFill instanceof PHPExcel_Style_Fill) {
+    throw new \InvalidArgumentException('参数$pFill必须是PHPExcel_Style_Fill实例');//[修改]兼容类型约束
+}
+
         // Check if this is a pattern type or gradient type
         if ($pFill->getFillType() === PHPExcel_Style_Fill::FILL_GRADIENT_LINEAR ||
             $pFill->getFillType() === PHPExcel_Style_Fill::FILL_GRADIENT_PATH) {
@@ -184,8 +195,15 @@ class PHPExcel_Writer_Excel2007_Style extends PHPExcel_Writer_Excel2007_WriterPa
      * @param     PHPExcel_Style_Fill            $pFill            Fill style
      * @throws     PHPExcel_Writer_Exception
      */
-    private function writeGradientFill(PHPExcel_Shared_XMLWriter $objWriter = null, PHPExcel_Style_Fill $pFill = null)
+    private function writeGradientFill($objWriter = null, $pFill = null)
     {
+if ($objWriter !== null && !$objWriter instanceof PHPExcel_Shared_XMLWriter) {
+    throw new \InvalidArgumentException('参数$objWriter必须是PHPExcel_Shared_XMLWriter实例');//[修改]兼容类型约束
+}
+if ($pFill !== null && !$pFill instanceof PHPExcel_Style_Fill) {
+    throw new \InvalidArgumentException('参数$pFill必须是PHPExcel_Style_Fill实例');//[修改]兼容类型约束
+}
+
         // fill
         $objWriter->startElement('fill');
 
@@ -228,8 +246,15 @@ class PHPExcel_Writer_Excel2007_Style extends PHPExcel_Writer_Excel2007_WriterPa
      * @param     PHPExcel_Style_Fill                    $pFill            Fill style
      * @throws     PHPExcel_Writer_Exception
      */
-    private function writePatternFill(PHPExcel_Shared_XMLWriter $objWriter = null, PHPExcel_Style_Fill $pFill = null)
+    private function writePatternFill($objWriter = null, $pFill = null)
     {
+if ($objWriter !== null && !$objWriter instanceof PHPExcel_Shared_XMLWriter) {
+    throw new \InvalidArgumentException('参数$objWriter必须是PHPExcel_Shared_XMLWriter实例');//[修改]兼容类型约束
+}
+if ($pFill !== null && !$pFill instanceof PHPExcel_Style_Fill) {
+    throw new \InvalidArgumentException('参数$pFill必须是PHPExcel_Style_Fill实例');//[修改]兼容类型约束
+}
+
         // fill
         $objWriter->startElement('fill');
 
@@ -266,8 +291,15 @@ class PHPExcel_Writer_Excel2007_Style extends PHPExcel_Writer_Excel2007_WriterPa
      * @param     PHPExcel_Style_Font                $pFont            Font style
      * @throws     PHPExcel_Writer_Exception
      */
-    private function writeFont(PHPExcel_Shared_XMLWriter $objWriter = null, PHPExcel_Style_Font $pFont = null)
+    private function writeFont($objWriter = null, $pFont = null)
     {
+if ($objWriter !== null && !$objWriter instanceof PHPExcel_Shared_XMLWriter) {
+    throw new \InvalidArgumentException('参数$objWriter必须是PHPExcel_Shared_XMLWriter实例');//[修改]兼容类型约束
+}
+if ($pFont !== null && !$pFont instanceof PHPExcel_Style_Font) {
+    throw new \InvalidArgumentException('参数$pFont必须是PHPExcel_Style_Font实例');//[修改]兼容类型约束
+}
+
         // font
         $objWriter->startElement('font');
         //    Weird! The order of these elements actually makes a difference when opening Excel2007
@@ -346,8 +378,15 @@ class PHPExcel_Writer_Excel2007_Style extends PHPExcel_Writer_Excel2007_WriterPa
      * @param     PHPExcel_Style_Borders                $pBorders        Borders style
      * @throws     PHPExcel_Writer_Exception
      */
-    private function writeBorder(PHPExcel_Shared_XMLWriter $objWriter = null, PHPExcel_Style_Borders $pBorders = null)
+    private function writeBorder($objWriter = null, $pBorders = null)
     {
+if ($objWriter !== null && !$objWriter instanceof PHPExcel_Shared_XMLWriter) {
+    throw new \InvalidArgumentException('参数$objWriter必须是PHPExcel_Shared_XMLWriter实例');//[修改]兼容类型约束
+}
+if ($pBorders !== null && !$pBorders instanceof PHPExcel_Style_Borders) {
+    throw new \InvalidArgumentException('参数$pBorders必须是PHPExcel_Style_Borders实例');//[修改]兼容类型约束
+}
+
         // Write border
         $objWriter->startElement('border');
         // Diagonal?
@@ -383,8 +422,18 @@ class PHPExcel_Writer_Excel2007_Style extends PHPExcel_Writer_Excel2007_WriterPa
      * @param     PHPExcel                            $pPHPExcel        Workbook
      * @throws     PHPExcel_Writer_Exception
      */
-    private function writeCellStyleXf(PHPExcel_Shared_XMLWriter $objWriter = null, PHPExcel_Style $pStyle = null, PHPExcel $pPHPExcel = null)
+    private function writeCellStyleXf($objWriter = null, $pStyle = null, $pPHPExcel = null)
     {
+if ($objWriter !== null && !$objWriter instanceof PHPExcel_Shared_XMLWriter) {
+    throw new \InvalidArgumentException('参数$objWriter必须是PHPExcel_Shared_XMLWriter实例');//[修改]兼容类型约束
+}
+if ($pStyle !== null && !$pStyle instanceof PHPExcel_Style) {
+    throw new \InvalidArgumentException('参数$pStyle必须是PHPExcel_Style实例');//[修改]兼容类型约束
+}
+if ($pPHPExcel !== null && !$pPHPExcel instanceof PHPExcel) {
+    throw new \InvalidArgumentException('参数$pPHPExcel必须是PHPExcel实例');//[修改]兼容类型约束
+}
+
         // xf
         $objWriter->startElement('xf');
         $objWriter->writeAttribute('xfId', 0);
@@ -458,8 +507,15 @@ class PHPExcel_Writer_Excel2007_Style extends PHPExcel_Writer_Excel2007_WriterPa
      * @param     PHPExcel_Style                    $pStyle            Style
      * @throws     PHPExcel_Writer_Exception
      */
-    private function writeCellStyleDxf(PHPExcel_Shared_XMLWriter $objWriter = null, PHPExcel_Style $pStyle = null)
+    private function writeCellStyleDxf($objWriter = null, $pStyle = null)
     {
+if ($objWriter !== null && !$objWriter instanceof PHPExcel_Shared_XMLWriter) {
+    throw new \InvalidArgumentException('参数$objWriter必须是PHPExcel_Shared_XMLWriter实例');//[修改]兼容类型约束
+}
+if ($pStyle !== null && !$pStyle instanceof PHPExcel_Style) {
+    throw new \InvalidArgumentException('参数$pStyle必须是PHPExcel_Style实例');//[修改]兼容类型约束
+}
+
         // dxf
         $objWriter->startElement('dxf');
 
@@ -523,8 +579,15 @@ class PHPExcel_Writer_Excel2007_Style extends PHPExcel_Writer_Excel2007_WriterPa
      * @param     PHPExcel_Style_Border            $pBorder        Border style
      * @throws     PHPExcel_Writer_Exception
      */
-    private function writeBorderPr(PHPExcel_Shared_XMLWriter $objWriter = null, $pName = 'left', PHPExcel_Style_Border $pBorder = null)
+    private function writeBorderPr($objWriter = null, $pName = 'left', $pBorder = null)
     {
+if ($objWriter !== null && !$objWriter instanceof PHPExcel_Shared_XMLWriter) {
+    throw new \InvalidArgumentException('参数$objWriter必须是PHPExcel_Shared_XMLWriter实例');//[修改]兼容类型约束
+}
+if ($pBorder !== null && !$pBorder instanceof PHPExcel_Style_Border) {
+    throw new \InvalidArgumentException('参数$pBorder必须是PHPExcel_Style_Border实例');//[修改]兼容类型约束
+}
+
         // Write BorderPr
         if ($pBorder->getBorderStyle() != PHPExcel_Style_Border::BORDER_NONE) {
             $objWriter->startElement($pName);
@@ -547,8 +610,15 @@ class PHPExcel_Writer_Excel2007_Style extends PHPExcel_Writer_Excel2007_WriterPa
      * @param     int                                    $pId            Number Format identifier
      * @throws     PHPExcel_Writer_Exception
      */
-    private function writeNumFmt(PHPExcel_Shared_XMLWriter $objWriter = null, PHPExcel_Style_NumberFormat $pNumberFormat = null, $pId = 0)
+    private function writeNumFmt($objWriter = null, $pNumberFormat = null, $pId = 0)
     {
+if ($objWriter !== null && !$objWriter instanceof PHPExcel_Shared_XMLWriter) {
+    throw new \InvalidArgumentException('参数$objWriter必须是PHPExcel_Shared_XMLWriter实例');//[修改]兼容类型约束
+}
+if ($pNumberFormat !== null && !$pNumberFormat instanceof PHPExcel_Style_NumberFormat) {
+    throw new \InvalidArgumentException('参数$pNumberFormat必须是PHPExcel_Style_NumberFormat实例');//[修改]兼容类型约束
+}
+
         // Translate formatcode
         $formatCode = $pNumberFormat->getFormatCode();
 
@@ -568,8 +638,12 @@ class PHPExcel_Writer_Excel2007_Style extends PHPExcel_Writer_Excel2007_WriterPa
      * @return     PHPExcel_Style[]        All styles in PHPExcel
      * @throws     PHPExcel_Writer_Exception
      */
-    public function allStyles(PHPExcel $pPHPExcel = null)
+    public function allStyles($pPHPExcel = null)
     {
+if ($pPHPExcel !== null && !$pPHPExcel instanceof PHPExcel) {
+    throw new \InvalidArgumentException('参数$pPHPExcel必须是PHPExcel实例');//[修改]兼容类型约束
+}
+
         return $pPHPExcel->getCellXfCollection();
     }
 
@@ -580,8 +654,12 @@ class PHPExcel_Writer_Excel2007_Style extends PHPExcel_Writer_Excel2007_WriterPa
      * @return     PHPExcel_Style_Conditional[]        All conditional styles in PHPExcel
      * @throws     PHPExcel_Writer_Exception
      */
-    public function allConditionalStyles(PHPExcel $pPHPExcel = null)
+    public function allConditionalStyles($pPHPExcel = null)
     {
+if ($pPHPExcel !== null && !$pPHPExcel instanceof PHPExcel) {
+    throw new \InvalidArgumentException('参数$pPHPExcel必须是PHPExcel实例');//[修改]兼容类型约束
+}
+
         // Get an array of all styles
         $aStyles = array();
 
@@ -604,8 +682,12 @@ class PHPExcel_Writer_Excel2007_Style extends PHPExcel_Writer_Excel2007_WriterPa
      * @return     PHPExcel_Style_Fill[]        All fills in PHPExcel
      * @throws     PHPExcel_Writer_Exception
      */
-    public function allFills(PHPExcel $pPHPExcel = null)
+    public function allFills($pPHPExcel = null)
     {
+if ($pPHPExcel !== null && !$pPHPExcel instanceof PHPExcel) {
+    throw new \InvalidArgumentException('参数$pPHPExcel必须是PHPExcel实例');//[修改]兼容类型约束
+}
+
         // Get an array of unique fills
         $aFills = array();
 
@@ -635,8 +717,12 @@ class PHPExcel_Writer_Excel2007_Style extends PHPExcel_Writer_Excel2007_WriterPa
      * @return     PHPExcel_Style_Font[]        All fonts in PHPExcel
      * @throws     PHPExcel_Writer_Exception
      */
-    public function allFonts(PHPExcel $pPHPExcel = null)
+    public function allFonts($pPHPExcel = null)
     {
+if ($pPHPExcel !== null && !$pPHPExcel instanceof PHPExcel) {
+    throw new \InvalidArgumentException('参数$pPHPExcel必须是PHPExcel实例');//[修改]兼容类型约束
+}
+
         // Get an array of unique fonts
         $aFonts = array();
         $aStyles = $this->allStyles($pPHPExcel);
@@ -657,8 +743,12 @@ class PHPExcel_Writer_Excel2007_Style extends PHPExcel_Writer_Excel2007_WriterPa
      * @return     PHPExcel_Style_Borders[]        All borders in PHPExcel
      * @throws     PHPExcel_Writer_Exception
      */
-    public function allBorders(PHPExcel $pPHPExcel = null)
+    public function allBorders($pPHPExcel = null)
     {
+if ($pPHPExcel !== null && !$pPHPExcel instanceof PHPExcel) {
+    throw new \InvalidArgumentException('参数$pPHPExcel必须是PHPExcel实例');//[修改]兼容类型约束
+}
+
         // Get an array of unique borders
         $aBorders = array();
         $aStyles = $this->allStyles($pPHPExcel);
@@ -679,8 +769,12 @@ class PHPExcel_Writer_Excel2007_Style extends PHPExcel_Writer_Excel2007_WriterPa
      * @return     PHPExcel_Style_NumberFormat[]        All number formats in PHPExcel
      * @throws     PHPExcel_Writer_Exception
      */
-    public function allNumberFormats(PHPExcel $pPHPExcel = null)
+    public function allNumberFormats($pPHPExcel = null)
     {
+if ($pPHPExcel !== null && !$pPHPExcel instanceof PHPExcel) {
+    throw new \InvalidArgumentException('参数$pPHPExcel必须是PHPExcel实例');//[修改]兼容类型约束
+}
+
         // Get an array of unique number formats
         $aNumFmts = array();
         $aStyles = $this->allStyles($pPHPExcel);

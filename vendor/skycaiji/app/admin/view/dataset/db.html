@@ -17,7 +17,8 @@
 		<table id="dataset_db_list" class="table table-striped datatable">
 			<thead>
 	            <tr>
-					<th class="chk">ID</th>
+	            	<th class="chk"><span data-toggle="popover" data-trigger="hover" data-placement="top" data-content="所有数据列表中的ID">数据ID</span></th>
+					<th style="width:60px;"><span data-toggle="popover" data-trigger="hover" data-placement="top" data-content="当前数据集表中的编号">序号</span></th>
 					{foreach $fields as $field}
 					<th>{$field['name']}</th>
 					{/foreach}
@@ -25,6 +26,13 @@
 	            </tr>
 			</thead>
 			<tbody>
+			{if empty($list)}
+			<tr>
+				<td colspan="{:count($fields)+3}" style="text-align:center;">
+					<p class="help-block">没有数据，可在“任务»发布设置”中使用“数据集”功能导入数据</p>
+				</td>
+			</tr>
+			{/if}
 			</tbody>
 			<tfoot>
 				{php}$colspan=count($fields)+2;{/php}
@@ -65,13 +73,13 @@
 		    </select>
 	    </div>
 	    <div class="form-group form-group-sm" style="margin-bottom:5px;">
-			<label>ID</label>
-		    <input type="number" name="id" class="form-control" value="" placeholder="精确搜索" autocomplete="off" />
+			<label>序号</label>
+		    <input type="number" style="width:100px;" name="id" class="form-control" value="" placeholder="精确搜索" autocomplete="off" />
 	    </div>
 	    {foreach $fields as $fname=>$field}
 	    <div class="form-group form-group-sm" style="margin-bottom:5px;">
 			<label>{$field['name']}</label>
-		    <input type="text" name="{$fname}" class="form-control" value="" placeholder="模糊搜索" autocomplete="off" />
+		    <input type="text" style="width:100px;" name="{$fname}" class="form-control" value="" placeholder="模糊搜索" autocomplete="off" />
 	    </div>
 	    {/foreach}
 	    <div class="form-group form-group-sm" style="margin-bottom:5px;margin-right:10px;">
@@ -81,17 +89,29 @@
 </div>
 <table style="display:none;">
 	<tr id="tpl_db" data-db-id="">
-		<td class="chk"><label class="checkbox-inline"><input type="checkbox" name="ids[]" value=""> <span data-field="id"></span></label></td>
+		<td class="chk"><label class="checkbox-inline"><input type="checkbox" name="ids[]" value=""> <span class="dh-di-id"></span></label></td>
+		<td class="dh-dt-id"></td>
 		{foreach $fields as $fname=>$field}
         <td>
         	{if $field['type']=='mediumtext'}
-        	<textarea data-field="{$fname}" name="{$fname}[_id_]" class="form-control" placeholder="{:lang('ds_f_type_'.$field['type'])}"></textarea>
+        	<div class="input-group no-visualize">
+        		<textarea data-field="{$fname}" name="{$fname}[_id_]" class="form-control" placeholder="{:lang('ds_f_type_'.$field['type'])}"></textarea>
+				<div class="input-group-addon">
+					<a href="javascript:;" class="glyphicon glyphicon-eye-open btn-visualize" title="预览"></a>
+				</div>
+        	</div>
         	{else/}
         	<input type="{if $field['type']=='bigint'}number{else/}text{/if}" data-field="{$fname}" name="{$fname}[_id_]" class="form-control{if $field['type']=='datetime'} db-time{/if}" placeholder="{:lang('ds_f_type_'.$field['type'])}" autocomplete="off" />
         	{/if}
         </td>
 		{/foreach}
-		<td><a href="javascript:;" class="db-delete">{$Think.lang.delete}</a></td>
+		<td>
+			<ul class="in-line">
+				<li><a href="javascript:;" class="db-edit">详细</li>
+				<li class="sep">|</li>
+				<li><a href="javascript:;" class="db-delete">{$Think.lang.delete}</a></li>
+			</ul>
+		</td>
 	</tr>
 </table>
 <script type="text/javascript">

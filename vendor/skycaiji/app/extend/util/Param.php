@@ -32,7 +32,9 @@ class Param{
 	}
 	
 	public static function set_collector_collecting(){
-	    self::set_define('COLLECTOR_COLLECTING');
+	    if(!self::is_collector_collecting()){
+	        self::set_define('COLLECTOR_COLLECTING');
+	    }
 	}
 	public static function is_collector_collecting(){
 	    return self::defined('COLLECTOR_COLLECTING');

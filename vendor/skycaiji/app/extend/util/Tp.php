@@ -13,7 +13,8 @@
 namespace util;
 class Tp{
     
-    public static function filter_log_msg($msg){
+    public static function filter_log_msg(&$logMsg){
+        static $msgList=array();
         static $passList=array(
             '未定义','Undefined array key','Undefined variable','Undefined index',
             'A session had already been started','DOMDocument::loadHTML',
@@ -25,6 +26,7 @@ class Tp{
             ']unlink(',']rmdir(',
             '[exception_exit_collect]',
             'Passing null to parameter',
+            'Using null as an array offset is deprecated'
         );
         static $passListLower=null;
         if(!isset($passListLower)){
@@ -34,14 +36,37 @@ class Tp{
             }
             $passListLower=array_map('strtolower', $passListLower);
         }
-        if($msg){
-            $msg=strtolower($msg);
-            foreach ($passListLower as $passStr){
+        if($logMsg){
+            $msg=$logMsg;
+            $msgKey=md5($msg);
+            if(isset($msgList[$msgKey])){
                 
-                if($passStr&&strpos($msg, $passStr)!==false){
-                    
+                if($msgList[$msgKey]){
                     $msg='';
-                    break;
+                }
+            }else{
+                $msgList[$msgKey]=false;
+                $msg=strtolower($msg);
+                foreach ($passListLower as $passStr){
+                    
+                    if($passStr&&strpos($msg, $passStr)!==false){
+                        
+                        $msg='';
+                        $msgList[$msgKey]=true;
+                        break;
+                    }
+                }
+            }
+            
+            if($msg){
+                
+                if(g_sc('coll_execute_func_error')){
+                    
+                    $taskName=g_sc('collect_task_name');
+                    $logMsg=g_sc('coll_execute_func_error').$logMsg;
+                    if($taskName){
+                        $logMsg='【任务：'.$taskName.'】'.$logMsg;
+                    }
                 }
             }
         }

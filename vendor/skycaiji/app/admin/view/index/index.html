@@ -28,14 +28,7 @@
         	<input type="password" name="password" class="form-control" autocomplete="off" placeholder="{$Think.lang.user_password}">
         	<span class="glyphicon glyphicon-lock form-control-feedback"></span>
       	</div>
-		{if condition="g_sc_c('site','verifycode')"}	
-		<div class="form-group">
-			<div class="input-group">
-				<input type="text" name="verifycode" class="form-control" autocomplete="off" placeholder="{$Think.lang.verifycode}" />
-				<div class="input-group-btn"><img src="{:url('admin/index/verify')}" class="verify-img" onclick="refreshVerify(this)" onerror="verifyImgError()" /></div>
-			</div>
-		</div>
-		{/if}
+      	{include file="common:verify_img" _show_title="" /}
 		<div class="input-group-lg">
     		<div style="float:left;">
     			<div class="checkbox" style="margin:0 0 15px 0;"><label><input name="auto" type="checkbox" checked="checked"> {$Think.lang.login_auto}</label></div>

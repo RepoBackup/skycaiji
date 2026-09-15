@@ -30,7 +30,9 @@ function ajaxOpen(settings){if(settings.type&&'post'==settings.type.toLowerCase(
 settings.data=data}}}
 var successFunc=null;if(settings.success&&typeof(settings.success)=='function'){successFunc=settings.success}
 settings.success=function(data,status,xhr){if(successFunc&&typeof(successFunc)=='function'){successFunc(data,status,xhr)}
-setNewUsertoken(data)};return $.ajax(settings)}
+setNewUsertoken(data)};var completeFunc=null;if(settings.complete&&typeof(settings.complete)=='function'){completeFunc=settings.complete}
+settings.complete=function(xhr,status){if(completeFunc&&typeof(completeFunc)=='function'){completeFunc(xhr,status)}
+if(xhr.status>=400&&xhr.status<600){if($('#myModal').find('iframe').length<=0){windowIframe('错误','',{lg:1});$('#myModal iframe').contents().find('body').html(xhr.responseText)}}};return $.ajax(settings)}
 function modal(title,body,options){if(!options){options={}}
 if(document.getElementById('myModal')){$('#myModal').off();$('#myModal').modal('hide');$('#myModal').remove()}
 if(!document.getElementById('myModal')){var modal='<div class="modal '+(options.lg?' bs-example-modal-lg':'')+' myModal" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"><div class="modal-dialog'+(options.lg?' modal-lg':'')+'"><div class="modal-content">'+'<div class="modal-header"><button type="button" class="close" data-dismiss="modal" style="font-size:24px;">&times;</button><h4 class="modal-title" id="myModalLabel"></h4></div><div class="modal-body" '+(options.bodyStyle?options.bodyStyle:'')+'></div>'+'<div class="modal-footer"><button type="button" class="close" data-dismiss="modal">'+tpl_lang.close+'</button></div></div></div></div>';$('body').append(modal)}
@@ -57,6 +59,7 @@ function decode_urlbase2json(urlBase64Str,checkNull){var json={};try{json=url_ba
 return json}
 function generateUUID(){var d=new Date().getTime();var uuid='xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,function(c){var r=(d+Math.random()*16)%16|0;d=Math.floor(d/16);return(c=='x'?r:(r&0x7|0x8)).toString(16)});return uuid}
 function refreshVerify(obj){var src=$(obj).attr('src');if(src.indexOf('version')>0){src=src.replace(/([\?\&]version\=)[\.\d]+/i,"$1"+Math.random())}else{src+=(src.indexOf('?')>-1?'&':'?')+'version='+Math.random()}
+if(src.indexOf('_usertoken_')>0){src=src.replace(/([\?\&]_usertoken_\=)[^\&]+/i,"$1"+encodeURIComponent(window.site_config.usertoken))}else{src+=(src.indexOf('?')>-1?'&':'?')+'_usertoken_='+encodeURIComponent(window.site_config.usertoken)}
 $(obj).attr('src',src)}
 function verifyImgError(){ajaxOpen({type:'get',dataType:'json',url:ulink('admin/index/verify_img_error'),success:function(data){if(data.msg){ajaxDataMsg(data)}}})}
 function ulink(url,vals){url=url?url:'';url=url.replace(/^\s*\//,'');if(url.indexOf('/')>-1){var path=url.split('/');if(path.length==2){url='admin/'+path[0]+'/'+path[1]}else if(path.length==3){url=path[0]+'/'+path[1]+'/'+path[2]}}

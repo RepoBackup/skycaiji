@@ -123,14 +123,22 @@ class PHPExcel_Writer_Excel5_Xf
      */
     private $rightBorderColor;
 
+    public $_diag;
+    public $_diag_color;
+    public $_style;
+    
     /**
      * Constructor
      *
      * @access public
      * @param PHPExcel_Style    The XF format
      */
-    public function __construct(PHPExcel_Style $style = null)
+    public function __construct($style = null)
     {
+if ($style !== null && !$style instanceof PHPExcel_Style) {
+    throw new \InvalidArgumentException('参数$style必须是PHPExcel_Style实例');//[修改]兼容类型约束
+}
+
         $this->isStyleXf =     false;
         $this->fontIndex = 0;
 
